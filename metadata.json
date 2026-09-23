@@ -1,0 +1,6 @@
+{
+  "name": "Hệ thống Quản lý Phòng khám - Clinic Management System",
+  "description": "Hệ thống quản lý phòng khám đa khoa toàn diện: tiếp đón, phân loại, khám bệnh, kê đơn thuốc và quản lý dược kho.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
