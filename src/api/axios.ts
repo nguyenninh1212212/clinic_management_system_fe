@@ -1,6 +1,7 @@
 // src/api/axios.ts
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/stores/auth.store';
+import { statusMessages } from '@/components/helper/Filter/FIlterStatus';
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
@@ -52,23 +53,15 @@ api.interceptors.response.use(
       original.url?.includes('/auth/login') ||
       original.url?.includes('/auth/refresh-token')
     ) {
-      // Global error reporting for non-401 or failed retries
       if (error.response) {
         const status = error.response.status;
         const msg = error.response.data?.message;
         const formattedMsg = Array.isArray(msg) ? msg.join(', ') : msg;
 
-        if (status === 403) {
-          notifyApiFeedback('Không có quyền thực hiện thao tác này', 'error');
-        } else if (status === 404) {
-          notifyApiFeedback(formattedMsg || 'Không tìm thấy dữ liệu', 'warning');
-        } else if (status === 409) {
-          notifyApiFeedback(formattedMsg || 'Dữ liệu xung đột hoặc đã tồn tại', 'error');
-        } else if (status >= 500) {
-          notifyApiFeedback('Lỗi hệ thống. Vui lòng thử lại sau.', 'error');
-        }
+     
+          notifyApiFeedback(statusMessages({status,formattedMsg})[0],statusMessages({status,formattedMsg})[1]);
+        
       } else if (!error.response && error.message) {
-        // Network error / connection refused
         console.warn('Network or server unreachable:', error.message);
       }
       return Promise.reject(error);
