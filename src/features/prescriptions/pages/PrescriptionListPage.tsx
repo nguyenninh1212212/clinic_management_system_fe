@@ -26,9 +26,7 @@ import { SearchInput } from '@/components/common/SearchInput';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { usePrescriptions, useCreatePrescription, useDeletePrescription } from '../hooks/usePrescriptions';
 import { useExaminations } from '@/features/examinations/hooks/useExaminations';
-import { useQuery } from '@tanstack/react-query';
-import { medicinesApi } from '@/api/endpoints/medicines.api';
-import { queryKeys } from '@/api/queryKeys';
+import { useMedicinesDropdown } from '@/features/medicines/hooks/useMedicines';
 import { Prescription, CreatePrescriptionItemDto, Medicine } from '@/types';
 import dayjs from 'dayjs';
 
@@ -68,11 +66,7 @@ export const PrescriptionListPage: React.FC = () => {
   });
 
   const { data: examsData } = useExaminations({ limit: 50 });
-  const { data: medicinesData } = useQuery({
-    queryKey: queryKeys.medicines.list({ limit: 100 }),
-    queryFn: () => medicinesApi.findAll({ limit: 100 }),
-    staleTime: 5 * 60_000,
-  });
+  const { data: medicinesData } = useMedicinesDropdown(100);
 
   const createMutation = useCreatePrescription();
   const deleteMutation = useDeletePrescription();

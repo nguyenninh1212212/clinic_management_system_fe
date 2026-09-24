@@ -4,6 +4,7 @@ import {
   PrescriptionItem,
   CreatePrescriptionItemDto,
   UpdatePrescriptionItemDto,
+  ApiResponse,
 } from '@/types';
 
 export const prescriptionItemsApi = {
@@ -13,13 +14,13 @@ export const prescriptionItemsApi = {
       return Array.isArray(res) ? res : res?.data || [];
     }),
 
-  findById: (id: string): Promise<PrescriptionItem> =>
+  findById: (id: string): Promise<ApiResponse<PrescriptionItem>> =>
     api.get(`/prescription-items/${id}`).then((r) => r.data),
 
-  create: (dto: CreatePrescriptionItemDto): Promise<PrescriptionItem> =>
+  create: (dto: CreatePrescriptionItemDto): Promise<ApiResponse<PrescriptionItem>> =>
     api.post('/prescription-items', dto).then((r) => r.data),
 
-  update: (id: string, dto: UpdatePrescriptionItemDto): Promise<PrescriptionItem> =>
+  update: (id: string, dto: UpdatePrescriptionItemDto): Promise<ApiResponse<PrescriptionItem>> =>
     api.patch(`/prescription-items/${id}`, dto).then((r) => r.data),
 
   remove: (id: string): Promise<void> =>

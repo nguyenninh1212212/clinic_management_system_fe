@@ -21,10 +21,8 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { createDoctorSchema, CreateDoctorFormValues } from '../schemas/doctor.schema';
 import { useCreateDoctor } from '../hooks/useDoctors';
 import { useSpecialtiesDropdown } from '@/features/specialties/hooks/useSpecialties';
-import { useQuery } from '@tanstack/react-query';
-import { queryKeys } from '@/api/queryKeys';
-import { usersApi } from '@/api/endpoints/users.api';
-import { DoctorDegree, UserRole } from '@/types';
+import { useUsersDropdown } from '@/features/users/hooks/useUsers';
+import { DoctorDegree } from '@/types';
 
 export const DoctorCreatePage: React.FC = () => {
   const navigate = useNavigate();
@@ -32,11 +30,7 @@ export const DoctorCreatePage: React.FC = () => {
   const { data: specialties } = useSpecialtiesDropdown();
 
   // Load users to link
-  const { data: usersData, isLoading: loadingUsers } = useQuery({
-    queryKey: queryKeys.users.list({ limit: 100 }),
-    queryFn: () => usersApi.findAll({ limit: 100 }),
-    staleTime: 60_000,
-  });
+  const { data: usersData, isLoading: loadingUsers } = useUsersDropdown(100);
 
   const {
     register,

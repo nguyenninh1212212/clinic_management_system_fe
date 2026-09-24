@@ -5,16 +5,17 @@ import {
   CreateStockTransactionDto,
   StockTransactionQueryParams,
   PaginatedResponse,
+  ApiResponse,
 } from '@/types';
 
 export const stockTransactionsApi = {
   findAll: (params?: StockTransactionQueryParams): Promise<PaginatedResponse<StockTransaction>> =>
     api.get('/stock-transactions', { params }).then((r) => r.data),
 
-  findById: (id: number): Promise<StockTransaction> =>
+  findById: (id: number): Promise<ApiResponse<StockTransaction>> =>
     api.get(`/stock-transactions/${id}`).then((r) => r.data),
 
-  create: (dto: CreateStockTransactionDto): Promise<StockTransaction> =>
+  create: (dto: CreateStockTransactionDto): Promise<ApiResponse<StockTransaction>> =>
     api.post('/stock-transactions', dto).then((r) => r.data),
 
   remove: (id: number): Promise<void> =>

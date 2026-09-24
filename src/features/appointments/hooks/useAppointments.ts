@@ -1,9 +1,9 @@
 // src/features/appointments/hooks/useAppointments.ts
-import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useMutation, useQueryClient, UseMutationResult } from '@tanstack/react-query';
 import { queryKeys } from '@/api/queryKeys';
 import { appointmentsApi } from '@/api/endpoints/appointments.api';
 import { notifyApiFeedback } from '@/api/axios';
-import { Appointment, AppointmentStatus, AppointmentQueryParams, CreateAppointmentDto, UpdateAppointmentDto } from '@/types';
+import { Appointment, AppointmentStatus, AppointmentQueryParams, CreateAppointmentDto, UpdateAppointmentDto, ApiResponse } from '@/types';
 
 export function useAppointments(params?: AppointmentQueryParams) {
   return useQuery({
@@ -23,13 +23,13 @@ export function useAppointment(id: string) {
   });
 }
 
-export function useCreateAppointment() {
+export function useCreateAppointment(): UseMutationResult<ApiResponse<Appointment>, Error, CreateAppointmentDto, unknown> {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (dto: CreateAppointmentDto) => appointmentsApi.create(dto),
-    onSuccess: (created: Appointment) => {
-      queryClient.setQueryData(queryKeys.appointments.detail(created.id), created);
+    onSuccess: (created: ApiResponse<Appointment>) => {
+      queryClient.setQueryData(queryKeys.appointments.detail(created.data.id), created);
       queryClient.invalidateQueries({ queryKey: queryKeys.appointments.lists() });
       notifyApiFeedback('Tạo lịch hẹn thành công', 'info');
     },
@@ -42,8 +42,8 @@ export function useUpdateAppointment() {
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdateAppointmentDto }) =>
       appointmentsApi.update(id, dto),
-    onSuccess: (updated: Appointment) => {
-      queryClient.setQueryData(queryKeys.appointments.detail(updated.id), updated);
+    onSuccess: (updated: ApiResponse<Appointment>) => {
+      queryClient.setQueryData(queryKeys.appointments.detail(updated.data.id), updated);
       queryClient.invalidateQueries({ queryKey: queryKeys.appointments.lists() });
       notifyApiFeedback('Cập nhật cuộc hẹn thành công', 'info');
     },
@@ -63,8 +63,8 @@ export function useUpdateAppointmentStatus() {
       status: AppointmentStatus;
       notes?: string;
     }) => appointmentsApi.updateStatus(id, { status, notes }),
-    onSuccess: (updated: Appointment) => {
-      queryClient.setQueryData(queryKeys.appointments.detail(updated.id), updated);
+    onSuccess: (updated: ApiResponse<Appointment>) => {
+      queryClient.setQueryData(queryKeys.appointments.detail(updated.data.id), updated);
       queryClient.invalidateQueries({ queryKey: queryKeys.appointments.lists() });
       notifyApiFeedback('Cập nhật trạng thái cuộc hẹn thành công', 'info');
     },

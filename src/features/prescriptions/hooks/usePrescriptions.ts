@@ -3,7 +3,7 @@ import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tansta
 import { queryKeys } from '@/api/queryKeys';
 import { prescriptionsApi } from '@/api/endpoints/prescriptions.api';
 import { notifyApiFeedback } from '@/api/axios';
-import { Prescription, CreatePrescriptionDto, UpdatePrescriptionDto, PrescriptionQueryParams } from '@/types';
+import { Prescription, CreatePrescriptionDto, UpdatePrescriptionDto, PrescriptionQueryParams, ApiResponse } from '@/types';
 
 export function usePrescriptions(params?: PrescriptionQueryParams) {
   return useQuery({
@@ -28,8 +28,8 @@ export function useCreatePrescription() {
 
   return useMutation({
     mutationFn: (dto: CreatePrescriptionDto) => prescriptionsApi.create(dto),
-    onSuccess: (created: Prescription) => {
-      queryClient.setQueryData(queryKeys.prescriptions.detail(created.id), created);
+    onSuccess: (created: ApiResponse<Prescription>) => {
+      queryClient.setQueryData(queryKeys.prescriptions.detail(created.data.id), created);
       queryClient.invalidateQueries({ queryKey: queryKeys.prescriptions.lists() });
       queryClient.invalidateQueries({ queryKey: queryKeys.examinations.all });
       notifyApiFeedback('Kê đơn thuốc thành công', 'info');

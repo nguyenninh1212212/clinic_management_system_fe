@@ -22,15 +22,15 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, Column } from '@/components/common/DataTable';
 import { SearchInput } from '@/components/common/SearchInput';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { permissionsApi } from '@/api/endpoints/permissions.api';
-import { queryKeys } from '@/api/queryKeys';
-import { notifyApiFeedback } from '@/api/axios';
+import {
+  usePermissionList,
+  useCreatePermission,
+  useUpdatePermission,
+  useDeletePermission,
+} from '../hooks/usePermissions';
 import { Permission, PermissionAction, CreatePermissionDto } from '@/types';
 
 export const PermissionListPage: React.FC = () => {
-  const queryClient = useQueryClient();
-
   const [search, setSearch] = useState('');
   const [actionFilter, setActionFilter] = useState<PermissionAction | ''>('');
 
@@ -47,39 +47,11 @@ export const PermissionListPage: React.FC = () => {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [deleteName, setDeleteName] = useState('');
 
-  const { data = [], isLoading } = useQuery({
-    queryKey: queryKeys.permissions.all,
-    queryFn: () => permissionsApi.findAll(),
-    staleTime: 60_000,
-  });
+  const { data = [], isLoading } = usePermissionList();
 
-  const createMutation = useMutation({
-    mutationFn: (dto: CreatePermissionDto) => permissionsApi.create(dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.permissions.all });
-      setDialogOpen(false);
-      notifyApiFeedback('Thêm quyền truy cập thành công', 'info');
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, dto }: { id: number; dto: CreatePermissionDto }) =>
-      permissionsApi.update(id, dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.permissions.all });
-      setDialogOpen(false);
-      notifyApiFeedback('Cập nhật quyền thành công', 'info');
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => permissionsApi.remove(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.permissions.all });
-      setDeleteId(null);
-      notifyApiFeedback('Đã xóa quyền truy cập', 'info');
-    },
-  });
+  const createMutation = useCreatePermission();
+  const updateMutation = useUpdatePermission();
+  const deleteMutation = useDeletePermission();
 
   const handleOpenCreate = () => {
     setEditingPerm(null);

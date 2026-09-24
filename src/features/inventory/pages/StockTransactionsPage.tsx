@@ -8,9 +8,7 @@ import {
 } from '@mui/material';
 import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, Column } from '@/components/common/DataTable';
-import { useQuery } from '@tanstack/react-query';
-import { inventoryApi } from '@/api/endpoints/inventory.api';
-import { queryKeys } from '@/api/queryKeys';
+import { useStockTransactionList } from '../hooks/useInventory';
 import { StockTransaction, StockTransactionType } from '@/types';
 import dayjs from 'dayjs';
 
@@ -19,19 +17,10 @@ export const StockTransactionsPage: React.FC = () => {
   const [limit, setLimit] = useState(15);
   const [transactionType, setTransactionType] = useState<StockTransactionType | ''>('');
 
-  const { data, isLoading } = useQuery({
-    queryKey: queryKeys.stockTransactions.list({
-      page,
-      limit,
-      transactionType: transactionType || undefined,
-    }),
-    queryFn: () =>
-      inventoryApi.findAllTransactions({
-        page,
-        limit,
-        transactionType: transactionType || undefined,
-      }),
-    staleTime: 30_000,
+  const { data, isLoading } = useStockTransactionList({
+    page,
+    limit,
+    transactionType: transactionType || undefined,
   });
 
   const getTransactionTypeChip = (txType: StockTransactionType) => {

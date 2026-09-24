@@ -26,17 +26,17 @@ import { DataTable, Column } from '@/components/common/DataTable';
 import { SearchInput } from '@/components/common/SearchInput';
 import { StatusChip } from '@/components/common/StatusChip';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { usersApi } from '@/api/endpoints/users.api';
-import { positionsApi } from '@/api/endpoints/positions.api';
-import { queryKeys } from '@/api/queryKeys';
-import { notifyApiFeedback } from '@/api/axios';
+import {
+  useUserList,
+  useActivePositions,
+  useCreateUser,
+  useUpdateUser,
+  useChangeUserPassword,
+} from '../hooks/useUsers';
 import { User, UserRole, CreateUserDto, UpdateUserDto, Position } from '@/types';
 import dayjs from 'dayjs';
 
 export const UserListPage: React.FC = () => {
-  const queryClient = useQueryClient();
-
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
@@ -66,46 +66,17 @@ export const UserListPage: React.FC = () => {
   // Deactivate User Dialog
   const [deactivateUser, setDeactivateUser] = useState<User | null>(null);
 
-  const { data, isLoading } = useQuery({
-    queryKey: queryKeys.users.list({ page, limit, search: search || undefined, role: roleFilter || undefined }),
-    queryFn: () => usersApi.findAll({ page, limit, search: search || undefined, role: roleFilter || undefined }),
-    staleTime: 60_000,
+  const { data, isLoading } = useUserList({
+    page,
+    limit,
+    search: search || undefined,
+    role: roleFilter || undefined,
   });
 
-  const { data: positionsList } = useQuery({
-    queryKey: queryKeys.positions.active(),
-    queryFn: () => positionsApi.getActive(),
-    staleTime: 5 * 60_000,
-  });
-
-  const createMutation = useMutation({
-    mutationFn: (dto: CreateUserDto) => usersApi.create(dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
-      setCreateDialogOpen(false);
-      notifyApiFeedback('Tạo tài khoản người dùng thành công', 'info');
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, dto }: { id: string; dto: UpdateUserDto }) => usersApi.update(id, dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
-      setEditDialogOpen(false);
-      setDeactivateUser(null);
-      notifyApiFeedback('Cập nhật tài khoản thành công', 'info');
-    },
-  });
-
-  const changePasswordMutation = useMutation({
-    mutationFn: ({ id, newPass }: { id: string; newPass: string }) =>
-      usersApi.resetPassword(id, newPass),
-    onSuccess: () => {
-      setPasswordDialogOpen(false);
-      setNewPassword('');
-      notifyApiFeedback('Đổi mật khẩu người dùng thành công', 'info');
-    },
-  });
+  const { data: positionsList } = useActivePositions();
+  const createMutation = useCreateUser();
+  const updateMutation = useUpdateUser();
+  const changePasswordMutation = useChangeUserPassword();
 
   const handleOpenEdit = (u: User) => {
     setEditingUser(u);

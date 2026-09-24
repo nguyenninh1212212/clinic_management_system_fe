@@ -2,12 +2,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Grid,
   Card,
   CardContent,
   Typography,
   Button,
-  Box,
   Skeleton,
 } from '@mui/material';
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutlined';
@@ -16,60 +14,30 @@ import HourglassEmptyOutlinedIcon from '@mui/icons-material/HourglassEmptyOutlin
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import AddIcon from '@mui/icons-material/Add';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import { useQuery } from '@tanstack/react-query';
-import { queryKeys } from '@/api/queryKeys';
-import { patientsApi } from '@/api/endpoints/patients.api';
-import { appointmentsApi } from '@/api/endpoints/appointments.api';
-import { medicinesApi } from '@/api/endpoints/medicines.api';
-import { inventoryApi } from '@/api/endpoints/inventory.api';
 import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, Column } from '@/components/common/DataTable';
 import { StatusChip } from '@/components/common/StatusChip';
-import { Appointment, AppointmentStatus } from '@/types';
+import { Appointment } from '@/types';
 import { usePermission } from '@/hooks/usePermission';
 import dayjs from 'dayjs';
+import { useDashboardStats, useDashboardRecentAppointments } from '../hooks/useDashboard';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const { canCreateOrEditPatient } = usePermission();
-  const todayStr = dayjs().format('YYYY-MM-DD');
 
-  // Stats queries
-  const { data: patientsData, isLoading: loadingPatients } = useQuery({
-    queryKey: queryKeys.patients.list({ page: 1, limit: 1 }),
-    queryFn: () => patientsApi.findAll({ page: 1, limit: 1 }),
-    staleTime: 60_000,
-  });
+  const {
+    totalPatients,
+    totalToday,
+    totalPending,
+    totalLowStock,
+    loadingPatients,
+    loadingTodayAppts,
+    loadingPending,
+    loadingLowStock,
+  } = useDashboardStats();
 
-  const { data: todayAppointments, isLoading: loadingTodayAppts } = useQuery({
-    queryKey: queryKeys.appointments.list({ date: todayStr, page: 1, limit: 10 }),
-    queryFn: () => appointmentsApi.findAll({ date: todayStr, page: 1, limit: 10 }),
-    staleTime: 30_000,
-  });
-
-  const { data: pendingAppointments, isLoading: loadingPending } = useQuery({
-    queryKey: queryKeys.appointments.list({ status: AppointmentStatus.PENDING, page: 1, limit: 1 }),
-    queryFn: () => appointmentsApi.findAll({ status: AppointmentStatus.PENDING, page: 1, limit: 1 }),
-    staleTime: 30_000,
-  });
-
-  const { data: lowStockData, isLoading: loadingLowStock } = useQuery({
-    queryKey: queryKeys.inventory.list({ lowStock: true, page: 1, limit: 1 }),
-    queryFn: () => inventoryApi.findAll({ lowStock: true, page: 1, limit: 1 }),
-    staleTime: 5 * 60_000,
-  });
-
-  // Recent appointments
-  const { data: recentAppointments, isLoading: loadingRecent } = useQuery({
-    queryKey: queryKeys.appointments.list({ page: 1, limit: 10 }),
-    queryFn: () => appointmentsApi.findAll({ page: 1, limit: 10 }),
-    staleTime: 30_000,
-  });
-
-  const totalPatients = patientsData?.pagination?.total ?? 0;
-  const totalToday = todayAppointments?.pagination?.total ?? (todayAppointments?.data?.length || 0);
-  const totalPending = pendingAppointments?.pagination?.total ?? (pendingAppointments?.data?.length || 0);
-  const totalLowStock = lowStockData?.pagination?.total ?? (lowStockData?.data?.length || 0);
+  const { recentAppointments, loadingRecent } = useDashboardRecentAppointments();
 
   const columns: Column<Appointment>[] = [
     {

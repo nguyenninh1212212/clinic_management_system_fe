@@ -11,6 +11,8 @@ import {
   TextField,
   IconButton,
   Tooltip,
+  Divider,
+  Box,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
@@ -20,6 +22,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, Column } from '@/components/common/DataTable';
 import { SearchInput } from '@/components/common/SearchInput';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { MaterialIconPicker, renderMaterialIcon } from '@/components/common/MaterialIconPicker';
 import {
   useSpecialties,
   useCreateSpecialty,
@@ -60,6 +63,7 @@ export const SpecialtyListPage: React.FC = () => {
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<SpecialtyFormValues>({
     resolver: zodResolver(specialtySchema),
@@ -126,21 +130,22 @@ export const SpecialtyListPage: React.FC = () => {
       label: 'Biểu tượng',
       minWidth: 90,
       render: (row) => (
-        <div className="w-8 h-8 rounded-lg bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-600">
-          {row.iconUrl ? (
-            <img
-              src={row.iconUrl}
-              alt={row.name}
-              className="w-5 h-5 object-contain"
-              referrerPolicy="no-referrer"
-              onError={(e) => {
-                (e.currentTarget as HTMLElement).style.display = 'none';
-              }}
-            />
-          ) : (
-            <LocalHospitalIcon fontSize="small" />
-          )}
-        </div>
+        <Box
+          sx={{
+            width: 36,
+            height: 36,
+            borderRadius: 1.5,
+            bgcolor: 'primary.50',
+            border: '1px solid',
+            borderColor: 'primary.100',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'primary.main',
+          }}
+        >
+          {renderMaterialIcon(row.iconUrl) ?? <LocalHospitalIcon fontSize="small" />}
+        </Box>
       ),
     },
     {
@@ -255,44 +260,32 @@ export const SpecialtyListPage: React.FC = () => {
         <DialogTitle className="font-bold text-slate-900">
           {editingSpecialty ? 'Cập nhật chuyên khoa' : 'Thêm chuyên khoa mới'}
         </DialogTitle>
+        <Divider />
         <form onSubmit={handleSubmit(onSubmit)}>
-          <DialogContent className="space-y-4">
+          <DialogContent className="space-y-4 mt-2  ">
             <TextField
               label="Tên chuyên khoa *"
               fullWidth
+              variant="filled"
               size="small"
+              sx={{ mt: 1 }}
               placeholder="VD: Tim mạch, Tiêu hóa, Thần kinh..."
               {...register('name')}
               error={!!errors.name}
               helperText={errors.name?.message}
             />
 
-            <TextField
-              label="Đường dẫn biểu tượng (Icon URL)"
-              fullWidth
-              size="small"
-              placeholder="https://... (tùy chọn)"
-              {...register('iconUrl')}
+            <MaterialIconPicker
+              value={iconUrlWatch}
+              onChange={(name) => setValue('iconUrl', name, { shouldValidate: true })}
             />
-
-            {iconUrlWatch && (
-              <div className="p-3 bg-slate-50 rounded-lg flex items-center gap-3">
-                <span className="text-xs text-slate-500">Xem trước icon:</span>
-                <img
-                  src={iconUrlWatch}
-                  alt="preview"
-                  className="w-8 h-8 object-contain rounded"
-                  onError={(e) => {
-                    (e.currentTarget as HTMLElement).style.display = 'none';
-                  }}
-                />
-              </div>
-            )}
 
             <TextField
               label="Mô tả chức năng chuyên khoa"
               fullWidth
               multiline
+              sx={{ mt: 1 }}
+              variant="filled"
               rows={3}
               placeholder="Mô tả phạm vi khám và chẩn đoán điều trị..."
               {...register('description')}
