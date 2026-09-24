@@ -97,3 +97,9 @@ export enum AuditAction {
   LOGIN = 'LOGIN',
   LOGOUT = 'LOGOUT',
 }
+
+export enum ResourceType {
+  TIMESHEET = 'TIMESHEET',
+  PRODUCTION = 'PRODUCTION',
+  DOCUMENT = 'DOCUMENT',
+}

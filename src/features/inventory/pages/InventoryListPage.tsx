@@ -72,8 +72,11 @@ export const InventoryListPage: React.FC = () => {
   });
 
   const { data: medicinesList } = useQuery({
-    queryKey: queryKeys.medicines.dropdown(),
-    queryFn: () => medicinesApi.getAllDropdown(),
+    queryKey: queryKeys.medicines.all,
+    queryFn: async () => {
+      const response = await medicinesApi.findAll({ page: 1, limit: 1000 });
+      return response.data;
+    },
     staleTime: 5 * 60_000,
   });
 

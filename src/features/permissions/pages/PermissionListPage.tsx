@@ -278,7 +278,6 @@ export const PermissionListPage: React.FC = () => {
         onEmptyAction={handleOpenCreate}
       />
 
-      {/* Permission Dialog */}
       <Dialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
