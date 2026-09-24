@@ -32,7 +32,11 @@ export const PatientDetailPage: React.FC = () => {
 
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const { data: patient, isLoading, isError } = usePatient(id || '');
+  if(!id) {
+    return 
+  }
+
+  const { data: patient, isLoading, isError } = usePatient(id);
   const deleteMutation = useDeletePatient();
 
   const { data: appointmentsData, isLoading: loadingAppointments } = useAppointments({
@@ -61,10 +65,12 @@ export const PatientDetailPage: React.FC = () => {
       </div>
     );
   }
+  const patientData =patient.data
 
   const handleDelete = async () => {
     try {
-      await deleteMutation.mutateAsync(patient.id);
+
+      await deleteMutation.mutateAsync(patientData.id);
       navigate('/patients');
     } catch {
       // Error handled by interceptor
@@ -115,12 +121,12 @@ export const PatientDetailPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={patient.fullName}
-        subtitle={`Mã hồ sơ: ${patient.id} · Đăng ký lúc ${dayjs(patient.createdAt).format('DD/MM/YYYY')}`}
+        title={patientData.fullName}
+        subtitle={`Mã hồ sơ: ${patientData.id} · Đăng ký lúc ${dayjs(patientData.createdAt).format('DD/MM/YYYY')}`}
         breadcrumbs={[
           { label: 'Trang chủ', href: '/dashboard' },
           { label: 'Bệnh nhân', href: '/patients' },
-          { label: patient.fullName },
+          { label: patientData.fullName },
         ]}
         action={
           <div className="flex items-center gap-2">
@@ -135,7 +141,7 @@ export const PatientDetailPage: React.FC = () => {
             <Button
               variant="contained"
               startIcon={<EventAvailableIcon />}
-              onClick={() => navigate(`/appointments/new?patientId=${patient.id}`)}
+              onClick={() => navigate(`/appointments/new?patientId=${patientData.id}`)}
               size="small"
             >
               Tạo lịch hẹn
@@ -145,7 +151,7 @@ export const PatientDetailPage: React.FC = () => {
                 variant="outlined"
                 color="primary"
                 startIcon={<EditOutlinedIcon />}
-                onClick={() => navigate(`/patients/${patient.id}/edit`)}
+                onClick={() => navigate(`/patients/${patientData.id}/edit`)}
                 size="small"
               >
                 Chỉnh sửa
@@ -175,15 +181,15 @@ export const PatientDetailPage: React.FC = () => {
             <div>
               <div className="text-xs text-slate-400">Giới tính</div>
               <div className="text-sm font-semibold text-slate-800 mt-1">
-                <StatusChip status={patient.gender} type="gender" />
+                <StatusChip status={patientData.gender} type="gender" />
               </div>
             </div>
 
             <div>
               <div className="text-xs text-slate-400">Ngày sinh</div>
               <div className="text-sm font-semibold text-slate-800 mt-1 tabular-nums">
-                {patient.dateOfBirth
-                  ? `${dayjs(patient.dateOfBirth).format('DD/MM/YYYY')} (${dayjs().diff(patient.dateOfBirth, 'year')} tuổi)`
+                {patientData.dateOfBirth
+                  ? `${dayjs(patientData.dateOfBirth).format('DD/MM/YYYY')} (${dayjs().diff(patientData.dateOfBirth, 'year')} tuổi)`
                   : '—'}
               </div>
             </div>
@@ -191,28 +197,28 @@ export const PatientDetailPage: React.FC = () => {
             <div>
               <div className="text-xs text-slate-400">Số điện thoại liên hệ</div>
               <div className="text-sm font-semibold text-slate-800 mt-1 font-mono tabular-nums">
-                {patient.phone || 'Chưa cập nhật'}
+                {patientData.phone || 'Chưa cập nhật'}
               </div>
             </div>
 
             <div>
               <div className="text-xs text-slate-400">Số CCCD / CMND</div>
               <div className="text-sm font-semibold text-slate-800 mt-1 font-mono tabular-nums">
-                {patient.identityNumber || 'Chưa cập nhật'}
+                {patientData.identityNumber || 'Chưa cập nhật'}
               </div>
             </div>
 
             <div className="sm:col-span-2">
               <div className="text-xs text-slate-400">Địa chỉ thường trú</div>
               <div className="text-sm text-slate-700 mt-1">
-                {patient.address || 'Chưa cập nhật'}
+                {patientData.address || 'Chưa cập nhật'}
               </div>
             </div>
 
             <div className="sm:col-span-2">
               <div className="text-xs text-slate-400">Tiền sử bệnh lý & Dị ứng thuốc</div>
               <div className="text-sm text-rose-700 font-medium mt-1 bg-rose-50/60 p-2.5 rounded-lg border border-rose-100">
-                {patient.medicalHistory || 'Không ghi nhận tiền sử đặc biệt'}
+                {patientData.medicalHistory || 'Không ghi nhận tiền sử đặc biệt'}
               </div>
             </div>
           </div>
@@ -237,14 +243,14 @@ export const PatientDetailPage: React.FC = () => {
           emptyTitle="Chưa có lịch hẹn khám nào"
           emptyDescription="Bệnh nhân này chưa có lịch hẹn khám hoặc tiền sử điều trị."
           emptyActionText="Đặt lịch khám ngay"
-          onEmptyAction={() => navigate(`/appointments/new?patientId=${patient.id}`)}
+          onEmptyAction={() => navigate(`/appointments/new?patientId=${patientData.id}`)}
         />
       </div>
 
       <ConfirmDialog
         open={deleteOpen}
         title="Xóa hồ sơ bệnh nhân?"
-        content={`Bạn có chắc muốn xóa vĩnh viễn hồ sơ của bệnh nhân "${patient.fullName}"?`}
+        content={`Bạn có chắc muốn xóa vĩnh viễn hồ sơ của bệnh nhân "${patientData.fullName}"?`}
         confirmText="Xóa hồ sơ"
         confirmColor="error"
         isLoading={deleteMutation.isPending}

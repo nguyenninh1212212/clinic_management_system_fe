@@ -13,6 +13,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Divider,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
@@ -287,7 +288,8 @@ export const PermissionListPage: React.FC = () => {
         <DialogTitle className="font-bold text-slate-900">
           {editingPerm ? 'Cập nhật quyền truy cập' : 'Thêm quyền truy cập mới'}
         </DialogTitle>
-        <DialogContent className="space-y-4 pt-2">
+        <Divider />
+        <DialogContent className="space-y-4 flex flex-col gap-3">
           <TextField
             label="Mã quyền (Permission Code) *"
             fullWidth

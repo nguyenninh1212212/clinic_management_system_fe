@@ -1,9 +1,9 @@
 // src/features/patients/hooks/usePatients.ts
-import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useMutation, useQueryClient, UseQueryResult } from '@tanstack/react-query';
 import { queryKeys } from '@/api/queryKeys';
 import { patientsApi } from '@/api/endpoints/patients.api';
 import { notifyApiFeedback } from '@/api/axios';
-import type { Patient, CreatePatientDto, UpdatePatientDto, PatientQueryParams } from '@/types';
+import type { Patient, CreatePatientDto, UpdatePatientDto, PatientQueryParams, ApiResponse } from '@/types';
 
 export function usePatients(params: PatientQueryParams) {
   return useQuery({
@@ -14,7 +14,7 @@ export function usePatients(params: PatientQueryParams) {
   });
 }
 
-export function usePatient(id: string) {
+export function usePatient(id: string):UseQueryResult<ApiResponse<Patient>>  {
   return useQuery({
     queryKey: queryKeys.patients.detail(id),
     queryFn: () => patientsApi.findById(id),
@@ -54,7 +54,9 @@ export function useDeletePatient() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => patientsApi.remove(id),
+    mutationFn: (id: string) => {
+      return patientsApi.remove(id);
+    },
     onSuccess: (_data, id: string) => {
       queryClient.removeQueries({ queryKey: queryKeys.patients.detail(id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.patients.lists() });

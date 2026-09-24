@@ -82,14 +82,12 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar }) => {
             </span>
           </div>
         </div>
-
         {/* Right: Notification Bell & User Account */}
         <div className="flex items-center gap-3">
           <NotificationBell />
 
           <Divider orientation="vertical" flexItem className="h-6 my-auto bg-slate-200" />
 
-          {/* User Button */}
           <button
             onClick={handleOpenUserMenu}
             className="flex items-center gap-2.5 p-1 rounded-lg hover:bg-slate-50 transition-colors text-left"
@@ -118,8 +116,10 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar }) => {
             onClose={handleCloseUserMenu}
             transformOrigin={{ horizontal: 'right', vertical: 'top' }}
             anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-            PaperProps={{
-              sx: { width: 230, borderRadius: 3, mt: 1 },
+            slotProps={{
+              paper: {
+                sx: { width: 230, borderRadius: 3, mt: 1 },
+              },
             }}
           >
             <Box className="px-4 py-2 border-b border-slate-100">
