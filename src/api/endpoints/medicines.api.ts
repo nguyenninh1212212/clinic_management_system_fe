@@ -23,4 +23,17 @@ export const medicinesApi = {
 
   remove: (id: string): Promise<void> =>
     api.delete(`/medicines/${id}`).then((r) => r.data),
+
+  importFromExcel: (file: File | Blob): Promise<{ message?: string; count?: number }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return api
+      .post('/medicines/import', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+      .then((r) => r.data);
+  },
 };

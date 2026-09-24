@@ -1,5 +1,5 @@
 // src/features/medicines/pages/MedicineListPage.tsx
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Button,
   FormControl,
@@ -13,16 +13,21 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Alert,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
+import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined';
+import UploadFileOutlinedIcon from '@mui/icons-material/UploadFileOutlined';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import { useQueryClient } from '@tanstack/react-query';
 import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, Column } from '@/components/common/DataTable';
 import { SearchInput } from '@/components/common/SearchInput';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { notifyApiFeedback } from '@/api/axios';
+import { medicinesApi } from '@/api/endpoints/medicines.api';
+import { queryKeys } from '@/api/queryKeys';
 import {
   useMedicines,
   useCreateMedicine,
@@ -30,18 +35,17 @@ import {
   useDeleteMedicine,
 } from '../hooks/useMedicines';
 import { Medicine, MedicineCategory, CreateMedicineDto } from '@/types';
-
+import * as XLSX from 'xlsx';
 export const MedicineListPage: React.FC = () => {
+  const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState<MedicineCategory | ''>('');
-
-  // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMedicine, setEditingMedicine] = useState<Medicine | null>(null);
-
-  // Form fields
   const [name, setName] = useState('');
   const [genericName, setGenericName] = useState('');
   const [unit, setUnit] = useState('Viên');
@@ -125,6 +129,53 @@ export const MedicineListPage: React.FC = () => {
       setDeleteId(null);
     } catch {
       // Handled by interceptor
+    }
+  };
+const handleDownloadTemplate = () => {
+  const rows = [
+    [
+      'name',
+      'genericName',
+      'unit',
+      'category',
+      'description',
+      'minStockLevel',
+      'manufacturer',
+      'registrationNumber',
+    ],
+    [
+      'Paracetamol 500mg',
+      'Paracetamol',
+      'Viên',
+      'ANTIBIOTIC',
+      'Bảo quản nơi khô ráo',
+      100,
+      'DHG Pharma',
+      'VD-12345',
+    ],
+  ];
+
+  const worksheet = XLSX.utils.aoa_to_sheet(rows);
+  const workbook = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Medicines');
+
+  XLSX.writeFile(workbook, 'medicine_import_template.xlsx');
+};
+
+  const handleImportExcel = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      await medicinesApi.importFromExcel(file);
+      queryClient.invalidateQueries({ queryKey: queryKeys.medicines.all });
+      notifyApiFeedback('Import thuốc từ Excel thành công', 'info');
+      setPage(1);
+    } catch {
+      // Handled by interceptor
+    } finally {
+      event.target.value = '';
     }
   };
 
@@ -242,9 +293,29 @@ export const MedicineListPage: React.FC = () => {
         subtitle="Quản lý danh bạ biệt dược, hoạt chất, mức dự trữ an toàn và đơn vị tính"
         breadcrumbs={[{ label: 'Trang chủ', href: '/dashboard' }, { label: 'Danh mục Thuốc' }]}
         action={
-          <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreate}>
-            Thêm thuốc mới
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outlined" startIcon={<DownloadOutlinedIcon />} onClick={handleDownloadTemplate}>
+              Mẫu Excel
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={<UploadFileOutlinedIcon />}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              Import Excel
+            </Button>
+            <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreate}>
+              Thêm thuốc mới
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              className="hidden"
+              onChange={handleImportExcel}
+            />
+          </div>
         }
       />
 

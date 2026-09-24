@@ -6,13 +6,14 @@ import {
   UpdatePatientDto,
   PatientQueryParams,
   PaginatedResponse,
+  ApiResponse,
 } from '@/types';
 
 export const patientsApi = {
   findAll: (params?: PatientQueryParams): Promise<PaginatedResponse<Patient>> =>
     api.get('/patients', { params }).then((r) => r.data),
 
-  findById: (id: string): Promise<Patient> =>
+  findById: (id: string): Promise<ApiResponse<Patient>> =>
     api.get(`/patients/${id}`).then((r) => r.data),
 
   create: (dto: CreatePatientDto): Promise<Patient> =>

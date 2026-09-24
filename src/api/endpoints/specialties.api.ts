@@ -6,6 +6,7 @@ import {
   UpdateSpecialtyDto,
   SpecialtyQueryParams,
   PaginatedResponse,
+  ApiResponse,
 } from '@/types';
 
 export const specialtiesApi = {
@@ -19,7 +20,7 @@ export const specialtiesApi = {
       return Array.isArray(res) ? res : res?.data || [];
     }),
 
-  findById: (id: number): Promise<Specialty> =>
+  findById: (id: number): Promise<ApiResponse<Specialty>> =>
     api.get(`/specialties/${id}`).then((r) => r.data),
 
   create: (dto: CreateSpecialtyDto): Promise<Specialty> =>
