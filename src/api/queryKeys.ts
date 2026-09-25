@@ -18,6 +18,7 @@ export const queryKeys = {
     details: () => [...queryKeys.doctors.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.doctors.details(), id] as const,
     me: ['doctors', 'me'] as const,
+    shifts: (doctorId: string, date: string) => [...queryKeys.doctors.all, 'shifts', doctorId, date] as const,
   },
   appointments: {
     all: ['appointments'] as const,

@@ -226,7 +226,6 @@ export const LoginPage: React.FC = () => {
           </Stack>
         </Box>
 
-        {/* Register */}
         <Typography
           variant="body2"
           color="text.secondary"
@@ -249,7 +248,6 @@ export const LoginPage: React.FC = () => {
           </Box>
         </Typography>
 
-        {/* Demo accounts */}
         <Divider sx={{ my: 3 }}>
           <Typography
             variant="caption"

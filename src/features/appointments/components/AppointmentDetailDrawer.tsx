@@ -1,0 +1,7 @@
+import React from 'react';
+import { Drawer, IconButton, Typography } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import { Appointment } from '@/types';
+import dayjs from 'dayjs';
+
+export const AppointmentDetailDrawer: React.FC<{ appointment: Appointment | null; onClose: () => void }> = ({ appointment, onClose }) => <Drawer anchor="right" open={Boolean(appointment)} onClose={onClose}><div className="w-screen max-w-md p-6"><div className="flex items-start justify-between"><div><Typography variant="h6" className="font-bold text-slate-900">Chi tiết lịch hẹn</Typography><div className="mt-1 text-xs text-slate-500">{appointment && dayjs(appointment.appointmentDate).format('HH:mm DD/MM/YYYY')}</div></div><IconButton onClick={onClose}><CloseIcon /></IconButton></div>{appointment && <div className="mt-6 space-y-4"><div><div className="text-xs text-slate-500">Bệnh nhân</div><div className="font-bold text-slate-900">{appointment.patient?.fullName || '—'}</div><div className="text-sm text-slate-600">{appointment.patient?.phone || '—'}</div></div><div><div className="text-xs text-slate-500">Bác sĩ</div><div className="font-semibold text-slate-800">{appointment.doctor?.user?.fullName || '—'}</div></div><div><div className="text-xs text-slate-500">Trạng thái</div><div className="font-semibold text-sky-700">{appointment.status}</div></div><div><div className="text-xs text-slate-500">Ghi chú</div><div className="text-sm text-slate-700">{appointment.notes || '—'}</div></div></div>}</div></Drawer>;

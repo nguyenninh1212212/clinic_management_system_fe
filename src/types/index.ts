@@ -5,6 +5,7 @@ export * from './auth.types';
 export * from './user.types';
 export * from './patient.types';
 export * from './doctor.types';
+export * from './doctor-shift.types';
 export * from './specialty.types';
 export * from './appointment.types';
 export * from './triage.types';

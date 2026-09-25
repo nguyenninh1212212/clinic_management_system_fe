@@ -11,6 +11,13 @@ export interface DoctorUser {
   role: UserRole;
 }
 
+export interface DoctorWorkSchedule {
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  isActive?: boolean;
+}
+
 export interface Doctor {
   id: string;
   userId: string;
@@ -21,6 +28,9 @@ export interface Doctor {
   yearsOfExperience: number;
   user?: DoctorUser;
   specialty?: Specialty;
+  workSchedules?: DoctorWorkSchedule[];
+  workingSchedules?: DoctorWorkSchedule[];
+  schedules?: DoctorWorkSchedule[];
   createdAt: string;
   updatedAt: string;
 }

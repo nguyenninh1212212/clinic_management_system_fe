@@ -4,7 +4,7 @@ import { AppointmentStatus } from '@/types';
 
 export const createAppointmentSchema = z.object({
   patientId: z.string().min(1, 'Vui lòng chọn bệnh nhân'),
-  doctorId: z.string().optional().or(z.literal('')),
+  doctorId: z.string().min(1, 'Vui lòng chọn bác sĩ có ca làm được phân công'),
   appointmentDate: z.string().min(1, 'Vui lòng chọn thời gian khám'),
   notes: z.string().optional().or(z.literal('')),
 });

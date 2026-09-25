@@ -15,6 +15,7 @@ import {
   Select,
   MenuItem,
   Alert,
+  Divider,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
@@ -268,7 +269,6 @@ export const PrescriptionListPage: React.FC = () => {
         onEmptyAction={() => setCreateDialogOpen(true)}
       />
 
-      {/* Create Prescription Dialog */}
       <Dialog
         open={createDialogOpen}
         onClose={() => setCreateDialogOpen(false)}
@@ -278,6 +278,9 @@ export const PrescriptionListPage: React.FC = () => {
         <DialogTitle className="font-bold text-slate-900">
           Kê đơn thuốc cho bệnh nhân
         </DialogTitle>
+        <Divider />
+
+
         <DialogContent className="space-y-5 pt-2">
           {createMutation.isError && (
             <Alert severity="error">
@@ -309,6 +312,7 @@ export const PrescriptionListPage: React.FC = () => {
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="VD: Kiêng đồ cay nóng, uống nhiều nước ấm, tái khám sau 5 ngày..."
+          sx={{ textAlign: 'center', fontSize: 12, mt: 2 }}
           />
 
           {/* Medicines list */}

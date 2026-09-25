@@ -41,7 +41,7 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
-  const { isSuperAdmin, canViewPatients, canViewAuditLogs } = usePermission();
+  const { isSuperAdmin, isManager, canViewPatients, canViewAuditLogs } = usePermission();
 
   const navigationGroups: NavGroup[] = [
     {
@@ -67,6 +67,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
         {
           label: 'Lịch hẹn khám',
           path: '/appointments',
+          icon: <EventNoteOutlinedIcon fontSize="small" />,
+          visible: true,
+        },
+        {
+          label: 'Lịch làm việc bác sĩ',
+          path: '/doctor-schedule',
           icon: <EventNoteOutlinedIcon fontSize="small" />,
           visible: true,
         },
@@ -117,6 +123,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
           icon: <BadgeOutlinedIcon fontSize="small" />,
           visible: true,
         },
+        {
+          label: 'Phân công ca bác sĩ',
+          path: '/doctor-shifts',
+          icon: <EventNoteOutlinedIcon fontSize="small" />,
+          visible: isManager,
+        },
       ],
     },
     {
@@ -138,6 +150,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
           label: 'Giao dịch kho',
           path: '/stock-transactions',
           icon: <SwapHorizOutlinedIcon fontSize="small" />,
+          visible: true,
+        },
+        {
+          label: 'Nhà thuốc',
+          path: '/pharmacy',
+          icon: <MedicationOutlinedIcon fontSize="small" />,
           visible: true,
         },
       ],

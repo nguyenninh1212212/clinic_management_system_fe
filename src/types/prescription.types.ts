@@ -2,6 +2,29 @@
 import { BaseQueryParams } from './common.types';
 import { Medicine } from './medicine.types';
 
+export enum PharmacyPrescriptionStatus {
+  NEW = 'NEW',
+  PROCESSING = 'PROCESSING',
+  READY = 'READY',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+}
+
+export type PharmacySocketStatus = 'connecting' | 'connected' | 'disconnected';
+
+export interface PharmacyPrescriptionCreatedPayload {
+  action: 'CREATED';
+  prescription: Prescription;
+  message: string;
+}
+
+export interface PharmacyPrescriptionUpdatedPayload {
+  action: 'ITEM_ADDED' | 'ITEM_UPDATED' | 'ITEM_REMOVED';
+  prescriptionId: string;
+  prescription: Prescription;
+  message: string;
+}
+
 export interface PrescriptionItem {
   id: string;
   prescriptionId: string;
@@ -22,6 +45,7 @@ export interface Prescription {
   id: string;
   examinationId: string;
   notes?: string;
+  pharmacyStatus?: PharmacyPrescriptionStatus;
   issuedAt?: string;
   validUntil?: string;
   items?: PrescriptionItem[];
@@ -70,6 +94,7 @@ export interface UpdatePrescriptionDto {
   notes?: string;
   issuedAt?: string;
   validUntil?: string;
+  pharmacyStatus?: PharmacyPrescriptionStatus;
 }
 
 export interface CreatePrescriptionItemDto {

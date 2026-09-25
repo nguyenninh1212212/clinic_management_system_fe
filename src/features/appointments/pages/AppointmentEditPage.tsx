@@ -21,11 +21,13 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { useAppointment, useUpdateAppointment } from "../hooks/useAppointments";
 import { useDoctors } from "@/features/doctors/hooks/useDoctors";
 import { AppointmentStatus } from "@/types";
+import { useAppointments } from "../hooks/useAppointments";
+import { hasDoctorConflict, isThirtyMinuteSlot, isWithinDoctorShift } from "../utils/appointmentAvailability";
 import dayjs from "dayjs";
 import { z } from "zod";
 
 const editAppointmentSchema = z.object({
-  doctorId: z.string().optional().or(z.literal("")),
+  doctorId: z.string().min(1, "Vui lòng chọn bác sĩ có ca làm được phân công"),
   appointmentDate: z.string().min(1, "Vui lòng chọn thời gian khám"),
   notes: z.string().optional().or(z.literal("")),
 });
@@ -44,6 +46,7 @@ export const AppointmentEditPage: React.FC = () => {
     register,
     handleSubmit,
     control,
+    watch,
     reset,
     formState: { errors },
   } = useForm<EditAppointmentFormValues>({
@@ -54,6 +57,24 @@ export const AppointmentEditPage: React.FC = () => {
       notes: "",
     },
   });
+
+  const selectedDoctorId = watch("doctorId");
+  const appointmentDateValue = watch("appointmentDate");
+  const selectedDoctor = doctorsData?.data?.find((doctor) => doctor.id === selectedDoctorId);
+  const appointmentDate = dayjs(appointmentDateValue);
+  const { data: doctorAppointmentsData, isLoading: loadingDoctorAppointments } = useAppointments(
+    { page: 1, limit: 100, doctorId: selectedDoctorId || undefined, date: appointmentDate.isValid() ? appointmentDate.format("YYYY-MM-DD") : undefined },
+    { enabled: Boolean(selectedDoctorId && appointmentDate.isValid()) },
+  );
+  const slotError = appointmentDateValue && !isThirtyMinuteSlot(appointmentDate)
+    ? "Thời gian khám phải nằm đúng mốc 30 phút (ví dụ: 08:00, 08:30, 09:00)."
+    : "";
+  const shiftAvailability = selectedDoctor ? isWithinDoctorShift(selectedDoctor, appointmentDate) : null;
+  const shiftError = shiftAvailability === false ? "Thời gian này nằm ngoài ca làm được phân công của bác sĩ." : "";
+  const conflictError = selectedDoctorId && appointmentDate.isValid() && hasDoctorConflict(doctorAppointmentsData?.data || [], appointmentDate, id)
+    ? "Bác sĩ đã có lịch hẹn trong khung giờ này. Vui lòng chọn mốc khác."
+    : "";
+  const availabilityError = slotError || shiftError || conflictError;
 
   useEffect(() => {
     if (appointment) {
@@ -99,6 +120,7 @@ export const AppointmentEditPage: React.FC = () => {
 
   const onSubmit = async (values: EditAppointmentFormValues) => {
     if (!id) return;
+    if (availabilityError || loadingDoctorAppointments) return;
     try {
       await updateMutation.mutateAsync({
         id,
@@ -163,7 +185,7 @@ export const AppointmentEditPage: React.FC = () => {
                         labelId="doctor-edit-select-label"
                         label="Bác sĩ phụ trách"
                       >
-                        <MenuItem value="">-- Chưa chỉ định bác sĩ --</MenuItem>
+                        <MenuItem value="">-- Chọn bác sĩ --</MenuItem>
                         {doctorsData?.data?.map((d) => (
                           <MenuItem key={d.id} value={d.id}>
                             {d.user?.fullName} —{" "}
@@ -187,6 +209,14 @@ export const AppointmentEditPage: React.FC = () => {
                   error={!!errors.appointmentDate}
                   helperText={errors.appointmentDate?.message}
                 />
+                {availabilityError && (
+                  <Alert severity="warning" className="mt-3">
+                    {availabilityError}
+                  </Alert>
+                )}
+                {!availabilityError && selectedDoctorId && !loadingDoctorAppointments && (
+                  <div className="mt-2 text-xs text-emerald-700">Khung giờ đang trống cho bác sĩ đã chọn.</div>
+                )}
               </div>
 
               {/* Notes */}
@@ -213,7 +243,7 @@ export const AppointmentEditPage: React.FC = () => {
                 type="submit"
                 variant="contained"
                 startIcon={<SaveIcon />}
-                disabled={updateMutation.isPending}
+                disabled={updateMutation.isPending || loadingDoctorAppointments || Boolean(availabilityError)}
               >
                 {updateMutation.isPending ? "Đang lưu..." : "Lưu thay đổi"}
               </Button>

@@ -5,10 +5,11 @@ import { appointmentsApi } from '@/api/endpoints/appointments.api';
 import { notifyApiFeedback } from '@/api/axios';
 import { Appointment, AppointmentStatus, AppointmentQueryParams, CreateAppointmentDto, UpdateAppointmentDto, ApiResponse } from '@/types';
 
-export function useAppointments(params?: AppointmentQueryParams) {
+export function useAppointments(params?: AppointmentQueryParams, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: queryKeys.appointments.list(params || {}),
     queryFn: () => appointmentsApi.findAll(params),
+    enabled: options?.enabled ?? true,
     placeholderData: keepPreviousData,
     staleTime: 30_000,
   });

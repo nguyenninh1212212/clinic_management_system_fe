@@ -27,9 +27,8 @@ export const ExaminationDetailPage: React.FC = () => {
 
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const { data: examinationData, isLoading, isError } = useExamination(id || '');
+  const { data: examination, isLoading, isError } = useExamination(id || '');
   const deleteMutation = useDeleteExamination();
-const examination =examinationData?.data
   if (isLoading) {
     return (
       <div className="py-20 flex justify-center">

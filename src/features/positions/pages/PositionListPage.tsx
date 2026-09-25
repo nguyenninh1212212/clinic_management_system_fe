@@ -13,6 +13,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Divider
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
@@ -285,6 +286,7 @@ export const PositionListPage: React.FC = () => {
         <DialogTitle className="font-bold text-slate-900">
           {editingPosition ? 'Cập nhật vị trí công việc' : 'Thêm vị trí công việc mới'}
         </DialogTitle>
+        <Divider />
         <DialogContent className="space-y-4 pt-2">
           <div className="grid grid-cols-2 gap-3">
             <TextField
@@ -319,6 +321,9 @@ export const PositionListPage: React.FC = () => {
             size="small"
             value={positionTitle}
             onChange={(e) => setPositionTitle(e.target.value)}
+            sx={{ 
+              mb:2
+            }}
             placeholder="VD: Bác sĩ chuyên khoa II, Điều dưỡng trưởng..."
           />
 

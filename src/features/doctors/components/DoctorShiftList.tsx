@@ -1,0 +1,8 @@
+import React from 'react';
+import { IconButton, Skeleton, Table, TableBody, TableCell, TableHead, TableRow, Tooltip } from '@mui/material';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
+import { DoctorShift } from '@/types';
+
+interface DoctorShiftListProps { shifts: DoctorShift[]; loading: boolean; onDelete: (shift: DoctorShift) => void; }
+
+export const DoctorShiftList: React.FC<DoctorShiftListProps> = ({ shifts, loading, onDelete }) => <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white"><Table size="small"><TableHead><TableRow><TableCell>Ngày</TableCell><TableCell>Giờ bắt đầu</TableCell><TableCell>Giờ kết thúc</TableCell><TableCell>Bác sĩ</TableCell><TableCell align="right">Thao tác</TableCell></TableRow></TableHead><TableBody>{loading ? Array.from({ length: 3 }).map((_, index) => <TableRow key={index}><TableCell colSpan={5}><Skeleton /></TableCell></TableRow>) : shifts.length ? shifts.map((shift) => <TableRow key={shift.id} hover><TableCell className="font-mono text-xs">{shift.workDate}</TableCell><TableCell className="font-semibold tabular-nums">{shift.startTime}</TableCell><TableCell className="font-semibold tabular-nums">{shift.endTime}</TableCell><TableCell>{shift.doctor?.user?.fullName || 'Bác sĩ đã chọn'}</TableCell><TableCell align="right"><Tooltip title="Xóa ca làm"><IconButton size="small" color="error" onClick={() => onDelete(shift)}><DeleteOutlineIcon fontSize="small" /></IconButton></Tooltip></TableCell></TableRow>) : <TableRow><TableCell colSpan={5} align="center" className="py-10 text-sm text-slate-500">Chưa có ca làm trong ngày này.</TableCell></TableRow>}</TableBody></Table></div>;
