@@ -2,9 +2,10 @@
 import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/api/queryKeys';
 import { inventoryApi } from '@/api/endpoints/inventory.api';
+import { stockTransactionsApi } from '@/api/endpoints/stock-transactions.api';
 import { notifyApiFeedback } from '@/api/axios';
 import {
-  CreateInventoryItemDto,
+  CreateInventoryDto,
   CreateStockTransactionDto,
   InventoryQueryParams,
   StockTransactionType,
@@ -22,7 +23,7 @@ export function useInventory(params?: InventoryQueryParams) {
 export function useCreateInventory() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (dto: CreateInventoryItemDto) => inventoryApi.create(dto),
+    mutationFn: (dto: CreateInventoryDto) => inventoryApi.create(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
       notifyApiFeedback('Thêm lô thuốc mới vào kho thành công', 'info');
@@ -33,7 +34,7 @@ export function useCreateInventory() {
 export function useStockTransaction() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (dto: CreateStockTransactionDto) => inventoryApi.createTransaction(dto),
+    mutationFn: (dto: CreateStockTransactionDto) => stockTransactionsApi.create(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
       notifyApiFeedback('Ghi nhận giao dịch kho thành công', 'info');
@@ -66,7 +67,7 @@ export function useStockTransactionList(params: UseStockTransactionListParams) {
       transactionType: params.transactionType || undefined,
     }),
     queryFn: () =>
-      inventoryApi.findAllTransactions({
+      stockTransactionsApi.findAll({
         page: params.page,
         limit: params.limit,
         transactionType: params.transactionType || undefined,

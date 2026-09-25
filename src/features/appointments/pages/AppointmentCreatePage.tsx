@@ -62,7 +62,7 @@ export const AppointmentCreatePage: React.FC = () => {
         appointmentDate: new Date(values.appointmentDate).toISOString(),
         notes: values.notes || undefined,
       });
-      navigate(`/appointments/${created.id}`);
+      navigate(`/appointments/${created.data.id}`);
     } catch {
       // Handled by interceptor
     }

@@ -1,8 +1,8 @@
 // src/types/examination.types.ts
-import { BaseQueryParams } from './common.types';
-import { Doctor } from './doctor.types';
-import { Patient } from './patient.types';
-import { Prescription } from './prescription.types';
+import { BaseQueryParams } from "./common.types";
+import { Doctor } from "./doctor.types";
+import { Patient } from "./patient.types";
+import { Prescription } from "./prescription.types";
 
 export interface Examination {
   id: string;
@@ -38,6 +38,7 @@ export interface CreateExaminationDto {
   icd10Code?: string;
   followUpDate?: string;
   examinedAt?: string;
+  treatmentPlan?: string;
 }
 
 export interface UpdateExaminationDto {

@@ -21,7 +21,7 @@ export interface Inventory {
   medicine?: Medicine;
   warehouseLocation?: string;
   batchNumber?: string;
-  expiryDate?: string;
+  expiryDate?: Date;
   quantity: number;
   unitCost: number;
   transactions?: StockTransaction[];
@@ -33,6 +33,7 @@ export interface InventoryQueryParams extends BaseQueryParams {
   medicineId?: string;
   expiringSoon?: boolean;
   lowStock?: boolean;
+  stockTransactionType?:StockTransactionType
 }
 
 export interface CreateInventoryDto {

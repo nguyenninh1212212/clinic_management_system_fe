@@ -46,10 +46,10 @@ export const AppointmentDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const { data: appointment, isLoading, isError } = useAppointment(id || '');
+  const { data: appointmentData, isLoading, isError } = useAppointment(id || '');
   const statusMutation = useUpdateAppointmentStatus();
   const triageMutation = useUpsertTriage(id || '');
-
+const appointment =appointmentData?.data
   // Triage Upsert Dialog
   const [triageDialogOpen, setTriageDialogOpen] = useState(false);
   const [triageLevel, setTriageLevel] = useState<TriageLevel>(TriageLevel.LEVEL_3);

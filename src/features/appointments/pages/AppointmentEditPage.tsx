@@ -1,8 +1,8 @@
 // src/features/appointments/pages/AppointmentEditPage.tsx
-import React, { useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import React, { useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Card,
   CardContent,
@@ -14,20 +14,20 @@ import {
   MenuItem,
   CircularProgress,
   Alert,
-} from '@mui/material';
-import SaveIcon from '@mui/icons-material/Save';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { PageHeader } from '@/components/common/PageHeader';
-import { useAppointment, useUpdateAppointment } from '../hooks/useAppointments';
-import { useDoctors } from '@/features/doctors/hooks/useDoctors';
-import { AppointmentStatus } from '@/types';
-import dayjs from 'dayjs';
-import { z } from 'zod';
+} from "@mui/material";
+import SaveIcon from "@mui/icons-material/Save";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { PageHeader } from "@/components/common/PageHeader";
+import { useAppointment, useUpdateAppointment } from "../hooks/useAppointments";
+import { useDoctors } from "@/features/doctors/hooks/useDoctors";
+import { AppointmentStatus } from "@/types";
+import dayjs from "dayjs";
+import { z } from "zod";
 
 const editAppointmentSchema = z.object({
-  doctorId: z.string().optional().or(z.literal('')),
-  appointmentDate: z.string().min(1, 'Vui lòng chọn thời gian khám'),
-  notes: z.string().optional().or(z.literal('')),
+  doctorId: z.string().optional().or(z.literal("")),
+  appointmentDate: z.string().min(1, "Vui lòng chọn thời gian khám"),
+  notes: z.string().optional().or(z.literal("")),
 });
 
 type EditAppointmentFormValues = z.infer<typeof editAppointmentSchema>;
@@ -36,10 +36,10 @@ export const AppointmentEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const { data: appointment, isLoading } = useAppointment(id || '');
+  const { data: appointmentData, isLoading } = useAppointment(id || "");
   const updateMutation = useUpdateAppointment();
   const { data: doctorsData } = useDoctors({ limit: 100 });
-
+  const appointment = appointmentData?.data;
   const {
     register,
     handleSubmit,
@@ -49,20 +49,20 @@ export const AppointmentEditPage: React.FC = () => {
   } = useForm<EditAppointmentFormValues>({
     resolver: zodResolver(editAppointmentSchema),
     defaultValues: {
-      doctorId: '',
-      appointmentDate: '',
-      notes: '',
+      doctorId: "",
+      appointmentDate: "",
+      notes: "",
     },
   });
 
   useEffect(() => {
     if (appointment) {
       reset({
-        doctorId: appointment.doctorId || '',
+        doctorId: appointment.doctorId || "",
         appointmentDate: appointment.appointmentDate
-          ? dayjs(appointment.appointmentDate).format('YYYY-MM-DDTHH:mm')
-          : '',
-        notes: appointment.notes || '',
+          ? dayjs(appointment.appointmentDate).format("YYYY-MM-DDTHH:mm")
+          : "",
+        notes: appointment.notes || "",
       });
     }
   }, [appointment, reset]);
@@ -77,7 +77,9 @@ export const AppointmentEditPage: React.FC = () => {
 
   const isTerminal =
     appointment &&
-    [AppointmentStatus.COMPLETED, AppointmentStatus.CANCELLED].includes(appointment.status);
+    [AppointmentStatus.COMPLETED, AppointmentStatus.CANCELLED].includes(
+      appointment.status,
+    );
 
   if (isTerminal) {
     return (
@@ -85,7 +87,10 @@ export const AppointmentEditPage: React.FC = () => {
         <Alert severity="warning">
           Lịch hẹn đã kết thúc hoặc bị hủy, không thể chỉnh sửa thông tin.
         </Alert>
-        <Button variant="outlined" onClick={() => navigate(`/appointments/${id}`)}>
+        <Button
+          variant="outlined"
+          onClick={() => navigate(`/appointments/${id}`)}
+        >
           Quay lại chi tiết
         </Button>
       </div>
@@ -113,12 +118,12 @@ export const AppointmentEditPage: React.FC = () => {
     <div className="space-y-6 max-w-3xl mx-auto">
       <PageHeader
         title="Chỉnh sửa Cuộc hẹn"
-        subtitle={`Bệnh nhân: ${appointment?.patient?.fullName || '—'}`}
+        subtitle={`Bệnh nhân: ${appointment?.patient?.fullName || "—"}`}
         breadcrumbs={[
-          { label: 'Trang chủ', href: '/dashboard' },
-          { label: 'Lịch hẹn', href: '/appointments' },
-          { label: 'Chi tiết', href: `/appointments/${id}` },
-          { label: 'Chỉnh sửa' },
+          { label: "Trang chủ", href: "/dashboard" },
+          { label: "Lịch hẹn", href: "/appointments" },
+          { label: "Chi tiết", href: `/appointments/${id}` },
+          { label: "Chỉnh sửa" },
         ]}
         action={
           <Button
@@ -137,7 +142,7 @@ export const AppointmentEditPage: React.FC = () => {
           {updateMutation.isError && (
             <Alert severity="error" className="mb-6">
               {(updateMutation.error as any)?.response?.data?.message ||
-                'Có lỗi xảy ra khi cập nhật cuộc hẹn.'}
+                "Có lỗi xảy ra khi cập nhật cuộc hẹn."}
             </Alert>
           )}
 
@@ -146,7 +151,9 @@ export const AppointmentEditPage: React.FC = () => {
               {/* Doctor */}
               <div>
                 <FormControl fullWidth error={!!errors.doctorId}>
-                  <InputLabel id="doctor-edit-select-label">Bác sĩ phụ trách</InputLabel>
+                  <InputLabel id="doctor-edit-select-label">
+                    Bác sĩ phụ trách
+                  </InputLabel>
                   <Controller
                     name="doctorId"
                     control={control}
@@ -159,7 +166,8 @@ export const AppointmentEditPage: React.FC = () => {
                         <MenuItem value="">-- Chưa chỉ định bác sĩ --</MenuItem>
                         {doctorsData?.data?.map((d) => (
                           <MenuItem key={d.id} value={d.id}>
-                            {d.user?.fullName} — {d.specialty?.name || 'Đa khoa'}
+                            {d.user?.fullName} —{" "}
+                            {d.specialty?.name || "Đa khoa"}
                           </MenuItem>
                         ))}
                       </Select>
@@ -175,7 +183,7 @@ export const AppointmentEditPage: React.FC = () => {
                   type="datetime-local"
                   fullWidth
                   slotProps={{ inputLabel: { shrink: true } }}
-                  {...register('appointmentDate')}
+                  {...register("appointmentDate")}
                   error={!!errors.appointmentDate}
                   helperText={errors.appointmentDate?.message}
                 />
@@ -188,7 +196,7 @@ export const AppointmentEditPage: React.FC = () => {
                   fullWidth
                   multiline
                   rows={3}
-                  {...register('notes')}
+                  {...register("notes")}
                 />
               </div>
             </div>
@@ -207,7 +215,7 @@ export const AppointmentEditPage: React.FC = () => {
                 startIcon={<SaveIcon />}
                 disabled={updateMutation.isPending}
               >
-                {updateMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
+                {updateMutation.isPending ? "Đang lưu..." : "Lưu thay đổi"}
               </Button>
             </div>
           </form>

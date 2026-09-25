@@ -103,16 +103,6 @@ export const StockTransactionsPage: React.FC = () => {
       },
     },
     {
-      id: 'balance',
-      label: 'Tồn kho (Trước → Sau)',
-      minWidth: 170,
-      render: (row) => (
-        <span className="text-xs tabular-nums text-slate-600 font-mono">
-          {row.balanceBefore ?? '—'} → <strong className="text-slate-800">{row.balanceAfter ?? '—'}</strong>
-        </span>
-      ),
-    },
-    {
       id: 'referenceId',
       label: 'Chứng từ liên quan',
       minWidth: 150,

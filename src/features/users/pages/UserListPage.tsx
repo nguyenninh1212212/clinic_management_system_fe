@@ -48,7 +48,7 @@ export const UserListPage: React.FC = () => {
   const [createPassword, setCreatePassword] = useState('');
   const [createFullName, setCreateFullName] = useState('');
   const [createRole, setCreateRole] = useState<UserRole>(UserRole.USER);
-  const [createPositionId, setCreatePositionId] = useState<number | ''>('');
+  const [createPositionId, setCreatePositionId] = useState<number>();
 
   // Edit User Dialog
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -107,7 +107,7 @@ export const UserListPage: React.FC = () => {
       password: createPassword,
       fullName: createFullName,
       role: createRole,
-      positionId: createPositionId !== '' ? Number(createPositionId) : undefined,
+      positionId:  Number(createPositionId) ,
       isActive: true,
     });
   };
@@ -371,7 +371,7 @@ export const UserListPage: React.FC = () => {
                 value={createPositionId}
                 label="Chức vụ"
                 onChange={(e) =>
-                  setCreatePositionId(e.target.value === '' ? '' : Number(e.target.value))
+                  setCreatePositionId(Number(e.target.value))
                 }
               >
                 <MenuItem value="">-- Không chọn --</MenuItem>
@@ -441,7 +441,7 @@ export const UserListPage: React.FC = () => {
                 value={editPositionId}
                 label="Chức vụ"
                 onChange={(e) =>
-                  setEditPositionId(e.target.value === '' ? '' : Number(e.target.value))
+                  setEditPositionId( Number(e.target.value))
                 }
               >
                 <MenuItem value="">-- Không chọn --</MenuItem>

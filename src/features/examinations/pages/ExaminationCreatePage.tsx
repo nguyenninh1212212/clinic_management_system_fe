@@ -83,7 +83,7 @@ export const ExaminationCreatePage: React.FC = () => {
         treatmentPlan: values.treatmentPlan || undefined,
         followUpDate: values.followUpDate ? new Date(values.followUpDate).toISOString() : undefined,
       });
-      navigate(`/examinations/${created.id}`);
+      navigate(`/examinations/${created.data.id}`);
     } catch {
       // Handled by interceptor
     }

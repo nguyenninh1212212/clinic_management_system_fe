@@ -27,9 +27,9 @@ export const ExaminationDetailPage: React.FC = () => {
 
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const { data: examination, isLoading, isError } = useExamination(id || '');
+  const { data: examinationData, isLoading, isError } = useExamination(id || '');
   const deleteMutation = useDeleteExamination();
-
+const examination =examinationData?.data
   if (isLoading) {
     return (
       <div className="py-20 flex justify-center">
@@ -76,9 +76,9 @@ export const ExaminationDetailPage: React.FC = () => {
           <div className="font-semibold text-slate-800 text-sm">
             {row.medicine?.name || 'Thuốc'}
           </div>
-          <div className="text-xs text-slate-500">
+          {/* <div className="text-xs text-slate-500">
             {row.medicine?.activeIngredient} {row.medicine?.strength && `· ${row.medicine?.strength}`}
-          </div>
+          </div> */}
         </div>
       ),
     },
@@ -220,7 +220,7 @@ export const ExaminationDetailPage: React.FC = () => {
             </div>
           )}
 
-          {examination.treatmentPlan && (
+          {/* {examination.treatmentPlan && (
             <div>
               <div className="text-xs text-slate-400 uppercase tracking-wider font-semibold">
                 Kế hoạch điều trị & Hướng dẫn bệnh nhân
@@ -229,7 +229,7 @@ export const ExaminationDetailPage: React.FC = () => {
                 {examination.treatmentPlan}
               </div>
             </div>
-          )}
+          )} */}
         </CardContent>
       </Card>
 

@@ -32,9 +32,9 @@ export const DoctorDetailPage: React.FC = () => {
 
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const { data: doctor, isLoading, isError } = useDoctor(id || '');
+  const { data: doctorData, isLoading, isError } = useDoctor(id || '');
   const deleteMutation = useDeleteDoctor();
-
+  const doctor = doctorData?.data
   const { data: appointmentsData, isLoading: loadingAppointments } = useAppointments({
     doctorId: id,
     page: 1,
