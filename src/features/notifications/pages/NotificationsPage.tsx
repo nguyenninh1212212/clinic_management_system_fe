@@ -14,40 +14,19 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
 import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, Column } from '@/components/common/DataTable';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { notificationsApi } from '@/api/endpoints/notifications.api';
-import { queryKeys } from '@/api/queryKeys';
-import { notifyApiFeedback } from '@/api/axios';
+import { useNotifications, useMarkNotificationRead, useDeleteNotification } from '../hooks/useNotifications';
 import { Notification } from '@/types';
 import dayjs from 'dayjs';
 
 export const NotificationsPage: React.FC = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(15);
 
-  const { data, isLoading } = useQuery({
-    queryKey: queryKeys.notifications.list({ page, limit }),
-    queryFn: () => notificationsApi.findAll({ page, limit }),
-    staleTime: 10_000,
-  });
-
-  const markReadMutation = useMutation({
-    mutationFn: (id: number) => notificationsApi.markRead(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => notificationsApi.remove(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
-      notifyApiFeedback('Đã xóa thông báo', 'info');
-    },
-  });
+  const { data, isLoading } = useNotifications({ page, limit });
+  const markReadMutation = useMarkNotificationRead();
+  const deleteMutation = useDeleteNotification();
 
   const columns: Column<Notification>[] = [
     {

@@ -28,7 +28,9 @@ export const DoctorEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const { data: doctor, isLoading } = useDoctor(id || '');
+  const { data: doctorData, isLoading } = useDoctor(id || '');
+  const doctor = doctorData?.data;
+
   const updateMutation = useUpdateDoctor();
   const { data: specialties } = useSpecialtiesDropdown();
 
@@ -169,7 +171,7 @@ export const DoctorEditPage: React.FC = () => {
                         {...field}
                         value={field.value ?? ''}
                         onChange={(e) =>
-                          field.onChange(e.target.value === '' ? undefined : Number(e.target.value))
+                          field.onChange(String(e.target.value) === '' ? undefined : Number(e.target.value))
                         }
                         labelId="specialty-edit-label"
                         label="Chuyên khoa"

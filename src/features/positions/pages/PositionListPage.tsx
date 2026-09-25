@@ -22,16 +22,17 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, Column } from '@/components/common/DataTable';
 import { SearchInput } from '@/components/common/SearchInput';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { positionsApi } from '@/api/endpoints/positions.api';
-import { queryKeys } from '@/api/queryKeys';
-import { notifyApiFeedback } from '@/api/axios';
+import {
+  usePositionList,
+  useCreatePosition,
+  useUpdatePosition,
+  useDeletePosition,
+} from '../hooks/usePositions';
 import { Position, PositionLevel, CreatePositionDto, UpdatePositionDto } from '@/types';
 import { usePermission } from '@/hooks/usePermission';
 
 export const PositionListPage: React.FC = () => {
   const { isSuperAdmin, isAdmin } = usePermission();
-  const queryClient = useQueryClient();
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -50,50 +51,16 @@ export const PositionListPage: React.FC = () => {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [deleteName, setDeleteName] = useState('');
 
-  const { data, isLoading } = useQuery({
-    queryKey: queryKeys.positions.list({
-      page,
-      limit,
-      search: search || undefined,
-      level: levelFilter || undefined,
-    }),
-    queryFn: () =>
-      positionsApi.findAll({
-        page,
-        limit,
-        search: search || undefined,
-        level: levelFilter || undefined,
-      }),
-    staleTime: 60_000,
+  const { data, isLoading } = usePositionList({
+    page,
+    limit,
+    search: search || undefined,
+    level: levelFilter || undefined,
   });
 
-  const createMutation = useMutation({
-    mutationFn: (dto: CreatePositionDto) => positionsApi.create(dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.positions.all });
-      setDialogOpen(false);
-      notifyApiFeedback('Thêm vị trí công việc thành công', 'info');
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, dto }: { id: number; dto: UpdatePositionDto }) =>
-      positionsApi.update(id, dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.positions.all });
-      setDialogOpen(false);
-      notifyApiFeedback('Cập nhật vị trí thành công', 'info');
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => positionsApi.softDelete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.positions.all });
-      setDeleteId(null);
-      notifyApiFeedback('Đã xóa vị trí công tác', 'info');
-    },
-  });
+  const createMutation = useCreatePosition();
+  const updateMutation = useUpdatePosition();
+  const deleteMutation = useDeletePosition();
 
   const handleOpenCreate = () => {
     setEditingPosition(null);

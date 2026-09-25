@@ -50,3 +50,22 @@ export function useDeleteMedicine() {
     },
   });
 }
+
+export function useMedicinesDropdown(limit = 100) {
+  return useQuery({
+    queryKey: queryKeys.medicines.list({ limit }),
+    queryFn: () => medicinesApi.findAll({ limit }),
+    staleTime: 5 * 60_000,
+  });
+}
+
+export function useMedicinesAll() {
+  return useQuery({
+    queryKey: queryKeys.medicines.all,
+    queryFn: async () => {
+      const response = await medicinesApi.findAll({ page: 1, limit: 1000 });
+      return response.data;
+    },
+    staleTime: 5 * 60_000,
+  });
+}

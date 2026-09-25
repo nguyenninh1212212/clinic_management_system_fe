@@ -15,9 +15,7 @@ import {
 import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, Column } from '@/components/common/DataTable';
 import { StatusChip } from '@/components/common/StatusChip';
-import { useQuery } from '@tanstack/react-query';
-import { triageResultsApi } from '@/api/endpoints/triage-results.api';
-import { queryKeys } from '@/api/queryKeys';
+import { useTriageList } from '../hooks/useTriageList';
 import { TriageResult, TriageLevel } from '@/types';
 import dayjs from 'dayjs';
 
@@ -29,11 +27,7 @@ export const TriageListPage: React.FC = () => {
 
   const [selectedTriage, setSelectedTriage] = useState<TriageResult | null>(null);
 
-  const { data, isLoading } = useQuery({
-    queryKey: queryKeys.triageResults.list({ page, limit }),
-    queryFn: () => triageResultsApi.findAll({ page, limit }),
-    staleTime: 30_000,
-  });
+  const { data, isLoading } = useTriageList({ page, limit });
 
   // Client filter by triage level if selected
   const filteredRows = triageLevel

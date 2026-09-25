@@ -4,10 +4,10 @@ import { queryKeys } from '@/api/queryKeys';
 import { inventoryApi } from '@/api/endpoints/inventory.api';
 import { notifyApiFeedback } from '@/api/axios';
 import {
-  InventoryItem,
   CreateInventoryItemDto,
   CreateStockTransactionDto,
   InventoryQueryParams,
+  StockTransactionType,
 } from '@/types';
 
 export function useInventory(params?: InventoryQueryParams) {
@@ -21,7 +21,6 @@ export function useInventory(params?: InventoryQueryParams) {
 
 export function useCreateInventory() {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (dto: CreateInventoryItemDto) => inventoryApi.create(dto),
     onSuccess: () => {
@@ -33,7 +32,6 @@ export function useCreateInventory() {
 
 export function useStockTransaction() {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (dto: CreateStockTransactionDto) => inventoryApi.createTransaction(dto),
     onSuccess: () => {
@@ -45,12 +43,34 @@ export function useStockTransaction() {
 
 export function useDeleteInventory() {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (id: string) => inventoryApi.remove(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
       notifyApiFeedback('Đã xóa lô thuốc khỏi kho', 'info');
     },
+  });
+}
+
+interface UseStockTransactionListParams {
+  page: number;
+  limit: number;
+  transactionType?: StockTransactionType;
+}
+
+export function useStockTransactionList(params: UseStockTransactionListParams) {
+  return useQuery({
+    queryKey: queryKeys.stockTransactions.list({
+      page: params.page,
+      limit: params.limit,
+      transactionType: params.transactionType || undefined,
+    }),
+    queryFn: () =>
+      inventoryApi.findAllTransactions({
+        page: params.page,
+        limit: params.limit,
+        transactionType: params.transactionType || undefined,
+      }),
+    staleTime: 30_000,
   });
 }

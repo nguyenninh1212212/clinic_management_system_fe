@@ -30,9 +30,7 @@ import {
   useStockTransaction,
   useDeleteInventory,
 } from '../hooks/useInventory';
-import { useQuery } from '@tanstack/react-query';
-import { medicinesApi } from '@/api/endpoints/medicines.api';
-import { queryKeys } from '@/api/queryKeys';
+import { useMedicinesAll } from '@/features/medicines/hooks/useMedicines';
 import { InventoryItem, StockTransactionType } from '@/types';
 import dayjs from 'dayjs';
 
@@ -71,14 +69,7 @@ export const InventoryListPage: React.FC = () => {
     lowStock: lowStockOnly ? true : undefined,
   });
 
-  const { data: medicinesList } = useQuery({
-    queryKey: queryKeys.medicines.all,
-    queryFn: async () => {
-      const response = await medicinesApi.findAll({ page: 1, limit: 1000 });
-      return response.data;
-    },
-    staleTime: 5 * 60_000,
-  });
+  const { data: medicinesList } = useMedicinesAll();
 
   const createBatchMutation = useCreateInventory();
   const txMutation = useStockTransaction();

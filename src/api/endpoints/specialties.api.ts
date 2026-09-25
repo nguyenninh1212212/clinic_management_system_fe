@@ -23,10 +23,10 @@ export const specialtiesApi = {
   findById: (id: number): Promise<ApiResponse<Specialty>> =>
     api.get(`/specialties/${id}`).then((r) => r.data),
 
-  create: (dto: CreateSpecialtyDto): Promise<Specialty> =>
+  create: (dto: CreateSpecialtyDto): Promise<ApiResponse<Specialty>> =>
     api.post('/specialties', dto).then((r) => r.data),
 
-  update: (id: number, dto: UpdateSpecialtyDto): Promise<Specialty> =>
+  update: (id: number, dto: UpdateSpecialtyDto): Promise<ApiResponse<Specialty>> =>
     api.put(`/specialties/${id}`, dto).then((r) => r.data),
 
   remove: (id: number): Promise<void> =>

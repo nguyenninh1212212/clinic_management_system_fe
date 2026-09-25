@@ -34,10 +34,7 @@ import {
   useAppointment,
   useUpdateAppointmentStatus,
 } from '../hooks/useAppointments';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { triageResultsApi } from '@/api/endpoints/triage-results.api';
-import { queryKeys } from '@/api/queryKeys';
-import { notifyApiFeedback } from '@/api/axios';
+import { useUpsertTriage } from '@/features/triage/hooks/useTriageList';
 import {
   AppointmentStatus,
   TriageLevel,
@@ -48,10 +45,10 @@ import dayjs from 'dayjs';
 export const AppointmentDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   const { data: appointment, isLoading, isError } = useAppointment(id || '');
   const statusMutation = useUpdateAppointmentStatus();
+  const triageMutation = useUpsertTriage(id || '');
 
   // Triage Upsert Dialog
   const [triageDialogOpen, setTriageDialogOpen] = useState(false);
@@ -64,16 +61,6 @@ export const AppointmentDetailPage: React.FC = () => {
   const [height, setHeight] = useState<number | ''>(165);
   const [chiefComplaint, setChiefComplaint] = useState('');
   const [triageNotes, setTriageNotes] = useState('');
-
-  const triageMutation = useMutation({
-    mutationFn: (dto: CreateTriageResultDto) => triageResultsApi.create(dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.detail(id || '') });
-      queryClient.invalidateQueries({ queryKey: queryKeys.triageResults.all });
-      setTriageDialogOpen(false);
-      notifyApiFeedback('Lưu phân loại cấp cứu thành công', 'info');
-    },
-  });
 
   if (isLoading) {
     return (
@@ -132,17 +119,20 @@ export const AppointmentDetailPage: React.FC = () => {
 
   const handleSaveTriage = async () => {
     await triageMutation.mutateAsync({
-      appointmentId: appointment.id,
-      triageLevel,
-      bloodPressure: bloodPressure || undefined,
-      heartRate: heartRate !== '' ? Number(heartRate) : undefined,
-      temperature: temperature !== '' ? Number(temperature) : undefined,
-      spo2: spo2 !== '' ? Number(spo2) : undefined,
-      weight: weight !== '' ? Number(weight) : undefined,
-      height: height !== '' ? Number(height) : undefined,
-      chiefComplaint: chiefComplaint || undefined,
-      notes: triageNotes || undefined,
+      dto: {
+        appointmentId: appointment.id,
+        triageLevel,
+        bloodPressure: bloodPressure || undefined,
+        heartRate: heartRate !== '' ? Number(heartRate) : undefined,
+        temperature: temperature !== '' ? Number(temperature) : undefined,
+        spo2: spo2 !== '' ? Number(spo2) : undefined,
+        weight: weight !== '' ? Number(weight) : undefined,
+        height: height !== '' ? Number(height) : undefined,
+        chiefComplaint: chiefComplaint || undefined,
+        notes: triageNotes || undefined,
+      },
     });
+    setTriageDialogOpen(false);
   };
 
   // Status timeline steps

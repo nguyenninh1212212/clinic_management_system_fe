@@ -1,54 +1,39 @@
 // src/features/audit-logs/pages/AuditLogListPage.tsx
-import React, { useState } from 'react';
+import { Column, DataTable } from '@/components/common/DataTable';
+import { PageHeader } from '@/components/common/PageHeader';
+import { SearchInput } from '@/components/common/SearchInput';
+import { AuditAction, AuditLog } from '@/types';
 import {
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Button,
   Dialog,
-  DialogTitle,
-  DialogContent,
   DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
   Typography,
 } from '@mui/material';
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import HistoryIcon from '@mui/icons-material/History';
-import { PageHeader } from '@/components/common/PageHeader';
-import { DataTable, Column } from '@/components/common/DataTable';
-import { SearchInput } from '@/components/common/SearchInput';
-import { useQuery } from '@tanstack/react-query';
-import { auditLogsApi } from '@/api/endpoints/audit-logs.api';
-import { queryKeys } from '@/api/queryKeys';
-import { AuditLog } from '@/types';
 import dayjs from 'dayjs';
+import React, { useState } from 'react';
+import { useAuditLogs } from '../hooks/useAuditLogs';
 
 export const AuditLogListPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [action, setAction] = useState('');
-  const [entity, setEntity] = useState('');
-  const [search, setSearch] = useState('');
+  const [action, setAction] = useState<AuditAction>();
+  const [entity, setEntity] = useState<string>();
+  const [search, setSearch] = useState<string>();
 
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
 
-  const { data, isLoading } = useQuery({
-    queryKey: queryKeys.auditLogs.list({
-      page,
-      limit,
-      action: action || undefined,
-      entity: entity || undefined,
-      search: search || undefined,
-    }),
-    queryFn: () =>
-      auditLogsApi.findAll({
-        page,
-        limit,
-        action: action || undefined,
-        entity: entity || undefined,
-        search: search || undefined,
-      }),
-    staleTime: 30_000,
+  const { data, isLoading } = useAuditLogs({
+    page,
+    limit,
+    entityName: entity || undefined,
+    search: search || undefined,
+    action: action || undefined,
   });
 
   const getActionBadge = (act: string) => {
@@ -95,7 +80,7 @@ export const AuditLogListPage: React.FC = () => {
       render: (row) => (
         <div>
           <div className="font-semibold text-slate-800 text-xs">
-            {row.user?.fullName || row.user?.email || 'Hệ thống'}
+            {row.createdByUser.fullName || row.createdByUser.email || 'Hệ thống'}
           </div>
           {row.ipAddress && (
             <div className="text-[10px] text-slate-400 font-mono">IP: {row.ipAddress}</div>
@@ -115,10 +100,7 @@ export const AuditLogListPage: React.FC = () => {
       minWidth: 140,
       render: (row) => (
         <div>
-          <span className="font-mono text-xs font-semibold text-slate-700">{row.entity}</span>
-          {row.entityId && (
-            <span className="text-[10px] text-slate-400 ml-1 font-mono">#{row.entityId.slice(0, 8)}</span>
-          )}
+          <span className="font-mono text-xs font-semibold text-slate-700">{row.entityName}</span>
         </div>
       ),
     },
@@ -241,7 +223,7 @@ export const AuditLogListPage: React.FC = () => {
                 <div>
                   <span className="text-slate-400">Người thực hiện:</span>
                   <div className="font-semibold text-slate-800 mt-0.5">
-                    {selectedLog.user?.fullName || selectedLog.user?.email || 'System'}
+                    {selectedLog.createdByUser.fullName || selectedLog.createdByUser.email || 'System'}
                   </div>
                 </div>
                 <div>
@@ -251,7 +233,7 @@ export const AuditLogListPage: React.FC = () => {
                 <div>
                   <span className="text-slate-400">Thực thể & ID:</span>
                   <div className="font-semibold font-mono text-slate-800 mt-0.5">
-                    {selectedLog.entity} #{selectedLog.entityId}
+                    {selectedLog.entityName}
                   </div>
                 </div>
                 <div>
@@ -262,7 +244,7 @@ export const AuditLogListPage: React.FC = () => {
                 </div>
               </div>
 
-              {selectedLog.details && (
+              {/* {selectedLog.details && (
                 <div>
                   <Typography variant="subtitle2" className="text-xs font-bold text-slate-700 mb-1">
                     Dữ liệu chi tiết:
@@ -271,7 +253,7 @@ export const AuditLogListPage: React.FC = () => {
                     {JSON.stringify(selectedLog.details, null, 2)}
                   </pre>
                 </div>
-              )}
+              )} */}
             </>
           )}
         </DialogContent>
