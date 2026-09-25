@@ -24,13 +24,13 @@ export function useAppointment(id: string) {
   });
 }
 
-export function useCreateAppointment(): UseMutationResult<ApiResponse<Appointment>, Error, CreateAppointmentDto, unknown> {
+export function useCreateAppointment(): UseMutationResult<Appointment, Error, CreateAppointmentDto, unknown> {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (dto: CreateAppointmentDto) => appointmentsApi.create(dto),
-    onSuccess: (created: ApiResponse<Appointment>) => {
-      queryClient.setQueryData(queryKeys.appointments.detail(created.data.id), created);
+    onSuccess: (created: Appointment) => {
+      queryClient.setQueryData(queryKeys.appointments.detail(created.id), created);
       queryClient.invalidateQueries({ queryKey: queryKeys.appointments.lists() });
       notifyApiFeedback('Tạo lịch hẹn thành công', 'info');
     },

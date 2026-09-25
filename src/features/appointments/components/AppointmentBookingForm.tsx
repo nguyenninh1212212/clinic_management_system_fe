@@ -86,7 +86,7 @@ export const AppointmentBookingForm: React.FC = () => {
         appointmentDate: `${date}T${time}:00+07:00`,
         notes: notes || undefined,
       });
-      navigate(`/appointments/${created.data.id}`);
+      navigate(`/appointments/${created.id}`);
     } catch (error: any) {
       const message = error?.response?.data?.message;
       setValidationError(

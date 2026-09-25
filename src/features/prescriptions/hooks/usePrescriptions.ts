@@ -28,8 +28,8 @@ export function useCreatePrescription() {
 
   return useMutation({
     mutationFn: (dto: CreatePrescriptionDto) => prescriptionsApi.create(dto),
-    onSuccess: (created: ApiResponse<Prescription>) => {
-      queryClient.setQueryData(queryKeys.prescriptions.detail(created.data.id), created);
+    onSuccess: (created: Prescription) => {
+      queryClient.setQueryData(queryKeys.prescriptions.detail(created.id), created);
       queryClient.invalidateQueries({ queryKey: queryKeys.prescriptions.lists() });
       queryClient.invalidateQueries({ queryKey: queryKeys.examinations.all });
       notifyApiFeedback('Kê đơn thuốc thành công', 'info');

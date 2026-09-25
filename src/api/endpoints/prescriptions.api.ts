@@ -13,10 +13,10 @@ export const prescriptionsApi = {
   findAll: (params?: PrescriptionQueryParams): Promise<PaginatedResponse<Prescription>> =>
     api.get('/prescriptions', { params }).then((r) => r.data),
 
-  findById: (id: string): Promise<ApiResponse<Prescription>> =>
+  findById: (id: string): Promise<Prescription> =>
     api.get(`/prescriptions/${id}`).then((r) => r.data),
 
-  create: (dto: CreatePrescriptionDto): Promise<ApiResponse<Prescription>> =>
+  create: (dto: CreatePrescriptionDto): Promise<Prescription> =>
     api.post('/prescriptions', dto).then((r) => r.data),
 
   update: (id: string, dto: UpdatePrescriptionDto): Promise<ApiResponse<Prescription>> =>

@@ -17,7 +17,7 @@ export const appointmentsApi = {
   findById: (id: string): Promise<ApiResponse<Appointment>> =>
     api.get(`/appointments/${id}`).then((r) => r.data),
 
-  create: (dto: CreateAppointmentDto): Promise<ApiResponse<Appointment>> =>
+  create: (dto: CreateAppointmentDto): Promise<Appointment> =>
     api.post('/appointments', dto).then((r) => r.data),
 
   update: (id: string, dto: UpdateAppointmentDto): Promise<ApiResponse<Appointment>> =>

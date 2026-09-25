@@ -1,6 +1,5 @@
-
-import React, { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
   Alert,
@@ -22,71 +21,64 @@ import {
   TextField,
   Tooltip,
   Typography,
-} from '@mui/material';
+} from "@mui/material";
 
-import AddIcon from '@mui/icons-material/Add';
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
-import RemoveCircleOutlinedIcon from '@mui/icons-material/RemoveCircleOutlined';
+import AddIcon from "@mui/icons-material/Add";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import RemoveCircleOutlinedIcon from "@mui/icons-material/RemoveCircleOutlined";
 
-import { PageHeader } from '@/components/common/PageHeader';
-import { DataTable, Column } from '@/components/common/DataTable';
-import { SearchInput } from '@/components/common/SearchInput';
-import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { PageHeader } from "@/components/common/PageHeader";
+import { DataTable, Column } from "@/components/common/DataTable";
+import { SearchInput } from "@/components/common/SearchInput";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 
 import {
   usePrescriptions,
   useCreatePrescription,
   useDeletePrescription,
-} from '../hooks/usePrescriptions';
+} from "../hooks/usePrescriptions";
 
-import { useExaminations } from '@/features/examinations/hooks/useExaminations';
-import { useMedicinesDropdown } from '@/features/medicines/hooks/useMedicines';
+import { useExaminations } from "@/features/examinations/hooks/useExaminations";
+import { useMedicinesDropdown } from "@/features/medicines/hooks/useMedicines";
 
-import {
-  Prescription,
-  CreatePrescriptionItemDto,
-  Medicine,
-} from '@/types';
+import { Prescription, CreatePrescriptionItemDto, Medicine } from "@/types";
 
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
 
 export const PrescriptionListPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const preselectedExamId =
-    searchParams.get('examinationId') || '';
+  const preselectedExamId = searchParams.get("examinationId") || "";
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
 
   // Delete state
-  const [deleteId, setDeleteId] =
-    useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   // Create prescription dialog
-  const [createDialogOpen, setCreateDialogOpen] =
-    useState(Boolean(preselectedExamId));
+  const [createDialogOpen, setCreateDialogOpen] = useState(
+    Boolean(preselectedExamId),
+  );
 
   const [selectedExamId, setSelectedExamId] =
     useState<string>(preselectedExamId);
 
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState("");
 
-  const [items, setItems] = useState<
-    CreatePrescriptionItemDto[]
-  >([
+  const [items, setItems] = useState<CreatePrescriptionItemDto[]>([
     {
-      medicineId: '',
+      medicineId: "",
       quantity: 10,
-      dosage: '1 viên/lần',
-      frequency: '2 lần/ngày (sau ăn)',
-      duration: '5 ngày',
+      dosage: "1 viên/lần",
+      frequency: "2 lần/ngày (sau ăn)",
+      duration: "5 ngày",
       durationDays: 5,
-      note: '',
-      instructions: '',
+      note: "",
+      instructions: "",
     },
   ]);
 
@@ -100,8 +92,7 @@ export const PrescriptionListPage: React.FC = () => {
     limit: 50,
   });
 
-  const { data: medicinesData } =
-    useMedicinesDropdown(100);
+  const { data: medicinesData } = useMedicinesDropdown(100);
 
   const createMutation = useCreatePrescription();
   const deleteMutation = useDeletePrescription();
@@ -110,22 +101,20 @@ export const PrescriptionListPage: React.FC = () => {
     setItems((prev) => [
       ...prev,
       {
-        medicineId: '',
+        medicineId: "",
         quantity: 10,
-        dosage: '1 viên/lần',
-        frequency: '2 lần/ngày (sau ăn)',
-        duration: '5 ngày',
+        dosage: "1 viên/lần",
+        frequency: "2 lần/ngày (sau ăn)",
+        duration: "5 ngày",
         durationDays: 5,
-        note: '',
-        instructions: '',
+        note: "",
+        instructions: "",
       },
     ]);
   };
 
   const handleRemoveItem = (index: number) => {
-    setItems((prev) =>
-      prev.filter((_, idx) => idx !== index),
-    );
+    setItems((prev) => prev.filter((_, idx) => idx !== index));
   };
 
   const handleItemChange = (
@@ -135,9 +124,7 @@ export const PrescriptionListPage: React.FC = () => {
   ) => {
     setItems((prev) =>
       prev.map((item, idx) =>
-        idx === index
-          ? { ...item, [field]: value }
-          : item,
+        idx === index ? { ...item, [field]: value } : item,
       ),
     );
   };
@@ -145,21 +132,17 @@ export const PrescriptionListPage: React.FC = () => {
   const handleCreateSubmit = async () => {
     if (
       !selectedExamId ||
-      items.some(
-        (item) =>
-          !item.medicineId || item.quantity <= 0,
-      )
+      items.some((item) => !item.medicineId || item.quantity <= 0)
     ) {
       return;
     }
 
     try {
-      const created =
-        await createMutation.mutateAsync({
-          examinationId: selectedExamId,
-          notes: notes || undefined,
-          items,
-        });
+      const created = await createMutation.mutateAsync({
+        examinationId: selectedExamId,
+        notes: notes || undefined,
+        items,
+      });
 
       setCreateDialogOpen(false);
 
@@ -182,17 +165,17 @@ export const PrescriptionListPage: React.FC = () => {
 
   const columns: Column<Prescription>[] = [
     {
-      id: 'id',
-      label: 'Mã đơn',
+      id: "id",
+      label: "Mã đơn",
       minWidth: 80,
       render: (row) => (
         <Typography
           component="span"
           variant="body2"
           sx={{
-            fontFamily: 'monospace',
-            color: 'text.secondary',
-            fontVariantNumeric: 'tabular-nums',
+            fontFamily: "monospace",
+            color: "text.secondary",
+            fontVariantNumeric: "tabular-nums",
           }}
         >
           #{row.id.slice(0, 8)}
@@ -201,90 +184,85 @@ export const PrescriptionListPage: React.FC = () => {
     },
 
     {
-      id: 'patient',
-      label: 'Bệnh nhân',
+      id: "patient",
+      label: "Bệnh nhân",
       minWidth: 180,
       render: (row) => (
         <Stack spacing={0.25}>
           <Button
             variant="text"
-            onClick={() =>
-              navigate(`/prescriptions/${row.id}`)
-            }
+            onClick={() => navigate(`/prescriptions/${row.id}`)}
             sx={{
               p: 0,
               minWidth: 0,
-              justifyContent: 'flex-start',
-              textTransform: 'none',
+              justifyContent: "flex-start",
+              textTransform: "none",
               fontWeight: 600,
               fontSize: 14,
-              color: 'primary.main',
-              '&:hover': {
-                backgroundColor: 'transparent',
-                textDecoration: 'underline',
+              color: "primary.main",
+              "&:hover": {
+                backgroundColor: "transparent",
+                textDecoration: "underline",
               },
             }}
           >
-            {row.examination?.appointment?.patient
-              ?.fullName || 'Bệnh nhân'}
+            {row.examination?.appointment?.patient?.fullName || "Bệnh nhân"}
           </Button>
 
           <Typography
             variant="caption"
             sx={{
-              color: 'text.secondary',
-              fontFamily: 'monospace',
+              color: "text.secondary",
+              fontFamily: "monospace",
             }}
           >
-            {row.examination?.appointment?.patient
-              ?.phone || '—'}
+            {row.examination?.appointment?.patient?.phone || "—"}
           </Typography>
         </Stack>
       ),
     },
 
     {
-      id: 'doctor',
-      label: 'Bác sĩ kê đơn',
+      id: "doctor",
+      label: "Bác sĩ kê đơn",
       minWidth: 160,
       render: (row) => (
         <Typography
           variant="body2"
           sx={{
-            color: 'text.primary',
+            color: "text.primary",
             fontWeight: 500,
           }}
         >
-          {row.examination?.doctor?.user?.fullName ||
-            'Bác sĩ điều trị'}
+          {row.examination?.doctor?.user?.fullName || "Bác sĩ điều trị"}
         </Typography>
       ),
     },
 
     {
-      id: 'diagnosis',
-      label: 'Chẩn đoán xác định',
+      id: "diagnosis",
+      label: "Chẩn đoán xác định",
       minWidth: 200,
       render: (row) => (
         <Typography
           variant="body2"
           noWrap
           sx={{
-            color: 'text.primary',
+            color: "text.primary",
             maxWidth: 240,
             fontSize: 13,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
+            overflow: "hidden",
+            textOverflow: "ellipsis",
           }}
         >
-          {row.examination?.diagnosis || '—'}
+          {row.examination?.diagnosis || "—"}
         </Typography>
       ),
     },
 
     {
-      id: 'itemCount',
-      label: 'Số vị thuốc',
+      id: "itemCount",
+      label: "Số vị thuốc",
       minWidth: 110,
       render: (row) => (
         <Chip
@@ -293,54 +271,46 @@ export const PrescriptionListPage: React.FC = () => {
           sx={{
             fontWeight: 600,
             fontSize: 12,
-            backgroundColor: 'success.50',
-            color: 'success.700',
+            backgroundColor: "success.50",
+            color: "success.700",
           }}
         />
       ),
     },
 
     {
-      id: 'createdAt',
-      label: 'Ngày kê đơn',
+      id: "createdAt",
+      label: "Ngày kê đơn",
       minWidth: 130,
       render: (row) => (
         <Typography
           variant="caption"
           sx={{
-            color: 'text.secondary',
-            fontVariantNumeric: 'tabular-nums',
+            color: "text.secondary",
+            fontVariantNumeric: "tabular-nums",
           }}
         >
-          {dayjs(row.createdAt).format(
-            'HH:mm DD/MM/YYYY',
-          )}
+          {dayjs(row.createdAt).format("HH:mm DD/MM/YYYY")}
         </Typography>
       ),
     },
 
     {
-      id: 'actions',
-      label: 'Thao tác',
-      align: 'right',
+      id: "actions",
+      label: "Thao tác",
+      align: "right",
       minWidth: 120,
       render: (row) => (
-        <Stack
-          direction="row"
-          spacing={0.5}
-          justifyContent="flex-end"
-        >
+        <Stack direction="row" spacing={0.5} className="flex justify-end">
           <Tooltip title="Xem & In đơn thuốc">
             <IconButton
               size="small"
-              onClick={() =>
-                navigate(`/prescriptions/${row.id}`)
-              }
+              onClick={() => navigate(`/prescriptions/${row.id}`)}
               sx={{
-                color: 'text.secondary',
-                '&:hover': {
-                  color: 'primary.main',
-                  backgroundColor: 'primary.50',
+                color: "text.secondary",
+                "&:hover": {
+                  color: "primary.main",
+                  backgroundColor: "primary.50",
                 },
               }}
             >
@@ -353,10 +323,10 @@ export const PrescriptionListPage: React.FC = () => {
               size="small"
               onClick={() => setDeleteId(row.id)}
               sx={{
-                color: 'text.secondary',
-                '&:hover': {
-                  color: 'error.main',
-                  backgroundColor: 'error.50',
+                color: "text.secondary",
+                "&:hover": {
+                  color: "error.main",
+                  backgroundColor: "error.50",
                 },
               }}
             >
@@ -371,8 +341,8 @@ export const PrescriptionListPage: React.FC = () => {
   return (
     <Box
       sx={{
-        display: 'flex',
-        flexDirection: 'column',
+        display: "flex",
+        flexDirection: "column",
         gap: 2,
       }}
     >
@@ -381,20 +351,18 @@ export const PrescriptionListPage: React.FC = () => {
         subtitle="Quản lý đơn thuốc ngoại trú, liều dùng và hướng dẫn sử dụng dược phẩm"
         breadcrumbs={[
           {
-            label: 'Trang chủ',
-            href: '/dashboard',
+            label: "Trang chủ",
+            href: "/dashboard",
           },
           {
-            label: 'Đơn thuốc',
+            label: "Đơn thuốc",
           },
         ]}
         action={
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() =>
-              setCreateDialogOpen(true)
-            }
+            onClick={() => setCreateDialogOpen(true)}
           >
             Kê đơn thuốc mới
           </Button>
@@ -404,16 +372,16 @@ export const PrescriptionListPage: React.FC = () => {
       {/* Search */}
       <Box
         sx={{
-          backgroundColor: 'background.paper',
+          backgroundColor: "background.paper",
           p: 2,
           borderRadius: 3,
-          border: '1px solid',
-          borderColor: 'divider',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
+          border: "1px solid",
+          borderColor: "divider",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
           gap: 2,
-          flexWrap: 'wrap',
+          flexWrap: "wrap",
         }}
       >
         <SearchInput
@@ -429,20 +397,20 @@ export const PrescriptionListPage: React.FC = () => {
         <Typography
           variant="caption"
           sx={{
-            color: 'text.secondary',
-            fontVariantNumeric: 'tabular-nums',
+            color: "text.secondary",
+            fontVariantNumeric: "tabular-nums",
           }}
         >
-          Tổng số:{' '}
+          Tổng số:{" "}
           <Box
             component="strong"
             sx={{
-              color: 'text.primary',
+              color: "text.primary",
               fontWeight: 700,
             }}
           >
             {data?.pagination?.total || 0}
-          </Box>{' '}
+          </Box>{" "}
           đơn thuốc
         </Typography>
       </Box>
@@ -461,9 +429,7 @@ export const PrescriptionListPage: React.FC = () => {
         emptyTitle="Chưa có đơn thuốc nào"
         emptyDescription="Tạo đơn thuốc liên kết với phiếu khám bệnh của bệnh nhân."
         emptyActionText="Kê đơn thuốc mới"
-        onEmptyAction={() =>
-          setCreateDialogOpen(true)
-        }
+        onEmptyAction={() => setCreateDialogOpen(true)}
       />
 
       {/* Create Prescription Dialog */}
@@ -476,7 +442,7 @@ export const PrescriptionListPage: React.FC = () => {
         <DialogTitle
           sx={{
             fontWeight: 700,
-            color: 'text.primary',
+            color: "text.primary",
           }}
         >
           Kê đơn thuốc cho bệnh nhân
@@ -492,9 +458,8 @@ export const PrescriptionListPage: React.FC = () => {
           <Stack spacing={2.5}>
             {createMutation.isError && (
               <Alert severity="error">
-                {(createMutation.error as any)?.response
-                  ?.data?.message ||
-                  'Có lỗi xảy ra khi tạo đơn thuốc. Lưu ý: Mỗi phiếu khám chỉ có 1 đơn thuốc duy nhất.'}
+                {(createMutation.error as any)?.response?.data?.message ||
+                  "Có lỗi xảy ra khi tạo đơn thuốc. Lưu ý: Mỗi phiếu khám chỉ có 1 đơn thuốc duy nhất."}
               </Alert>
             )}
 
@@ -508,23 +473,13 @@ export const PrescriptionListPage: React.FC = () => {
                 labelId="exam-select-label"
                 value={selectedExamId}
                 label="Phiếu khám bệnh liên kết *"
-                onChange={(event) =>
-                  setSelectedExamId(event.target.value)
-                }
+                onChange={(event) => setSelectedExamId(event.target.value)}
               >
                 {examsData?.data?.map((exam) => (
-                  <MenuItem
-                    key={exam.id}
-                    value={exam.id}
-                  >
-                    {exam.appointment?.patient?.fullName ||
-                      'Bệnh nhân'}{' '}
-                    — Chẩn đoán:{' '}
-                    {exam.diagnosis || 'Chưa có'} (
-                    {dayjs(exam.createdAt).format(
-                      'DD/MM',
-                    )}
-                    )
+                  <MenuItem key={exam.id} value={exam.id}>
+                    {exam.appointment?.patient?.fullName || "Bệnh nhân"} — Chẩn
+                    đoán: {exam.diagnosis || "Chưa có"} (
+                    {dayjs(exam.createdAt).format("DD/MM")})
                   </MenuItem>
                 ))}
               </Select>
@@ -536,9 +491,7 @@ export const PrescriptionListPage: React.FC = () => {
               fullWidth
               size="small"
               value={notes}
-              onChange={(event) =>
-                setNotes(event.target.value)
-              }
+              onChange={(event) => setNotes(event.target.value)}
               placeholder="VD: Kiêng đồ cay nóng, uống nhiều nước ấm, tái khám sau 5 ngày..."
             />
 
@@ -546,17 +499,15 @@ export const PrescriptionListPage: React.FC = () => {
             <Box>
               <Stack
                 direction="row"
-                alignItems="center"
-                justifyContent="space-between"
-                sx={{ mb: 1.5 }}
+                className="flex justify-between mb-2 items-center"
               >
                 <Typography
                   variant="caption"
                   sx={{
                     fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.08em',
-                    color: 'text.primary',
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    color: "text.primary",
                   }}
                 >
                   Danh mục thuốc kê ({items.length} loại)
@@ -578,24 +529,23 @@ export const PrescriptionListPage: React.FC = () => {
                     key={idx}
                     sx={{
                       p: 2,
-                      backgroundColor: 'grey.50',
+                      backgroundColor: "grey.50",
                       borderRadius: 3,
-                      border: '1px solid',
-                      borderColor: 'divider',
+                      border: "1px solid",
+                      borderColor: "divider",
                     }}
                   >
                     <Stack spacing={1.5}>
                       {/* Medicine header */}
                       <Stack
                         direction="row"
-                        alignItems="center"
-                        justifyContent="space-between"
+                        className="flex justify-between items-center"
                       >
                         <Typography
                           variant="caption"
                           sx={{
                             fontWeight: 600,
-                            color: 'primary.dark',
+                            color: "primary.dark",
                           }}
                         >
                           Thuốc #{idx + 1}
@@ -606,9 +556,7 @@ export const PrescriptionListPage: React.FC = () => {
                             <IconButton
                               size="small"
                               color="error"
-                              onClick={() =>
-                                handleRemoveItem(idx)
-                              }
+                              onClick={() => handleRemoveItem(idx)}
                             >
                               <RemoveCircleOutlinedIcon fontSize="small" />
                             </IconButton>
@@ -624,13 +572,8 @@ export const PrescriptionListPage: React.FC = () => {
                             sm: 8,
                           }}
                         >
-                          <FormControl
-                            fullWidth
-                            size="small"
-                          >
-                            <InputLabel
-                              id={`med-select-${idx}`}
-                            >
+                          <FormControl fullWidth size="small">
+                            <InputLabel id={`med-select-${idx}`}>
                               Chọn biệt dược *
                             </InputLabel>
 
@@ -641,7 +584,7 @@ export const PrescriptionListPage: React.FC = () => {
                               onChange={(event) =>
                                 handleItemChange(
                                   idx,
-                                  'medicineId',
+                                  "medicineId",
                                   event.target.value,
                                 )
                               }
@@ -652,10 +595,7 @@ export const PrescriptionListPage: React.FC = () => {
                                     key={medicine.id}
                                     value={medicine.id}
                                   >
-                                    {medicine.name} (
-                                    {medicine.strength ||
-                                      medicine.unit}
-                                    )
+                                    {medicine.name} ({medicine.unit})
                                   </MenuItem>
                                 ),
                               )}
@@ -678,10 +618,8 @@ export const PrescriptionListPage: React.FC = () => {
                             onChange={(event) =>
                               handleItemChange(
                                 idx,
-                                'quantity',
-                                Number(
-                                  event.target.value,
-                                ),
+                                "quantity",
+                                Number(event.target.value),
                               )
                             }
                             slotProps={{
@@ -706,7 +644,7 @@ export const PrescriptionListPage: React.FC = () => {
                             onChange={(event) =>
                               handleItemChange(
                                 idx,
-                                'dosage',
+                                "dosage",
                                 event.target.value,
                               )
                             }
@@ -728,7 +666,7 @@ export const PrescriptionListPage: React.FC = () => {
                             onChange={(event) =>
                               handleItemChange(
                                 idx,
-                                'frequency',
+                                "frequency",
                                 event.target.value,
                               )
                             }
@@ -749,21 +687,11 @@ export const PrescriptionListPage: React.FC = () => {
                             fullWidth
                             value={item.durationDays || 5}
                             onChange={(event) => {
-                              const days = Number(
-                                event.target.value,
-                              );
+                              const days = Number(event.target.value);
 
-                              handleItemChange(
-                                idx,
-                                'durationDays',
-                                days,
-                              );
+                              handleItemChange(idx, "durationDays", days);
 
-                              handleItemChange(
-                                idx,
-                                'duration',
-                                `${days} ngày`,
-                              );
+                              handleItemChange(idx, "duration", `${days} ngày`);
                             }}
                             slotProps={{
                               htmlInput: {
@@ -783,21 +711,15 @@ export const PrescriptionListPage: React.FC = () => {
                             label="Hướng dẫn uống chi tiết"
                             size="small"
                             fullWidth
-                            value={
-                              item.instructions || ''
-                            }
+                            value={item.instructions || ""}
                             onChange={(event) => {
                               handleItemChange(
                                 idx,
-                                'instructions',
+                                "instructions",
                                 event.target.value,
                               );
 
-                              handleItemChange(
-                                idx,
-                                'note',
-                                event.target.value,
-                              );
+                              handleItemChange(idx, "note", event.target.value);
                             }}
                             placeholder="Uống sau bữa ăn 30 phút với nhiều nước..."
                           />
@@ -817,26 +739,18 @@ export const PrescriptionListPage: React.FC = () => {
             pb: 2,
           }}
         >
-          <Button
-            onClick={() =>
-              setCreateDialogOpen(false)
-            }
-            color="inherit"
-          >
+          <Button onClick={() => setCreateDialogOpen(false)} color="inherit">
             Hủy
           </Button>
 
           <Button
             onClick={handleCreateSubmit}
             variant="contained"
-            disabled={
-              !selectedExamId ||
-              createMutation.isPending
-            }
+            disabled={!selectedExamId || createMutation.isPending}
           >
             {createMutation.isPending
-              ? 'Đang lưu...'
-              : 'Xác nhận tạo đơn thuốc'}
+              ? "Đang lưu..."
+              : "Xác nhận tạo đơn thuốc"}
           </Button>
         </DialogActions>
       </Dialog>

@@ -27,7 +27,7 @@ export const ExaminationDetailPage: React.FC = () => {
 
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const { data: examination, isLoading, isError } = useExamination(id || '');
+  const { data: examination, isLoading, isError } = useExamination(id!);
   const deleteMutation = useDeleteExamination();
   if (isLoading) {
     return (

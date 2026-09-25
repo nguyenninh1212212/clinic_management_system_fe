@@ -13,7 +13,7 @@ export const examinationsApi = {
   findAll: (params?: ExaminationQueryParams): Promise<PaginatedResponse<Examination>> =>
     api.get('/examinations', { params }).then((r) => r.data),
 
-  findById: (id: string): Promise<ApiResponse<Examination>> =>
+  findById: (id: string): Promise<Examination> =>
     api.get(`/examinations/${id}`).then((r) => r.data),
 
   create: (dto: CreateExaminationDto): Promise<ApiResponse<Examination>> =>

@@ -19,11 +19,11 @@ export const doctorsApi = {
   findById: (id: string): Promise<ApiResponse<Doctor>> =>
     api.get(`/doctors/${id}`).then((r) => r.data),
 
-  create: (dto: CreateDoctorDto): Promise<ApiResponse<Doctor>> =>
-    api.post('/doctors', dto).then((r) => r.data),
+  create: (dto: CreateDoctorDto): Promise<Doctor> =>
+     api.post('/doctors', dto).then((r) => r.data.data),
 
-  update: (id: string, dto: UpdateDoctorDto): Promise<ApiResponse<Doctor>> =>
-    api.put(`/doctors/${id}`, dto).then((r) => r.data),
+  update: (id: string, dto: UpdateDoctorDto): Promise<Doctor> =>
+    api.put(`/doctors/${id}`, dto).then((r) => r.data.data),
 
   remove: (id: string): Promise<void> =>
     api.delete(`/doctors/${id}`).then((r) => r.data),

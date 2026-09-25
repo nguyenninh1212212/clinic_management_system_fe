@@ -1,1 +1,44 @@
 @import "tailwindcss";
+@media print {
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+
+  body {
+    margin: 0;
+    background: white !important;
+  }
+
+  /* Ẩn toàn bộ phần tử có print:hidden */
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Card đơn thuốc */
+  .print\:shadow-none {
+    box-shadow: none !important;
+  }
+
+  .print\:border-none {
+    border: none !important;
+  }
+
+  /* Tránh nội dung bị cắt giữa trang */
+  table {
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  .MuiCardContent-root {
+    padding: 0 !important;
+  }
+}
