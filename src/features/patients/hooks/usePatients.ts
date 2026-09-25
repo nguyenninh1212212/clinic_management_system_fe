@@ -14,7 +14,7 @@ export function usePatients(params: PatientQueryParams) {
   });
 }
 
-export function usePatient(id: string):UseQueryResult<ApiResponse<Patient>>  {
+export function usePatient(id: string): UseQueryResult<Patient> {
   return useQuery({
     queryKey: queryKeys.patients.detail(id),
     queryFn: () => patientsApi.findById(id),

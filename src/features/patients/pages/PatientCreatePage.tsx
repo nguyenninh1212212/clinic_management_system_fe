@@ -21,6 +21,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { patientSchema, PatientFormValues } from '../schemas/patient.schema';
 import { useCreatePatient } from '../hooks/usePatients';
 import { Gender } from '@/types';
+import { notifyApiFeedback } from '@/api/axios';
 
 export const PatientCreatePage: React.FC = () => {
   const navigate = useNavigate();
@@ -55,9 +56,13 @@ export const PatientCreatePage: React.FC = () => {
         address: values.address || undefined,
         medicalHistory: values.medicalHistory || undefined,
       });
-      navigate(`/patients/${created.id}`);
-    } catch {
-      // Error handled by interceptor
+
+      if (created?.id) {
+        navigate(`/patients/${created.id}`);
+      }
+      notifyApiFeedback('Tạo hồ sơ bệnh nhân thành công', 'info');
+    } catch (err: any) {
+      notifyApiFeedback(err)
     }
   };
 

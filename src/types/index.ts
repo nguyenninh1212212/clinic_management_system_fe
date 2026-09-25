@@ -18,3 +18,4 @@ export * from './permission.types';
 export * from './notification.types';
 export * from './audit-log.types';
 export * from './invoice.types';
+export * from './user-patient-access.types';

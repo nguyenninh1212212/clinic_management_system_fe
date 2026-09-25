@@ -32,8 +32,8 @@ export const PatientDetailPage: React.FC = () => {
 
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  if(!id) {
-    return 
+  if (!id) {
+    return
   }
 
   const { data: patient, isLoading, isError } = usePatient(id);
@@ -65,7 +65,7 @@ export const PatientDetailPage: React.FC = () => {
       </div>
     );
   }
-  const patientData =patient.data
+  const patientData = patient
 
   const handleDelete = async () => {
     try {

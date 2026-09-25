@@ -107,4 +107,10 @@ export const queryKeys = {
     list: (params: object) => [...queryKeys.invoices.lists(), params] as const,
     detail: (id: string) => [...queryKeys.invoices.all, 'detail', id] as const,
   },
+  userPatientAccess: {
+    all: ['user-patient-access'] as const,
+    myPatients: () => [...queryKeys.userPatientAccess.all, 'my-patients'] as const,
+    check: (patientId: string) => [...queryKeys.userPatientAccess.all, 'check', patientId] as const,
+    accessors: (patientId: string) => [...queryKeys.userPatientAccess.all, 'accessors', patientId] as const,
+  },
 };
