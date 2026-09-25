@@ -16,3 +16,4 @@ export * from './position.types';
 export * from './permission.types';
 export * from './notification.types';
 export * from './audit-log.types';
+export * from './invoice.types';

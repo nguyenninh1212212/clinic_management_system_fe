@@ -100,4 +100,10 @@ export const queryKeys = {
     all: ['audit-logs'] as const,
     list: (p: object) => [...queryKeys.auditLogs.all, 'list', p] as const,
   },
+  invoices: {
+    all: ['invoices'] as const,
+    lists: () => [...queryKeys.invoices.all, 'list'] as const,
+    list: (params: object) => [...queryKeys.invoices.lists(), params] as const,
+    detail: (id: string) => [...queryKeys.invoices.all, 'detail', id] as const,
+  },
 };

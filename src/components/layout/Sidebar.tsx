@@ -88,6 +88,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
           icon: <ReceiptLongOutlinedIcon fontSize="small" />,
           visible: true,
         },
+        {
+          label: 'Hóa đơn thanh toán',
+          path: '/invoices',
+          icon: <ReceiptLongOutlinedIcon fontSize="small" />,
+          visible: true,
+        },
       ],
     },
     {

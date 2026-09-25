@@ -1,0 +1,21 @@
+import React from 'react';
+import { Alert, Button, Card, CardContent, CircularProgress, Divider, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined';
+import { useNavigate, useParams } from 'react-router-dom';
+import dayjs from 'dayjs';
+import { invoicesApi } from '@/api/endpoints/invoices.api';
+import { PageHeader } from '@/components/common/PageHeader';
+import { useInvoice } from '../hooks/useInvoices';
+
+export const InvoiceDetailPage: React.FC = () => {
+  const { id = '' } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { data: response, isLoading, isError } = useInvoice(id);
+  const invoice = response?.data;
+  const download = async () => { const result = await invoicesApi.export(id); const url = URL.createObjectURL(result.data); const link = document.createElement('a'); link.href = url; link.download = `invoice-${id}.xlsx`; link.click(); URL.revokeObjectURL(url); };
+  if (isLoading) return <div className="py-20 flex justify-center"><CircularProgress /></div>;
+  if (isError || !invoice) return <div className="py-12 text-center space-y-4"><Typography variant="h6">Không tìm thấy hóa đơn</Typography><Button variant="outlined" onClick={() => navigate('/invoices')}>Quay lại danh sách</Button></div>;
+  const money = (value?: number) => `${Number(value || 0).toLocaleString('vi-VN')} ₫`;
+  return <div className="space-y-4 max-w-5xl mx-auto"><PageHeader title={`Hóa đơn ${invoice.invoiceNumber || `#${invoice.id}`}`} subtitle={`Tạo ngày ${dayjs(invoice.createdAt).format('HH:mm DD/MM/YYYY')}`} breadcrumbs={[{ label: 'Trang chủ', href: '/dashboard' }, { label: 'Hóa đơn', href: '/invoices' }, { label: 'Chi tiết' }]} action={<div className="flex gap-2"><Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={() => navigate('/invoices')}>Danh sách</Button><Button variant="contained" startIcon={<DownloadOutlinedIcon />} onClick={download}>Xuất Excel</Button></div>} /><Card><CardContent className="space-y-5"><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"><div><div className="text-xs text-slate-500">Người mua</div><div className="font-bold text-slate-900">{invoice.buyerName}</div></div><div><div className="text-xs text-slate-500">Số điện thoại</div><div className="font-mono text-sm">{invoice.buyerPhone || '—'}</div></div><div><div className="text-xs text-slate-500">Email</div><div className="text-sm">{invoice.buyerEmail || '—'}</div></div><div><div className="text-xs text-slate-500">Địa chỉ</div><div className="text-sm">{invoice.buyerAddress || '—'}</div></div><div><div className="text-xs text-slate-500">Mã số thuế</div><div className="font-mono text-sm">{invoice.buyerTaxCode || '—'}</div></div><div><div className="text-xs text-slate-500">Bệnh nhân liên kết</div><div className="text-sm">{invoice.patient?.fullName || invoice.patientId || '—'}</div></div></div><Divider /><div className="overflow-x-auto"><Table size="small" sx={{ minWidth: 680 }}><TableHead><TableRow><TableCell>Loại</TableCell><TableCell>Mặt hàng / mô tả</TableCell><TableCell align="right">Số lượng</TableCell><TableCell align="right">Đơn giá</TableCell><TableCell align="right">Thành tiền</TableCell></TableRow></TableHead><TableBody>{invoice.items?.map((item, index) => <TableRow key={item.id || index}><TableCell>{item.itemType === 'MEDICINE' ? 'Thuốc' : 'Chi phí'}</TableCell><TableCell>{item.medicine?.name || item.description || '—'}</TableCell><TableCell align="right">{item.quantity}</TableCell><TableCell align="right">{money(item.unitPrice)}</TableCell><TableCell align="right" className="font-semibold">{money(item.amount ?? item.quantity * item.unitPrice)}</TableCell></TableRow>)}</TableBody></Table></div><div className="flex justify-end border-t border-slate-200 pt-4"><div className="text-right"><div className="text-xs text-slate-500">Tổng tiền</div><div className="text-2xl font-bold text-sky-700 tabular-nums">{money(invoice.totalAmount ?? invoice.items?.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0))}</div></div></div>{invoice.notes && <Alert severity="info">Ghi chú: {invoice.notes}</Alert>}</CardContent></Card></div>;
+};

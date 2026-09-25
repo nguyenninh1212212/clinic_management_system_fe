@@ -60,6 +60,9 @@ import { UserListPage } from '@/features/users/pages/UserListPage';
 import { PermissionListPage } from '@/features/permissions/pages/PermissionListPage';
 import { AuditLogListPage } from '@/features/audit-logs/pages/AuditLogListPage';
 import { NotificationsPage } from '@/features/notifications/pages/NotificationsPage';
+import { InvoiceListPage } from '@/features/invoices/pages/InvoiceListPage';
+import { InvoiceCreatePage } from '@/features/invoices/pages/InvoiceCreatePage';
+import { InvoiceDetailPage } from '@/features/invoices/pages/InvoiceDetailPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -122,6 +125,11 @@ export default function App() {
               {/* Prescriptions */}
               <Route path="prescriptions" element={<PrescriptionListPage />} />
               <Route path="prescriptions/:id" element={<PrescriptionDetailPage />} />
+
+              {/* Invoices */}
+              <Route path="invoices" element={<InvoiceListPage />} />
+              <Route path="invoices/new" element={<InvoiceCreatePage />} />
+              <Route path="invoices/:id" element={<InvoiceDetailPage />} />
 
               {/* Medicines & Inventory */}
               <Route path="medicines" element={<MedicineListPage />} />
