@@ -66,7 +66,7 @@ export function useUpdateUser() {
 export function useChangeUserPassword() {
   return useMutation({
     mutationFn: ({ id, newPass }: { id: string; newPass: string }) =>
-      usersApi.changePassword(id, newPass),
+      usersApi.resetPassword(id, newPass),
     onSuccess: () => {
       notifyApiFeedback('Đổi mật khẩu thành công', 'info');
     },

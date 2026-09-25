@@ -16,6 +16,7 @@ import {
   Tooltip,
   Switch,
   FormControlLabel,
+  Alert,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
@@ -42,7 +43,6 @@ export const UserListPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<UserRole | ''>('');
 
-  // Create User Dialog
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [createEmail, setCreateEmail] = useState('');
   const [createPassword, setCreatePassword] = useState('');
@@ -50,7 +50,6 @@ export const UserListPage: React.FC = () => {
   const [createRole, setCreateRole] = useState<UserRole>(UserRole.USER);
   const [createPositionId, setCreatePositionId] = useState<number>();
 
-  // Edit User Dialog
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editRole, setEditRole] = useState<UserRole>(UserRole.USER);
@@ -73,7 +72,7 @@ export const UserListPage: React.FC = () => {
     role: roleFilter || undefined,
   });
 
-  const { data: positionsList } = useActivePositions();
+  // const { data: positionsList } = useActivePositions();
   const createMutation = useCreateUser();
   const updateMutation = useUpdateUser();
   const changePasswordMutation = useChangeUserPassword();
@@ -107,7 +106,7 @@ export const UserListPage: React.FC = () => {
       password: createPassword,
       fullName: createFullName,
       role: createRole,
-      positionId:  Number(createPositionId) ,
+      positionId: createPositionId || undefined,
       isActive: true,
     });
   };
@@ -122,6 +121,22 @@ export const UserListPage: React.FC = () => {
         isActive: !u.isActive,
       },
     });
+  };
+
+  const handleChangePassword = async () => {
+    if (!targetUserId || newPassword.length < 6) return;
+
+    try {
+      await changePasswordMutation.mutateAsync({
+        id: targetUserId,
+        newPass: newPassword,
+      });
+      setPasswordDialogOpen(false);
+      setTargetUserId(null);
+      setNewPassword('');
+    } catch {
+      // The backend error is displayed in the dialog.
+    }
   };
 
   const columns: Column<User>[] = [
@@ -318,6 +333,12 @@ export const UserListPage: React.FC = () => {
           Tạo tài khoản người dùng mới
         </DialogTitle>
         <DialogContent className="space-y-4 pt-2">
+          {changePasswordMutation.isError && (
+            <Alert severity="error">
+              {(changePasswordMutation.error as any)?.response?.data?.message ||
+                'Không thể đổi mật khẩu. Vui lòng kiểm tra lại và thử lại.'}
+            </Alert>
+          )}
           <TextField
             label="Họ và tên *"
             fullWidth
@@ -364,7 +385,7 @@ export const UserListPage: React.FC = () => {
               </Select>
             </FormControl>
 
-            <FormControl fullWidth size="small">
+            {/* <FormControl fullWidth size="small">
               <InputLabel id="create-pos-label">Chức vụ</InputLabel>
               <Select
                 labelId="create-pos-label"
@@ -381,7 +402,7 @@ export const UserListPage: React.FC = () => {
                   </MenuItem>
                 ))}
               </Select>
-            </FormControl>
+            </FormControl> */}
           </div>
         </DialogContent>
         <DialogActions className="px-6 pb-4">
@@ -434,7 +455,7 @@ export const UserListPage: React.FC = () => {
               </Select>
             </FormControl>
 
-            <FormControl fullWidth size="small">
+            {/* <FormControl fullWidth size="small">
               <InputLabel id="edit-pos-label">Chức vụ</InputLabel>
               <Select
                 labelId="edit-pos-label"
@@ -451,7 +472,7 @@ export const UserListPage: React.FC = () => {
                   </MenuItem>
                 ))}
               </Select>
-            </FormControl>
+            </FormControl> */}
           </div>
 
           <FormControlLabel
@@ -505,11 +526,7 @@ export const UserListPage: React.FC = () => {
             Hủy
           </Button>
           <Button
-            onClick={() => {
-              if (targetUserId && newPassword.length >= 6) {
-                changePasswordMutation.mutate({ id: targetUserId, newPass: newPassword });
-              }
-            }}
+            onClick={handleChangePassword}
             variant="contained"
             disabled={newPassword.length < 6 || changePasswordMutation.isPending}
           >
