@@ -17,6 +17,7 @@ export interface Patient {
 
 export interface PatientQueryParams extends BaseQueryParams {
   gender?: Gender;
+  fullname?: string;
 }
 
 export interface CreatePatientDto {

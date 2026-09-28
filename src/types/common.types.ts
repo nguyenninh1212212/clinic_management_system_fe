@@ -27,5 +27,4 @@ export interface ApiError {
 export interface BaseQueryParams {
   page?: number;
   limit?: number;
-  search?: string;
 }

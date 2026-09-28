@@ -173,12 +173,14 @@ export const MaterialIconPicker: React.FC<MaterialIconPickerProps> = ({ value, o
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             autoFocus
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon fontSize="small" />
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              },
             }}
           />
         </Box>

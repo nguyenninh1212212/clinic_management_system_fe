@@ -15,34 +15,29 @@ import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import { PageHeader } from '@/components/common/PageHeader';
-import { DataTable, Column } from '@/components/common/DataTable';
+import { DataTable, Column, ColumnFilterValue } from '@/components/common/DataTable';
 import { SearchInput } from '@/components/common/SearchInput';
 import { StatusChip } from '@/components/common/StatusChip';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { usePatients, useDeletePatient } from '../hooks/usePatients';
 import { usePermission } from '@/hooks/usePermission';
-import { Patient, Gender } from '@/types';
+import { Patient, Gender, PatientQueryParams } from '@/types';
 import dayjs from 'dayjs';
+
 
 export const PatientListPage: React.FC = () => {
   const navigate = useNavigate();
   const { canCreateOrEditPatient, canDeletePatient } = usePermission();
-
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
-  const [search, setSearch] = useState('');
-  const [gender, setGender] = useState<Gender | ''>('');
+  const [filter, setFilter] = useState<PatientQueryParams>({
+    page: 1,
+    limit: 10,
+  });
 
   // Delete dialog state
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteName, setDeleteName] = useState<string>('');
 
-  const { data, isLoading } = usePatients({
-    page,
-    limit,
-    search: search || undefined,
-    gender: gender || undefined,
-  });
+  const { data, isLoading } = usePatients(filter);
 
   const deleteMutation = useDeletePatient();
 
@@ -63,13 +58,23 @@ export const PatientListPage: React.FC = () => {
       minWidth: 60,
       render: (_row, idx) => (
         <span className="text-slate-400 tabular-nums">
-          {(page - 1) * limit + idx + 1}
+          {(filter.page - 1) * filter.limit + idx + 1}
         </span>
       ),
     },
     {
       id: 'fullName',
       label: 'Họ và tên',
+      filterType: 'input',
+      filterPlaceholder: 'Tìm họ tên, SĐT, CCCD...',
+      filteredValue: filter.fullname,
+      onChange: (val) => {
+        setFilter((prev) => ({
+          ...prev,
+          search: val || undefined,
+          page: 1,
+        }));
+      },
       minWidth: 180,
       render: (row) => (
         <div>
@@ -88,6 +93,20 @@ export const PatientListPage: React.FC = () => {
     {
       id: 'gender',
       label: 'Giới tính',
+      filterType: 'select',
+      filters: [
+        { text: 'Nam', value: Gender.MALE },
+        { text: 'Nữ', value: Gender.FEMALE },
+        { text: 'Khác', value: Gender.OTHER },
+      ],
+      filteredValue: filter.gender,
+      onChange: (val) => {
+        setFilter((prev) => ({
+          ...prev,
+          gender: (val as Gender) || undefined,
+          page: 1,
+        }));
+      },
       minWidth: 100,
       render: (row) => <StatusChip status={row.gender} type="gender" />,
     },
@@ -201,25 +220,18 @@ export const PatientListPage: React.FC = () => {
       {/* Filter toolbar */}
       <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
-          <SearchInput
-            placeholder="Tìm theo họ tên, số điện thoại hoặc CCCD..."
-            value={search}
-            onChange={(val) => {
-              setSearch(val);
-              setPage(1);
-            }}
-            className="sm:w-80"
-          />
-
           <FormControl size="small" className="sm:w-44">
             <InputLabel id="gender-filter-label">Giới tính</InputLabel>
             <Select
               labelId="gender-filter-label"
-              value={gender}
+              value={filter.gender || ''}
               label="Giới tính"
               onChange={(e) => {
-                setGender(e.target.value as Gender | '');
-                setPage(1);
+                setFilter((prev) => ({
+                  ...prev,
+                  gender: (e.target.value as Gender) || undefined,
+                  page: 1,
+                }));
               }}
             >
               <MenuItem value="">Tất cả giới tính</MenuItem>
@@ -240,10 +252,9 @@ export const PatientListPage: React.FC = () => {
         rows={data?.data || []}
         loading={isLoading}
         pagination={data?.pagination}
-        onPageChange={(p) => setPage(p)}
+        onPageChange={(p) => setFilter((prev) => ({ ...prev, page: p }))}
         onLimitChange={(l) => {
-          setLimit(l);
-          setPage(1);
+          setFilter((prev) => ({ ...prev, limit: l, page: 1 }));
         }}
         emptyTitle="Không tìm thấy bệnh nhân"
         emptyDescription="Thử tìm kiếm với từ khóa khác hoặc thêm hồ sơ bệnh nhân mới."

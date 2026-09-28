@@ -5,7 +5,6 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
@@ -16,6 +15,7 @@ import { prescriptionsApi } from '@/api/endpoints/prescriptions.api';
 import { invoicesApi } from '@/api/endpoints/invoices.api';
 import { queryKeys } from '@/api/queryKeys';
 import { Examination, Prescription, Invoice, PharmacyPrescriptionStatus } from '@/types';
+import { CheckCircleOutlineRounded } from '@mui/icons-material';
 
 interface TabPanelProps { children: React.ReactNode; value: number; index: number; }
 const TabPanel = ({ children, value, index }: TabPanelProps) => (
@@ -39,7 +39,7 @@ const pharmacyStatusColor: Record<PharmacyPrescriptionStatus, 'default' | 'info'
   CANCELLED: 'error',
 };
 
-const money = (v?: number | string) => Number(v || 0).toLocaleString('vi-VN')} ₫";
+const money = (v?: number | string) => `${Number(v || 0).toLocaleString('vi-VN')} ₫`;
 
 const ExaminationSection: React.FC<{ examination: Examination | null | undefined; isLoading: boolean }> = ({ examination, isLoading }) => {
   if (isLoading) return <Skeleton variant="rounded" height={320} />;
@@ -59,12 +59,12 @@ const ExaminationSection: React.FC<{ examination: Examination | null | undefined
       <Box sx={{ bgcolor: 'primary.main', color: 'white', px: 4, py: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
         <LocalHospitalIcon sx={{ fontSize: 36 }} />
         <Box>
-          <Typography variant="h6" fontWeight={700} letterSpacing={1}>PHIẾU KHÁM BỆNH</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: 1, }} >PHIẾU KHÁM BỆNH</Typography>
           <Typography variant="caption" sx={{ opacity: 0.85 }}>Phòng khám Đa khoa Quốc tế Medi Clinic</Typography>
         </Box>
         <Box sx={{ ml: 'auto', textAlign: 'right' }}>
           <Typography variant="caption" sx={{ opacity: 0.75 }}>Mã phiếu</Typography>
-          <Typography variant="body2" fontFamily="monospace" fontWeight={700}>
+          <Typography variant="body2" sx={{ fontWeight: 700, fontFamily: "monospace" }}>
             #{(examination.id || '').slice(0, 8).toUpperCase()}
           </Typography>
         </Box>
@@ -81,8 +81,8 @@ const ExaminationSection: React.FC<{ examination: Examination | null | undefined
             { label: 'Ngày khám', value: examination.examinedAt ? dayjs(examination.examinedAt).format('DD/MM/YYYY HH:mm') : '—' },
           ].map((item) => (
             <Box key={item.label}>
-              <Typography variant="caption" color="text.secondary" display="block">{item.label}</Typography>
-              <Typography variant="body2" fontWeight={600}>{item.value}</Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{item.label}</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>{item.value}</Typography>
             </Box>
           ))}
         </Box>
@@ -92,11 +92,11 @@ const ExaminationSection: React.FC<{ examination: Examination | null | undefined
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" color="text.secondary" gutterBottom>Chẩn đoán xác định</Typography>
           <Paper elevation={0} sx={{ p: 2, bgcolor: 'primary.50', borderLeft: '4px solid', borderColor: 'primary.main', borderRadius: '0 8px 8px 0' }}>
-            <Typography variant="body1" fontWeight={700}>
+            <Typography variant="body1" sx={{ fontWeight: 700 }}>
               {examination.diagnosis || 'Chưa có chẩn đoán'}
             </Typography>
             {examination.icd10Code && (
-              <Chip label={} size="small" variant="outlined" color="primary" sx={{ mt: 1, fontFamily: 'monospace' }} />
+              <Chip label={"Mã ICD-10: " + examination.icd10Code} size="small" variant="outlined" color="primary" sx={{ mt: 1, fontFamily: 'monospace' }} />
             )}
           </Paper>
         </Box>
@@ -115,7 +115,7 @@ const ExaminationSection: React.FC<{ examination: Examination | null | undefined
             <EventAvailableIcon color="success" />
             <Box>
               <Typography variant="caption" color="success.dark">Hẹn ngày tái khám</Typography>
-              <Typography variant="body2" fontWeight={700} color="success.dark">
+              <Typography variant="body2" sx={{ fontWeight: 700 }} color="success.dark">
                 {dayjs(examination.followUpDate).format('DD/MM/YYYY')}
               </Typography>
             </Box>
@@ -127,11 +127,11 @@ const ExaminationSection: React.FC<{ examination: Examination | null | undefined
         <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
           <Box sx={{ textAlign: 'center' }}>
             <Typography variant="caption" color="text.secondary">Bác sĩ khám bệnh</Typography>
-            <Typography variant="body2" fontWeight={700} mt={0.5}>
+            <Typography variant="body2" sx={{ fontWeight: 700, mt: 0.5 }} >
               {doctor?.user?.fullName || 'BS. Chuyên khoa'}
             </Typography>
             {doctor?.licenseNumber && (
-              <Typography variant="caption" fontFamily="monospace" color="text.secondary">
+              <Typography variant="caption" sx={{ fontFamily: 'monospace' }} color="text.secondary">
                 CCHN: {doctor.licenseNumber}
               </Typography>
             )}
@@ -161,7 +161,7 @@ const PrescriptionSection: React.FC<{ prescription: Prescription | null | undefi
       <Box sx={{ bgcolor: 'success.main', color: 'white', px: 4, py: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
         <MedicalServicesIcon sx={{ fontSize: 36 }} />
         <Box>
-          <Typography variant="h6" fontWeight={700} letterSpacing={1}>ĐƠN THUỐC ĐIỀU TRỊ</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: 1 }} >ĐƠN THUỐC ĐIỀU TRỊ</Typography>
           <Typography variant="caption" sx={{ opacity: 0.85 }}>Dùng cho bệnh nhân điều trị ngoại trú</Typography>
         </Box>
         <Box sx={{ ml: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
@@ -169,7 +169,7 @@ const PrescriptionSection: React.FC<{ prescription: Prescription | null | undefi
             label={pharmacyStatusLabel[status] || status}
             color={pharmacyStatusColor[status] || 'default'}
             size="small"
-            icon={status === 'COMPLETED' ? <CheckCircleOutlineIcon /> : <HourglassBottomIcon />}
+            icon={status === 'COMPLETED' ? <CheckCircleOutlineRounded /> : <HourglassBottomIcon />}
             sx={{ fontWeight: 700, color: 'white', bgcolor: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.4)' }}
           />
           <Typography variant="caption" sx={{ opacity: 0.75 }}>Ngày kê: {dayjs(prescription.issuedAt ?? prescription.createdAt).format('DD/MM/YYYY')}</Typography>
@@ -180,19 +180,19 @@ const PrescriptionSection: React.FC<{ prescription: Prescription | null | undefi
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)' }, gap: 2, mb: 3 }}>
           {[
             { label: 'Họ và tên', value: patient?.fullName || '—' },
-            { label: 'Giới tính / Tuổi', value: patient ?  : '—' },
+            { label: 'Giới tính', value: patient?.gender === 'MALE' ? 'Nam' : patient?.gender === 'FEMALE' ? 'Nữ' : patient?.gender || '—' },
             { label: 'Điện thoại', value: patient?.phone || '—' },
           ].map((item) => (
             <Box key={item.label}>
-              <Typography variant="caption" color="text.secondary" display="block">{item.label}</Typography>
-              <Typography variant="body2" fontWeight={600}>{item.value}</Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{item.label}</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>{item.value}</Typography>
             </Box>
           ))}
           {exam?.diagnosis && (
             <Box sx={{ gridColumn: '1 / -1' }}>
-              <Typography variant="caption" color="text.secondary" display="block">Chẩn đoán</Typography>
-              <Typography variant="body2" fontWeight={700}>
-                {exam.diagnosis} {exam.icd10Code && }
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>Chẩn đoán</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                {exam.diagnosis} {exam.icd10Code && `(${exam.icd10Code})`}
               </Typography>
             </Box>
           )}
@@ -215,18 +215,18 @@ const PrescriptionSection: React.FC<{ prescription: Prescription | null | undefi
                 <TableRow key={item.id} sx={{ '&:last-child td': { border: 0 } }}>
                   <TableCell align="center" sx={{ color: 'text.disabled', fontFamily: 'monospace' }}>{idx + 1}</TableCell>
                   <TableCell>
-                    <Typography variant="body2" fontWeight={700}>{item.medicine?.name || '—'}</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700 }}>{item.medicine?.name || '—'}</Typography>
                     {item.medicine?.genericName && (
                       <Typography variant="caption" color="text.secondary">Hoạt chất: {item.medicine.genericName}</Typography>
                     )}
                   </TableCell>
                   <TableCell align="center">
-                    <Typography variant="body2" fontWeight={700}>{item.quantity} {item.medicine?.unit || 'viên'}</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700 }}>{item.quantity} {item.medicine?.unit || 'viên'}</Typography>
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">{item.dosage} · {item.frequency}</Typography>
-                    {item.duration && <Typography variant="caption" color="text.secondary">Dùng: {item.duration}</Typography>}
-                    {item.note && <Typography variant="caption" color="text.secondary" display="block" sx={{ fontStyle: 'italic' }}>Lưu ý: {item.note}</Typography>}
+                    {item.duration && <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>Dùng: {item.duration}</Typography>}
+                    {item.note && <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontStyle: 'italic' }}>Lưu ý: {item.note}</Typography>}
                   </TableCell>
                 </TableRow>
               ))}
@@ -272,14 +272,14 @@ const InvoiceSection: React.FC<{ invoices: Invoice[] | undefined; isLoading: boo
           <Box sx={{ bgcolor: 'warning.main', color: 'white', px: 4, py: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
             <ReceiptLongIcon sx={{ fontSize: 36 }} />
             <Box>
-              <Typography variant="h6" fontWeight={700} letterSpacing={1}>HÓA ĐƠN THANH TOÁN</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: 1 }} >HÓA ĐƠN THANH TOÁN</Typography>
               <Typography variant="caption" sx={{ opacity: 0.85 }}>
-                {invoice.invoiceNumber || }
+                {invoice.invoiceNumber || `Hóa đơn #${invoice.id}`}
               </Typography>
             </Box>
             <Box sx={{ ml: 'auto', textAlign: 'right' }}>
               <Typography variant="caption" sx={{ opacity: 0.75 }}>Ngày tạo</Typography>
-              <Typography variant="body2" fontWeight={700}>
+              <Typography variant="body2" sx={{ fontWeight: 700 }}>
                 {dayjs(invoice.createdAt).format('DD/MM/YYYY HH:mm')}
               </Typography>
             </Box>
@@ -295,8 +295,8 @@ const InvoiceSection: React.FC<{ invoices: Invoice[] | undefined; isLoading: boo
                 { label: 'Mã số thuế', value: invoice.buyerTaxCode || '—' },
               ].map((item) => (
                 <Box key={item.label}>
-                  <Typography variant="caption" color="text.secondary" display="block">{item.label}</Typography>
-                  <Typography variant="body2" fontWeight={600}>{item.value}</Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{item.label}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{item.value}</Typography>
                 </Box>
               ))}
             </Box>
@@ -326,7 +326,7 @@ const InvoiceSection: React.FC<{ invoices: Invoice[] | undefined; isLoading: boo
                         />
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" fontWeight={600}>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }} color="text.primary">
                           {item.medicine?.name || item.description || '—'}
                         </Typography>
                       </TableCell>
@@ -344,7 +344,7 @@ const InvoiceSection: React.FC<{ invoices: Invoice[] | undefined; isLoading: boo
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
               <Paper elevation={0} sx={{ p: 2.5, bgcolor: 'warning.50', border: '2px solid', borderColor: 'warning.main', borderRadius: 2, minWidth: 220, textAlign: 'right' }}>
                 <Typography variant="caption" color="text.secondary">Tổng thanh toán</Typography>
-                <Typography variant="h5" fontWeight={800} color="warning.dark" sx={{ fontFamily: 'monospace' }}>
+                <Typography variant="h5" sx={{ fontWeight: 800, fontFamily: 'monospace', color: 'warning.dark' }}>
                   {money(invoice.totalAmount ?? invoice.items?.reduce((s, it) => s + Number(it.quantity) * Number(it.unitPrice), 0))}
                 </Typography>
               </Paper>
@@ -406,7 +406,7 @@ export const MyHealthRecordsPage: React.FC = () => {
           Quay lại
         </Button>
         <Box>
-          <Typography variant="h5" fontWeight={800} color="text.primary">
+          <Typography variant="h5" sx={{ fontWeight: 800 }} color="text.primary">
             Hồ sơ sức khỏe
           </Typography>
           <Typography variant="body2" color="text.secondary">
