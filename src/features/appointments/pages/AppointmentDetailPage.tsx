@@ -45,8 +45,9 @@ import dayjs from 'dayjs';
 export const AppointmentDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  if(!id) return ;
 
-  const { data: appointment, isLoading, isError } = useAppointment(id || '');
+  const { data: appointment, isLoading, isError } = useAppointment(id);
   const statusMutation = useUpdateAppointmentStatus();
   const triageMutation = useUpsertTriage(id || '');
   const [triageDialogOpen, setTriageDialogOpen] = useState(false);
@@ -194,7 +195,6 @@ export const AppointmentDetailPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Quick Next Status Actions */}
             {validNextStatuses.length > 0 && (
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs text-slate-500">Chuyển tiếp sang:</span>

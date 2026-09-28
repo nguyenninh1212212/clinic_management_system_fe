@@ -1,26 +1,23 @@
 // src/features/dashboard/pages/DashboardPage.tsx
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, Typography, Button, Skeleton } from "@mui/material";
+import PeopleOutlineIcon from "@mui/icons-material/PeopleOutlined";
+import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
+import HourglassEmptyOutlinedIcon from "@mui/icons-material/HourglassEmptyOutlined";
+import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
+import AddIcon from "@mui/icons-material/Add";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import { PageHeader } from "@/components/common/PageHeader";
+import { DataTable, Column } from "@/components/common/DataTable";
+import { StatusChip } from "@/components/common/StatusChip";
+import { Appointment, Gender } from "@/types";
+import { usePermission } from "@/hooks/usePermission";
+import dayjs from "dayjs";
 import {
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  Skeleton,
-} from '@mui/material';
-import PeopleOutlineIcon from '@mui/icons-material/PeopleOutlined';
-import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
-import HourglassEmptyOutlinedIcon from '@mui/icons-material/HourglassEmptyOutlined';
-import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
-import AddIcon from '@mui/icons-material/Add';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import { PageHeader } from '@/components/common/PageHeader';
-import { DataTable, Column } from '@/components/common/DataTable';
-import { StatusChip } from '@/components/common/StatusChip';
-import { Appointment } from '@/types';
-import { usePermission } from '@/hooks/usePermission';
-import dayjs from 'dayjs';
-import { useDashboardStats, useDashboardRecentAppointments } from '../hooks/useDashboard';
+  useDashboardStats,
+  useDashboardRecentAppointments,
+} from "../hooks/useDashboard";
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -37,53 +34,68 @@ export const DashboardPage: React.FC = () => {
     loadingLowStock,
   } = useDashboardStats();
 
-  const { recentAppointments, loadingRecent } = useDashboardRecentAppointments();
+  const { recentAppointments, loadingRecent } =
+    useDashboardRecentAppointments();
 
   const columns: Column<Appointment>[] = [
     {
-      id: 'patient',
-      label: 'Bệnh nhân',
+      id: "patient",
+      label: "Bệnh nhân",
+      filters: [
+        { text: "Nam", value: Gender.MALE },
+        { text: "Nữ", value: Gender.FEMALE },
+        { text: "Khác", value: Gender.OTHER },
+      ],
       render: (row) => (
         <div>
-          <div className="font-semibold text-slate-800">{row.patient?.fullName || '—'}</div>
-          <div className="text-xs text-slate-400 tabular-nums">{row.patient?.phone || ''}</div>
+          <div className="font-semibold text-slate-800">
+            {row.patient?.fullName || "—"}
+          </div>
+          <div className="text-xs text-slate-400 tabular-nums">
+            {row.patient?.phone || ""}
+          </div>
         </div>
       ),
     },
     {
-      id: 'doctor',
-      label: 'Bác sĩ phụ trách',
+      id: "doctor",
+      label: "Bác sĩ phụ trách",
       render: (row) => (
         <span className="text-slate-700">
-          {row.doctor?.user?.fullName || (row.doctorId ? 'Bác sĩ chuyên khoa' : 'Chưa chỉ định')}
+          {row.doctor?.user?.fullName ||
+            (row.doctorId ? "Bác sĩ chuyên khoa" : "Chưa chỉ định")}
         </span>
       ),
     },
     {
-      id: 'appointmentDate',
-      label: 'Thời gian hẹn',
+      id: "appointmentDate",
+      label: "Thời gian hẹn",
       render: (row) => (
         <span className="tabular-nums text-slate-600 font-medium">
-          {row.appointmentDate ? dayjs(row.appointmentDate).format('HH:mm DD/MM/YYYY') : '—'}
+          {row.appointmentDate
+            ? dayjs(row.appointmentDate).format("HH:mm DD/MM/YYYY")
+            : "—"}
         </span>
       ),
     },
     {
-      id: 'status',
-      label: 'Trạng thái',
+      id: "status",
+      label: "Trạng thái",
       render: (row) => <StatusChip status={row.status} type="appointment" />,
     },
     {
-      id: 'notes',
-      label: 'Ghi chú',
+      id: "notes",
+      label: "Ghi chú",
       render: (row) => (
-        <span className="text-xs text-slate-500 line-clamp-1 max-w-xs">{row.notes || '—'}</span>
+        <span className="text-xs text-slate-500 line-clamp-1 max-w-xs">
+          {row.notes || "—"}
+        </span>
       ),
     },
     {
-      id: 'actions',
-      label: 'Thao tác',
-      align: 'right',
+      id: "actions",
+      label: "Thao tác",
+      align: "right",
       render: (row) => (
         <Button
           size="small"
@@ -101,14 +113,14 @@ export const DashboardPage: React.FC = () => {
     <div className="space-y-6">
       <PageHeader
         title="Tổng quan phòng khám"
-        subtitle={`Hôm nay: ${dayjs().format('dddd, [ngày] DD/MM/YYYY')} · Báo cáo tiếp nhận & hoạt động lâm sàng`}
+        subtitle={`Hôm nay: ${dayjs().format("dddd, [ngày] DD/MM/YYYY")} · Báo cáo tiếp nhận & hoạt động lâm sàng`}
         action={
           <div className="flex items-center gap-2">
             {canCreateOrEditPatient && (
               <Button
                 variant="outlined"
                 startIcon={<AddIcon />}
-                onClick={() => navigate('/patients/new')}
+                onClick={() => navigate("/patients/new")}
                 size="small"
               >
                 Tiếp nhận bệnh nhân
@@ -117,7 +129,7 @@ export const DashboardPage: React.FC = () => {
             <Button
               variant="contained"
               startIcon={<CalendarMonthIcon />}
-              onClick={() => navigate('/appointments/new')}
+              onClick={() => navigate("/appointments/new")}
               size="small"
             >
               Đặt lịch hẹn
@@ -132,13 +144,22 @@ export const DashboardPage: React.FC = () => {
         <Card className="hover:border-sky-300 transition-colors">
           <CardContent className="p-4 sm:p-5 flex items-center justify-between">
             <div>
-              <Typography variant="caption" className="text-slate-500 font-medium tracking-wide">
+              <Typography
+                variant="caption"
+                className="text-slate-500 font-medium tracking-wide"
+              >
                 TỔNG SỐ BỆNH NHÂN
               </Typography>
               <div className="text-2xl font-bold text-slate-900 mt-1 tabular-nums">
-                {loadingPatients ? <Skeleton width={60} /> : totalPatients.toLocaleString('vi-VN')}
+                {loadingPatients ? (
+                  <Skeleton width={60} />
+                ) : (
+                  totalPatients.toLocaleString("vi-VN")
+                )}
               </div>
-              <div className="text-xs text-slate-400 mt-1">Đã lưu trong hệ thống</div>
+              <div className="text-xs text-slate-400 mt-1">
+                Đã lưu trong hệ thống
+              </div>
             </div>
             <div className="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
               <PeopleOutlineIcon fontSize="medium" />
@@ -150,14 +171,21 @@ export const DashboardPage: React.FC = () => {
         <Card className="hover:border-emerald-300 transition-colors">
           <CardContent className="p-4 sm:p-5 flex items-center justify-between">
             <div>
-              <Typography variant="caption" className="text-slate-500 font-medium tracking-wide">
+              <Typography
+                variant="caption"
+                className="text-slate-500 font-medium tracking-wide"
+              >
                 LỊCH HẸN HÔM NAY
               </Typography>
               <div className="text-2xl font-bold text-emerald-700 mt-1 tabular-nums">
-                {loadingTodayAppts ? <Skeleton width={60} /> : totalToday.toLocaleString('vi-VN')}
+                {loadingTodayAppts ? (
+                  <Skeleton width={60} />
+                ) : (
+                  totalToday.toLocaleString("vi-VN")
+                )}
               </div>
               <div className="text-xs text-slate-400 mt-1">
-                Lịch đăng ký ngày {dayjs().format('DD/MM')}
+                Lịch đăng ký ngày {dayjs().format("DD/MM")}
               </div>
             </div>
             <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
@@ -170,13 +198,22 @@ export const DashboardPage: React.FC = () => {
         <Card className="hover:border-amber-300 transition-colors">
           <CardContent className="p-4 sm:p-5 flex items-center justify-between">
             <div>
-              <Typography variant="caption" className="text-slate-500 font-medium tracking-wide">
+              <Typography
+                variant="caption"
+                className="text-slate-500 font-medium tracking-wide"
+              >
                 CHỜ TIẾP NHẬN / PHÂN LOẠI
               </Typography>
               <div className="text-2xl font-bold text-amber-700 mt-1 tabular-nums">
-                {loadingPending ? <Skeleton width={60} /> : totalPending.toLocaleString('vi-VN')}
+                {loadingPending ? (
+                  <Skeleton width={60} />
+                ) : (
+                  totalPending.toLocaleString("vi-VN")
+                )}
               </div>
-              <div className="text-xs text-slate-400 mt-1">Cần điều dưỡng tiếp đón</div>
+              <div className="text-xs text-slate-400 mt-1">
+                Cần điều dưỡng tiếp đón
+              </div>
             </div>
             <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
               <HourglassEmptyOutlinedIcon fontSize="medium" />
@@ -188,13 +225,22 @@ export const DashboardPage: React.FC = () => {
         <Card className="hover:border-rose-300 transition-colors">
           <CardContent className="p-4 sm:p-5 flex items-center justify-between">
             <div>
-              <Typography variant="caption" className="text-slate-500 font-medium tracking-wide">
+              <Typography
+                variant="caption"
+                className="text-slate-500 font-medium tracking-wide"
+              >
                 DƯỢC SẮP HẾT / CẢNH BÁO
               </Typography>
               <div className="text-2xl font-bold text-rose-700 mt-1 tabular-nums">
-                {loadingLowStock ? <Skeleton width={60} /> : totalLowStock.toLocaleString('vi-VN')}
+                {loadingLowStock ? (
+                  <Skeleton width={60} />
+                ) : (
+                  totalLowStock.toLocaleString("vi-VN")
+                )}
               </div>
-              <div className="text-xs text-slate-400 mt-1">Lô dược dưới mức tối thiểu</div>
+              <div className="text-xs text-slate-400 mt-1">
+                Lô dược dưới mức tối thiểu
+              </div>
             </div>
             <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
               <WarningAmberOutlinedIcon fontSize="medium" />
@@ -207,7 +253,10 @@ export const DashboardPage: React.FC = () => {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Typography variant="h6" className="text-slate-800 font-bold text-base">
+            <Typography
+              variant="h6"
+              className="text-slate-800 font-bold text-base"
+            >
               Lịch khám gần đây
             </Typography>
             <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">
@@ -217,7 +266,7 @@ export const DashboardPage: React.FC = () => {
           <Button
             size="small"
             variant="text"
-            onClick={() => navigate('/appointments')}
+            onClick={() => navigate("/appointments")}
             className="text-xs text-sky-700 font-semibold"
           >
             Xem tất cả lịch hẹn →
@@ -231,7 +280,7 @@ export const DashboardPage: React.FC = () => {
           emptyTitle="Chưa có lịch hẹn nào"
           emptyDescription="Tạo cuộc hẹn mới cho bệnh nhân hoặc kiểm tra bộ lọc."
           emptyActionText="Tạo lịch hẹn đầu tiên"
-          onEmptyAction={() => navigate('/appointments/new')}
+          onEmptyAction={() => navigate("/appointments/new")}
         />
       </div>
     </div>

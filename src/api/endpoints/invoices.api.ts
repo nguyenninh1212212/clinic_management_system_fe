@@ -12,7 +12,7 @@ export const invoicesApi = {
   findAll: (params?: InvoiceQueryParams): Promise<PaginatedResponse<Invoice>> =>
     api.get('/invoices', { params }).then((response) => response.data),
 
-  findById: (id: string): Promise<ApiResponse<Invoice>> =>
+  findById: (id: string): Promise<Invoice> =>
     api.get(`/invoices/${id}`).then((response) => response.data),
 
   create: (dto: CreateInvoiceDto): Promise<ApiResponse<Invoice>> =>
