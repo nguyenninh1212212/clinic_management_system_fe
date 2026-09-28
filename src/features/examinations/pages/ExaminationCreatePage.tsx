@@ -83,12 +83,10 @@ export const ExaminationCreatePage: React.FC = () => {
         treatmentPlan: values.treatmentPlan || undefined,
         followUpDate: values.followUpDate ? new Date(values.followUpDate).toISOString() : undefined,
       });
-      navigate(`/examinations/${created.data.id}`);
+      navigate(`/examinations/${created.id}`);
     } catch {
-      // Handled by interceptor
     }
   };
-
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <PageHeader
@@ -132,12 +130,7 @@ export const ExaminationCreatePage: React.FC = () => {
 
       <Card>
         <CardContent className="p-6 sm:p-8">
-          {createMutation.isError && (
-            <Alert severity="error" className="mb-6">
-              {(createMutation.error as any)?.response?.data?.message ||
-                'Có lỗi xảy ra khi tạo phiếu khám. Mỗi cuộc hẹn chỉ được liên kết 1 phiếu khám.'}
-            </Alert>
-          )}
+        
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

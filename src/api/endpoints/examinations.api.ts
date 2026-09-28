@@ -16,7 +16,7 @@ export const examinationsApi = {
   findById: (id: string): Promise<Examination> =>
     api.get(`/examinations/${id}`).then((r) => r.data),
 
-  create: (dto: CreateExaminationDto): Promise<ApiResponse<Examination>> =>
+  create: (dto: CreateExaminationDto): Promise<Examination> =>
     api.post('/examinations', dto).then((r) => r.data),
 
   update: (id: string, dto: UpdateExaminationDto): Promise<ApiResponse<Examination>> =>

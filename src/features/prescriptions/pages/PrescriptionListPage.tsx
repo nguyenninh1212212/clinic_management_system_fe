@@ -90,6 +90,7 @@ export const PrescriptionListPage: React.FC = () => {
 
   const { data: examsData } = useExaminations({
     limit: 50,
+    isExist:false
   });
 
   const { data: medicinesData } = useMedicinesDropdown(100);
@@ -432,7 +433,6 @@ export const PrescriptionListPage: React.FC = () => {
         onEmptyAction={() => setCreateDialogOpen(true)}
       />
 
-      {/* Create Prescription Dialog */}
       <Dialog
         open={createDialogOpen}
         onClose={() => setCreateDialogOpen(false)}
@@ -463,7 +463,6 @@ export const PrescriptionListPage: React.FC = () => {
               </Alert>
             )}
 
-            {/* Examination */}
             <FormControl fullWidth size="small">
               <InputLabel id="exam-select-label">
                 Phiếu khám bệnh liên kết *

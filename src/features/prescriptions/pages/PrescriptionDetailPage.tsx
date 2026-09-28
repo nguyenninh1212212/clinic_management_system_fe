@@ -19,10 +19,12 @@ import dayjs from "dayjs";
 export const PrescriptionDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const printRef = useRef<HTMLDivElement>(null);
+  const { data: prescription, isLoading, isError } = usePrescription(id ?? "");
+
   if (!id) {
     return <Navigate to="/examinations" replace />;
   }
-  const { data: prescription, isLoading, isError } = usePrescription(id);
 
   if (isLoading) {
     return (
@@ -44,7 +46,6 @@ export const PrescriptionDetailPage: React.FC = () => {
       </div>
     );
   }
-  const printRef = useRef<HTMLDivElement>(null);
   const patient = prescription.examination?.appointment?.patient;
   const doctor = prescription.examination?.doctor;
   const exam = prescription.examination;

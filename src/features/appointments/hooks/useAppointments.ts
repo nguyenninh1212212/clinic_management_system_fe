@@ -64,8 +64,8 @@ export function useUpdateAppointmentStatus() {
       status: AppointmentStatus;
       notes?: string;
     }) => appointmentsApi.updateStatus(id, { status, notes }),
-    onSuccess: (updated: ApiResponse<Appointment>) => {
-      queryClient.setQueryData(queryKeys.appointments.detail(updated.data.id), updated);
+    onSuccess: (updated: Appointment) => {
+      queryClient.setQueryData(queryKeys.appointments.detail(updated.id), updated);
       queryClient.invalidateQueries({ queryKey: queryKeys.appointments.lists() });
       notifyApiFeedback('Cập nhật trạng thái cuộc hẹn thành công', 'info');
     },

@@ -28,6 +28,7 @@ export interface Examination {
 
 export interface ExaminationQueryParams extends BaseQueryParams {
   doctorId?: string;
+  isExist?:boolean
 }
 
 export interface CreateExaminationDto {
