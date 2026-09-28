@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import {
   Alert,
+  Autocomplete,
   Button,
   Card,
   CardContent,
@@ -93,7 +94,7 @@ export const AppointmentBookingForm: React.FC = () => {
         Array.isArray(message)
           ? message.join(", ")
           : message ||
-              "Không thể đặt lịch. Vui lòng kiểm tra lại ca làm và khung giờ.",
+          "Không thể đặt lịch. Vui lòng kiểm tra lại ca làm và khung giờ.",
       );
     }
   };
@@ -120,26 +121,31 @@ export const AppointmentBookingForm: React.FC = () => {
             {validationError && (
               <Alert severity="error">{validationError}</Alert>
             )}
-            <FormControl fullWidth size="small" error={!patientId}>
-              <InputLabel id="booking-patient">Bệnh nhân *</InputLabel>
-              <Select
-                labelId="booking-patient"
-                label="Bệnh nhân *"
-                value={patientId}
-                onChange={(event) => setPatientId(event.target.value)}
-                disabled={loadingPatients}
-              >
-                <MenuItem value="">Chọn bệnh nhân</MenuItem>
-                {patientsData?.data?.map((patient) => (
-                  <MenuItem key={patient.id} value={patient.id}>
-                    {patient.fullName} · {patient.phone || "Không có SĐT"}
-                  </MenuItem>
-                ))}
-              </Select>
-              {!patientId && (
-                <FormHelperText>Vui lòng chọn bệnh nhân</FormHelperText>
+            <Autocomplete
+              fullWidth
+              size="small"
+              id="booking-patient"
+              options={patientsData?.data || []}
+              getOptionLabel={(option) =>
+                `${option.fullName} · ${option.phone || "Không có SĐT"}`
+              }
+              value={
+                patientsData?.data?.find((p) => p.id === patientId) || null
+              }
+              onChange={(_, newValue) => {
+                setPatientId(newValue ? newValue.id : "");
+              }}
+              disabled={loadingPatients}
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Bệnh nhân *"
+                  error={!patientId}
+                  helperText={!patientId ? "Vui lòng chọn bệnh nhân" : ""}
+                />
               )}
-            </FormControl>
+            />
             <FormControl fullWidth size="small" error={!doctorId}>
               <InputLabel id="booking-doctor">Bác sĩ *</InputLabel>
               <Select

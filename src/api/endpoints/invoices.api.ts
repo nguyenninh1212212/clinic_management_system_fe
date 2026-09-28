@@ -31,4 +31,11 @@ export const invoicesApi = {
       .post('/invoices/import', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
       .then((response) => response.data);
   },
+
+  /** GET /invoices?patientId=xxx — lọc hóa đơn theo bệnh nhân */
+  findByPatientId: (patientId: string): Promise<Invoice[]> =>
+    api.get('/invoices').then((r) => {
+      const invoices: Invoice[] = Array.isArray(r.data) ? r.data : (r.data?.data ?? []);
+      return invoices.filter((inv) => inv.patientId === patientId);
+    }),
 };

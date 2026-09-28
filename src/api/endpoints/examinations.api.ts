@@ -24,4 +24,9 @@ export const examinationsApi = {
 
   remove: (id: string): Promise<void> =>
     api.delete(`/examinations/${id}`).then((r) => r.data),
+
+  /** GET /examinations/:appointmentId/examination — lấy phiếu khám theo appointment ID */
+  findByAppointmentId: (appointmentId: string): Promise<Examination | null> =>
+    api.get(`/examinations/${appointmentId}/examination`).then((r) => r.data).catch(() => null),
 };
+// NOTE: Appended below
