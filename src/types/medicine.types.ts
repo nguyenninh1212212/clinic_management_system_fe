@@ -9,7 +9,7 @@ export interface Medicine {
   unit: string;
   category: MedicineCategory;
   description?: string;
-  minStockLevel?: number;
+  minstocklevel?: number;
   manufacturer?: string;
   registrationNumber?: string;
   totalStock?: number;

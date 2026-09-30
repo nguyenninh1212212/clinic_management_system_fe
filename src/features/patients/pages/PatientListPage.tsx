@@ -219,28 +219,6 @@ export const PatientListPage: React.FC = () => {
 
       {/* Filter toolbar */}
       <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
-          <FormControl size="small" className="sm:w-44">
-            <InputLabel id="gender-filter-label">Giới tính</InputLabel>
-            <Select
-              labelId="gender-filter-label"
-              value={filter.gender || ''}
-              label="Giới tính"
-              onChange={(e) => {
-                setFilter((prev) => ({
-                  ...prev,
-                  gender: (e.target.value as Gender) || undefined,
-                  page: 1,
-                }));
-              }}
-            >
-              <MenuItem value="">Tất cả giới tính</MenuItem>
-              <MenuItem value={Gender.MALE}>Nam</MenuItem>
-              <MenuItem value={Gender.FEMALE}>Nữ</MenuItem>
-              <MenuItem value={Gender.OTHER}>Khác</MenuItem>
-            </Select>
-          </FormControl>
-        </div>
 
         <div className="text-xs text-slate-500 text-right tabular-nums">
           Tổng số: <strong className="text-slate-800">{data?.pagination?.total || 0}</strong> bệnh nhân

@@ -90,7 +90,7 @@ export const MedicineListPage: React.FC = () => {
     setUnit(m.unit);
     setMedCategory(m.category);
     setDescription(m.description || '');
-    setMinStockLevel(m.minStockLevel || 100);
+    setMinStockLevel(m.minstocklevel || 100);
     setManufacturer(m.manufacturer || '');
     setRegistrationNumber(m.registrationNumber || '');
     setDialogOpen(true);
@@ -131,37 +131,37 @@ export const MedicineListPage: React.FC = () => {
       // Handled by interceptor
     }
   };
-const handleDownloadTemplate = () => {
-  const rows = [
-    [
-      'name',
-      'genericName',
-      'unit',
-      'category',
-      'description',
-      'minStockLevel',
-      'manufacturer',
-      'registrationNumber',
-    ],
-    [
-      'Paracetamol 500mg',
-      'Paracetamol',
-      'Viên',
-      'ANTIBIOTIC',
-      'Bảo quản nơi khô ráo',
-      100,
-      'DHG Pharma',
-      'VD-12345',
-    ],
-  ];
+  const handleDownloadTemplate = () => {
+    const rows = [
+      [
+        'name',
+        'genericName',
+        'unit',
+        'category',
+        'description',
+        'minStockLevel',
+        'manufacturer',
+        'registrationNumber',
+      ],
+      [
+        'Paracetamol 500mg',
+        'Paracetamol',
+        'Viên',
+        'ANTIBIOTIC',
+        'Bảo quản nơi khô ráo',
+        100,
+        'DHG Pharma',
+        'VD-12345',
+      ],
+    ];
 
-  const worksheet = XLSX.utils.aoa_to_sheet(rows);
-  const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.aoa_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
 
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Medicines');
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Medicines');
 
-  XLSX.writeFile(workbook, 'medicine_import_template.xlsx');
-};
+    XLSX.writeFile(workbook, 'medicine_import_template.xlsx');
+  };
 
   const handleImportExcel = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -219,22 +219,21 @@ const handleDownloadTemplate = () => {
       render: (row) => <span className="text-xs text-slate-700">{row.unit}</span>,
     },
     {
-      id: 'stock',
+      id: 'totalStock',
       label: 'Tổng tồn kho',
       minWidth: 130,
       render: (row) => (
         <div>
           <span
-            className={`text-sm font-bold tabular-nums ${
-              (row.totalStock || 0) <= (row.minStockLevel || 0)
-                ? 'text-rose-600'
-                : 'text-emerald-700'
-            }`}
+            className={`text-sm font-bold tabular-nums ${(row.totalStock || 0) <= (row.minstocklevel || 0)
+              ? 'text-rose-600'
+              : 'text-emerald-700'
+              }`}
           >
             {row.totalStock ?? 0} {row.unit}
           </span>
           <div className="text-[11px] text-slate-400 tabular-nums">
-            Mức sàn: {row.minStockLevel || 0}
+            Mức sàn: {row.minstocklevel || 0}
           </div>
         </div>
       ),

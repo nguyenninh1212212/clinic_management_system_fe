@@ -14,6 +14,7 @@ import MedicalServicesOutlinedIcon from '@mui/icons-material/MedicalServicesOutl
 import LocalHospitalOutlinedIcon from '@mui/icons-material/LocalHospitalOutlined';
 import MedicationOutlinedIcon from '@mui/icons-material/MedicationOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import UploadFileOutlinedIcon from '@mui/icons-material/UploadFileOutlined';
 import SwapHorizOutlinedIcon from '@mui/icons-material/SwapHorizOutlined';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined';
@@ -144,6 +145,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
           label: 'Tồn kho dược',
           path: '/inventory',
           icon: <Inventory2OutlinedIcon fontSize="small" />,
+          visible: true,
+        },
+        {
+          label: 'Nhập dữ liệu kho',
+          path: '/inventory/import',
+          icon: <UploadFileOutlinedIcon fontSize="small" />,
           visible: true,
         },
         {
