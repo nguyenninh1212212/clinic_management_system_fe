@@ -3,11 +3,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/api/queryKeys';
 import { notificationsApi } from '@/api/endpoints/notifications.api';
 import { notifyApiFeedback } from '@/api/axios';
+import { NotificationQueryParams } from '@/types';
 
-export function useNotifications(params: { page: number; limit: number }) {
+export function useNotifications(params: NotificationQueryParams & { page: number; limit: number }) {
   return useQuery({
-    queryKey: queryKeys.notifications.list({ page: params.page, limit: params.limit }),
-    queryFn: () => notificationsApi.findAll({ page: params.page, limit: params.limit }),
+    queryKey: queryKeys.notifications.list(params),
+    queryFn: () => notificationsApi.findAll(params),
     staleTime: 10_000,
   });
 }

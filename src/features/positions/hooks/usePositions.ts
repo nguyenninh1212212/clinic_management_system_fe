@@ -3,30 +3,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/api/queryKeys';
 import { positionsApi } from '@/api/endpoints/positions.api';
 import { notifyApiFeedback } from '@/api/axios';
-import { CreatePositionDto, UpdatePositionDto, PositionLevel } from '@/types';
+import { CreatePositionDto, UpdatePositionDto, PositionQueryParams } from '@/types';
 
-interface UsePositionListParams {
+interface UsePositionListParams extends PositionQueryParams {
   page: number;
   limit: number;
-  search?: string;
-  level?: PositionLevel;
 }
 
 export function usePositionList(params: UsePositionListParams) {
   return useQuery({
-    queryKey: queryKeys.positions.list({
-      page: params.page,
-      limit: params.limit,
-      search: params.search || undefined,
-      level: params.level || undefined,
-    }),
-    queryFn: () =>
-      positionsApi.findAll({
-        page: params.page,
-        limit: params.limit,
-        search: params.search || undefined,
-        level: params.level || undefined,
-      }),
+    queryKey: queryKeys.positions.list(params),
+    queryFn: () => positionsApi.findAll(params),
     staleTime: 60_000,
   });
 }

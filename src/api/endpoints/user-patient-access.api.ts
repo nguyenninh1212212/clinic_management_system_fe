@@ -1,12 +1,12 @@
-import { UserPatientAccess, GrantAccessDto, UpdateAccessDto, User } from '@/types';
+import { UserPatientAccess, GrantAccessDto, UpdateAccessDto, User, MyPatientsQueryParams } from '@/types';
 import { api } from '../axios';
 
 export const userPatientAccessApi = {
   /**
    * Get list of patients the current user has access to
    */
-  getMyPatients: async (): Promise<UserPatientAccess[]> => {
-    const response = await api.get('/user-patient-access/my-patients');
+  getMyPatients: async (params?: MyPatientsQueryParams): Promise<UserPatientAccess[]> => {
+    const response = await api.get('/user-patient-access/my-patients', { params });
     return response.data;
   },
 
@@ -21,8 +21,8 @@ export const userPatientAccessApi = {
   /**
    * Get list of users who have access to a specific patient
    */
-  getAccessors: async (patientId: string): Promise<User[]> => {
-    const response = await api.get(`/user-patient-access/patient/${patientId}/accessors`);
+  getAccessors: async (patientId: string, params?: MyPatientsQueryParams): Promise<User[]> => {
+    const response = await api.get(`/user-patient-access/patient/${patientId}/accessors`, { params });
     return response.data;
   },
 

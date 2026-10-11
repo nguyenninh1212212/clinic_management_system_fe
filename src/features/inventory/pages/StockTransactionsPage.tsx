@@ -1,26 +1,22 @@
 // src/features/inventory/pages/StockTransactionsPage.tsx
 import React, { useState } from 'react';
-import {
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-} from '@mui/material';
 import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, Column } from '@/components/common/DataTable';
+import { useListFilters } from '@/hooks/useListFilters';
 import { useStockTransactionList } from '../hooks/useInventory';
-import { StockTransaction, StockTransactionType } from '@/types';
+import { StockTransaction, StockTransactionQueryParams, StockTransactionType } from '@/types';
 import dayjs from 'dayjs';
 
 export const StockTransactionsPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(15);
-  const [transactionType, setTransactionType] = useState<StockTransactionType | ''>('');
+  const { filters, replaceFilters } =
+    useListFilters<Omit<StockTransactionQueryParams, 'page' | 'limit'>>();
 
   const { data, isLoading } = useStockTransactionList({
     page,
     limit,
-    transactionType: transactionType || undefined,
+    ...filters,
   });
 
   const getTransactionTypeChip = (txType: StockTransactionType) => {
@@ -70,6 +66,7 @@ export const StockTransactionsPage: React.FC = () => {
     {
       id: 'inventoryId',
       label: 'Mã lô tồn kho',
+      filterFields: [{ key: 'inventoryId', label: 'Mã lô tồn kho', type: 'input' }],
       minWidth: 160,
       render: (row) => (
         <span className="font-mono text-xs text-slate-700 font-semibold">
@@ -80,12 +77,19 @@ export const StockTransactionsPage: React.FC = () => {
     {
       id: 'transactionType',
       label: 'Loại nghiệp vụ',
+      filterFields: [{
+        key: 'transactionType',
+        label: 'Loại giao dịch',
+        type: 'select',
+        filters: Object.values(StockTransactionType).map((value) => ({ text: value, value })),
+      }],
       minWidth: 160,
       render: (row) => getTransactionTypeChip(row.transactionType),
     },
     {
       id: 'quantity',
       label: 'Số lượng biến động',
+      filterFields: [{ key: 'quantity', label: 'Số lượng', type: 'number' }],
       minWidth: 140,
       render: (row) => {
         const isPositive =
@@ -105,6 +109,7 @@ export const StockTransactionsPage: React.FC = () => {
     {
       id: 'referenceId',
       label: 'Chứng từ liên quan',
+      filterFields: [{ key: 'referenceId', label: 'Mã chứng từ', type: 'input' }],
       minWidth: 150,
       render: (row) => (
         <span className="text-xs text-slate-500 font-mono">
@@ -115,12 +120,17 @@ export const StockTransactionsPage: React.FC = () => {
     {
       id: 'note',
       label: 'Ghi chú',
+      filterFields: [{ key: 'note', label: 'Ghi chú', type: 'input' }],
       minWidth: 180,
       render: (row) => <span className="text-xs text-slate-600">{row.note || '—'}</span>,
     },
     {
       id: 'createdAt',
       label: 'Thời gian thực hiện',
+      filterFields: [
+        { key: 'dateFrom', label: 'Từ ngày', type: 'date' },
+        { key: 'dateTo', label: 'Đến ngày', type: 'date' },
+      ],
       minWidth: 140,
       render: (row) => (
         <span className="text-xs tabular-nums text-slate-500">
@@ -143,26 +153,6 @@ export const StockTransactionsPage: React.FC = () => {
       />
 
       <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <FormControl size="small" className="sm:w-80">
-          <InputLabel id="tx-type-label">Phân loại giao dịch</InputLabel>
-          <Select
-            labelId="tx-type-label"
-            value={transactionType}
-            label="Phân loại giao dịch"
-            onChange={(e) => {
-              setTransactionType(e.target.value as StockTransactionType | '');
-              setPage(1);
-            }}
-          >
-            <MenuItem value="">Tất cả giao dịch</MenuItem>
-            <MenuItem value={StockTransactionType.IN}>Nhập kho dược (IN)</MenuItem>
-            <MenuItem value={StockTransactionType.OUT}>Xuất kho cấp phát (OUT)</MenuItem>
-            <MenuItem value={StockTransactionType.ADJUSTMENT}>Điều chỉnh kiểm kê</MenuItem>
-            <MenuItem value={StockTransactionType.EXPIRED}>Hết hạn / Tiêu hủy</MenuItem>
-            <MenuItem value={StockTransactionType.RETURN}>Hoàn trả kho</MenuItem>
-          </Select>
-        </FormControl>
-
         <div className="text-xs text-slate-500 tabular-nums">
           Tổng cộng: <strong className="text-slate-800">{data?.pagination?.total || 0}</strong> giao dịch
         </div>
@@ -173,6 +163,11 @@ export const StockTransactionsPage: React.FC = () => {
         rows={data?.data || []}
         loading={isLoading}
         pagination={data?.pagination}
+        filters={filters}
+        onFilterChange={(nextFilters) => {
+          replaceFilters(nextFilters);
+          setPage(1);
+        }}
         onPageChange={(p) => setPage(p)}
         onLimitChange={(l) => {
           setLimit(l);

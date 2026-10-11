@@ -11,9 +11,9 @@ import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, Column } from '@/components/common/DataTable';
-import { SearchInput } from '@/components/common/SearchInput';
+import { useListFilters } from '@/hooks/useListFilters';
 import { useExaminations } from '../hooks/useExaminations';
-import { Examination } from '@/types';
+import { Examination, ExaminationQueryParams } from '@/types';
 import dayjs from 'dayjs';
 
 export const ExaminationListPage: React.FC = () => {
@@ -21,12 +21,13 @@ export const ExaminationListPage: React.FC = () => {
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [search, setSearch] = useState('');
+  const { filters, replaceFilters } =
+    useListFilters<Omit<ExaminationQueryParams, 'page' | 'limit'>>();
 
   const { data, isLoading } = useExaminations({
     page,
     limit,
-    search: search || undefined,
+    ...filters,
   });
 
   const columns: Column<Examination>[] = [
@@ -43,6 +44,10 @@ export const ExaminationListPage: React.FC = () => {
     {
       id: 'patient',
       label: 'Bệnh nhân',
+      filterFields: [
+        { key: 'appointmentId', label: 'Mã cuộc hẹn', type: 'input' },
+        { key: 'isExist', label: 'Tồn tại phiếu khám', type: 'input' },
+      ],
       minWidth: 180,
       render: (row) => (
         <div>
@@ -61,6 +66,7 @@ export const ExaminationListPage: React.FC = () => {
     {
       id: 'doctor',
       label: 'Bác sĩ khám',
+      filterFields: [{ key: 'doctorId', label: 'Mã bác sĩ', type: 'input' }],
       minWidth: 160,
       render: (row) => (
         <span className="text-slate-700 font-medium">
@@ -71,6 +77,10 @@ export const ExaminationListPage: React.FC = () => {
     {
       id: 'diagnosis',
       label: 'Chẩn đoán xác định',
+      filterFields: [
+        { key: 'diagnosis', label: 'Chẩn đoán', type: 'input' },
+        { key: 'icd10Code', label: 'Mã ICD-10', type: 'input' },
+      ],
       minWidth: 220,
       render: (row) => (
         <div>
@@ -122,6 +132,10 @@ export const ExaminationListPage: React.FC = () => {
     {
       id: 'createdAt',
       label: 'Ngày khám',
+      filterFields: [
+        { key: 'dateFrom', label: 'Từ ngày', type: 'date' },
+        { key: 'dateTo', label: 'Đến ngày', type: 'date' },
+      ],
       minWidth: 120,
       render: (row) => (
         <span className="text-xs tabular-nums text-slate-500">
@@ -167,16 +181,7 @@ export const ExaminationListPage: React.FC = () => {
         }
       />
 
-      <div className="bg-white p-4 rounded-xl border border-slate-200 flex items-center justify-between gap-4">
-        <SearchInput
-          placeholder="Tìm chẩn đoán, mã ICD-10 hoặc mã phiếu..."
-          value={search}
-          onChange={(val) => {
-            setSearch(val);
-            setPage(1);
-          }}
-          className="w-full sm:w-80"
-        />
+      <div className="bg-white p-4 rounded-xl border border-slate-200 flex items-center justify-end gap-4">
         <div className="text-xs text-slate-500 tabular-nums">
           Tổng số: <strong className="text-slate-800">{data?.pagination?.total || 0}</strong> phiếu khám
         </div>
@@ -187,6 +192,11 @@ export const ExaminationListPage: React.FC = () => {
         rows={data?.data || []}
         loading={isLoading}
         pagination={data?.pagination}
+        filters={filters}
+        onFilterChange={(nextFilters) => {
+          replaceFilters(nextFilters);
+          setPage(1);
+        }}
         onPageChange={(p) => setPage(p)}
         onLimitChange={(l) => {
           setLimit(l);

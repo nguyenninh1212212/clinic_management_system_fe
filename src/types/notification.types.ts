@@ -12,4 +12,10 @@ export interface Notification {
   createdAt: string;
 }
 
-export interface NotificationQueryParams extends BaseQueryParams {}
+export interface NotificationQueryParams extends BaseQueryParams {
+  isRead?: boolean;
+  type?: string;
+  search?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}

@@ -10,7 +10,10 @@ export interface Specialty {
   updatedAt?: string;
 }
 
-export interface SpecialtyQueryParams extends BaseQueryParams {}
+export interface SpecialtyQueryParams extends BaseQueryParams {
+  search?: string;
+  isActive?: boolean;
+}
 
 export interface CreateSpecialtyDto {
   name: string;

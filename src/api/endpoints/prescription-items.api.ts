@@ -2,14 +2,15 @@
 import { api } from '@/api/axios';
 import {
   PrescriptionItem,
+  PrescriptionItemQueryParams,
   CreatePrescriptionItemDto,
   UpdatePrescriptionItemDto,
   ApiResponse,
 } from '@/types';
 
 export const prescriptionItemsApi = {
-  findByPrescription: (prescriptionId: string): Promise<PrescriptionItem[]> =>
-    api.get('/prescription-items', { params: { prescriptionId } }).then((r) => {
+  findByPrescription: (params: PrescriptionItemQueryParams): Promise<PrescriptionItem[]> =>
+    api.get('/prescription-items', { params }).then((r) => {
       const res = r.data;
       return Array.isArray(res) ? res : res?.data || [];
     }),

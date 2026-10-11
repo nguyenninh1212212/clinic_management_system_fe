@@ -18,8 +18,10 @@ export interface User {
 }
 
 export interface UserQueryParams extends BaseQueryParams {
+  search?: string;
   role?: UserRole;
   departmentId?: number;
+  positionId?: number;
   isActive?: boolean;
 }
 

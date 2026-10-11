@@ -8,6 +8,7 @@ export interface Patient {
   dateOfBirth?: string;
   gender: Gender;
   phone?: string;
+  email?: string;
   address?: string;
   medicalHistory?: string;
   identityNumber?: string;
@@ -17,7 +18,9 @@ export interface Patient {
 
 export interface PatientQueryParams extends BaseQueryParams {
   gender?: Gender;
-  fullname?: string;
+  search?: string;
+  isActive?: boolean;
+  patientCode?: string;
 }
 
 export interface CreatePatientDto {

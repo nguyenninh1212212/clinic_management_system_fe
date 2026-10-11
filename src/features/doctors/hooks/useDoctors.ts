@@ -1,5 +1,5 @@
 // src/features/doctors/hooks/useDoctors.ts
-import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/api/queryKeys';
 import { doctorsApi } from '@/api/endpoints/doctors.api';
 import { notifyApiFeedback } from '@/api/axios';
@@ -14,11 +14,11 @@ export function useDoctors(params?: DoctorQueryParams) {
   });
 }
 
-export function useDoctor(id: string) {
+export function useDoctor(id: string, enabled = true) {
   return useQuery({
     queryKey: queryKeys.doctors.detail(id),
     queryFn: () => doctorsApi.findById(id),
-    enabled: !!id,
+    enabled: !!id && enabled,
     staleTime: 2 * 60_000,
   });
 }
@@ -62,3 +62,27 @@ export function useDeleteDoctor() {
     },
   });
 }
+
+
+export function useInfiniteDoctors(
+  search?: string,
+  specialtyId?: number,
+) {
+  return useInfiniteQuery({
+    queryKey: ["doctors", "infinite", search, specialtyId],
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) =>
+      doctorsApi.findAll({
+        page: pageParam,
+        limit: 5,
+        search,
+        specialtyId,
+      }),
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.pagination;
+
+      return page < totalPages ? page + 1 : undefined;
+    },
+  });
+}
+

@@ -1,5 +1,11 @@
 // src/types/permission.types.ts
-import { PermissionAction } from './enums';
+import { PermissionAction, ResourceType } from './enums';
+
+export interface PermissionQueryParams {
+  resource?: ResourceType;
+  action?: PermissionAction;
+  search?: string;
+}
 
 export interface Permission {
   id: number;

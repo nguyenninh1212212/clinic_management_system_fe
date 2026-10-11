@@ -19,15 +19,25 @@ import {
   Typography,
   TextField,
   InputAdornment,
+  MenuItem,
 } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
+import ClearAllIcon from '@mui/icons-material/ClearAll';
 import CheckIcon from '@mui/icons-material/Check';
 import { EmptyState } from './EmptyState';
 import { PaginationMeta } from '@/types';
 
 export type ColumnFilterValue = string | number | boolean;
+
+export interface DataTableFilterField {
+  key: string;
+  label: string;
+  type: 'input' | 'select' | 'number' | 'date' | 'boolean';
+  filters?: Array<{ text: string; value: ColumnFilterValue }>;
+  placeholder?: string;
+}
 
 export interface Column<T> {
   id: string;
@@ -42,6 +52,7 @@ export interface Column<T> {
   filteredValue?: ColumnFilterValue[] | ColumnFilterValue | null;
   filterPlaceholder?: string;
   filterMultiple?: boolean;
+  filterFields?: DataTableFilterField[];
 
   // Direct column-level change callback
   onChange?: (value: any) => void;
@@ -102,6 +113,7 @@ export function DataTable<T extends Record<string, any>>({
   const [filterColumnId, setFilterColumnId] = useState<string | null>(null);
   const [internalFilters, setInternalFilters] = useState<TableFiltersParam>({});
   const [inputValue, setInputValue] = useState<string>('');
+  const [filterFieldValues, setFilterFieldValues] = useState<Record<string, string>>({});
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -123,6 +135,12 @@ export function DataTable<T extends Record<string, any>>({
   };
 
   const isColumnFiltered = (col: Column<T>): boolean => {
+    if (col.filterFields?.some((field) => {
+      const value = propsFilters?.[field.key] ?? internalFilters[field.key];
+      return value !== undefined && value !== null && value !== '';
+    })) {
+      return true;
+    }
     const val = getColumnFilterValue(col);
     if (val === undefined || val === null || val === '') return false;
     if (Array.isArray(val)) return val.length > 0;
@@ -169,6 +187,52 @@ export function DataTable<T extends Record<string, any>>({
       allFilters,
     );
   };
+
+  const triggerFieldFilter = (fieldKey: string, value: ColumnFilterValue | undefined) => {
+    const normalizedValue = typeof value === 'string' ? value.trim() || undefined : value;
+    const nextFilters = { ...internalFilters, ...propsFilters };
+    if (normalizedValue === undefined || normalizedValue === '') {
+      delete nextFilters[fieldKey];
+    } else {
+      nextFilters[fieldKey] = normalizedValue;
+    }
+    setInternalFilters(nextFilters);
+    onFilterChange?.(nextFilters);
+    onChange?.(
+      { page: 1, limit: pagination?.limit || 10, filters: nextFilters },
+      nextFilters,
+    );
+  };
+
+  const clearAllFilters = () => {
+    setInternalFilters({});
+    setFilterFieldValues({});
+    onFilterChange?.({});
+    onChange?.({ page: 1, limit: pagination?.limit || 10, filters: {} }, {});
+  };
+
+  const clearColumnFilters = (column: Column<T>) => {
+    if (!column.filterFields?.length) {
+      triggerFilter(column.id, undefined);
+      return;
+    }
+    const nextFilters = { ...internalFilters, ...propsFilters };
+    column.filterFields.forEach((field) => delete nextFilters[field.key]);
+    setInternalFilters(nextFilters);
+    onFilterChange?.(nextFilters);
+    onChange?.(
+      { page: 1, limit: pagination?.limit || 10, filters: nextFilters },
+      nextFilters,
+    );
+  };
+
+  const queryFilterKeys = columns.flatMap(
+    (column) => column.filterFields?.map((field) => field.key) || [],
+  );
+  const hasActiveQueryFilters = queryFilterKeys.some((key) => {
+    const value = propsFilters?.[key] ?? internalFilters[key];
+    return value !== undefined && value !== null && value !== '';
+  });
 
   // If server-side (default when pagination or onChange/onFilterChange or column.onChange is present),
   // DO NOT filter on FE. The backend query handles filtering.
@@ -242,6 +306,7 @@ export function DataTable<T extends Record<string, any>>({
 
   const hasFilter = (col: Column<T>) =>
     Boolean(
+      col.filterFields?.length ||
       (col.filters && col.filters.length > 0) ||
       col.filterType === 'input' ||
       col.filterType === 'select' ||
@@ -250,6 +315,18 @@ export function DataTable<T extends Record<string, any>>({
 
   return (
     <Paper className="border border-slate-200 overflow-hidden rounded-xl">
+      {queryFilterKeys.length > 0 && hasActiveQueryFilters && (
+          <Box className="flex justify-end border-b border-slate-100 bg-white px-3 py-2">
+            <Button
+              size="small"
+              color="inherit"
+              startIcon={<ClearAllIcon />}
+              onClick={clearAllFilters}
+            >
+              Xóa bộ lọc
+            </Button>
+          </Box>
+        )}
       <TableContainer sx={{ maxHeight: 680 }}>
         <Table stickyHeader size="small" aria-label="data table">
           <TableHead>
@@ -373,7 +450,7 @@ export function DataTable<T extends Record<string, any>>({
                     if (filterColumn.filterType === 'input') {
                       setInputValue('');
                     }
-                    triggerFilter(filterColumn.id, undefined);
+                    clearColumnFilters(filterColumn);
                     setFilterAnchor(null);
                   }}
                   className="text-xs text-rose-500 hover:text-rose-700 font-normal normal-case cursor-pointer"
@@ -383,8 +460,71 @@ export function DataTable<T extends Record<string, any>>({
               )}
             </div>
 
+            {filterColumn.filterFields?.length ? (
+              <Box className="grid min-w-64 gap-2 p-2">
+                {filterColumn.filterFields.map((field) => {
+                  const currentValue = propsFilters?.[field.key] ?? internalFilters[field.key];
+                  const isSelect = field.type === 'select' || field.type === 'boolean';
+                  const options = field.type === 'boolean'
+                    ? [
+                        { text: 'Có', value: true },
+                        { text: 'Không', value: false },
+                      ]
+                    : field.filters || [];
+
+                  return (
+                    <TextField
+                      key={field.key}
+                      size="small"
+                      fullWidth
+                      label={field.label}
+                      placeholder={field.placeholder}
+                      type={isSelect ? undefined : field.type === 'input' ? 'text' : field.type}
+                      select={isSelect}
+                      value={
+                        field.type === 'boolean'
+                          ? currentValue === undefined ? '' : String(currentValue)
+                          : currentValue ?? ''
+                      }
+                      onChange={(event) => {
+                        const rawValue = event.target.value;
+                        let nextValue: ColumnFilterValue | undefined;
+                        if (rawValue !== '') {
+                          const selectedOption = options.find(
+                            (option) => String(option.value) === rawValue,
+                          );
+                          nextValue = field.type === 'number'
+                            ? Number(rawValue)
+                            : field.type === 'boolean'
+                              ? rawValue === 'true'
+                              : selectedOption?.value ?? rawValue;
+                        }
+                        triggerFieldFilter(field.key, nextValue);
+                      }}
+                      slotProps={
+                        field.type === 'date'
+                          ? { inputLabel: { shrink: true } }
+                          : field.type === 'number'
+                            ? { htmlInput: { min: 0 } }
+                            : undefined
+                      }
+                    >
+                      {isSelect && (
+                        <MenuItem value="">Tất cả</MenuItem>
+                      )}
+                      {options.map((option) => (
+                        <MenuItem key={String(option.value)} value={String(option.value)}>
+                          {option.text}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  );
+                })}
+              </Box>
+            ) : null}
+
             {/* Type 1: INPUT SEARCH */}
-            {filterColumn.filterType === 'input' && (
+            {!filterColumn.filterFields?.length && filterColumn.filterType === 'input' && (
               <Box className="p-2 space-y-2">
                 <TextField
                   size="small"
@@ -447,7 +587,7 @@ export function DataTable<T extends Record<string, any>>({
             )}
 
             {/* Type 2: SELECT (Single Choice - click là lọc luôn) */}
-            {(filterColumn.filterType === 'select' ||
+            {!filterColumn.filterFields?.length && (filterColumn.filterType === 'select' ||
               (!filterColumn.filterType && !filterColumn.filterMultiple)) && (
               <Box className="py-1">
                 {/* Option Tất cả */}
@@ -500,7 +640,7 @@ export function DataTable<T extends Record<string, any>>({
             )}
 
             {/* Type 3: CHECKBOX (Multi-select - chọn là lọc luôn) */}
-            {(filterColumn.filterType === 'checkbox' || filterColumn.filterMultiple) && (
+            {!filterColumn.filterFields?.length && (filterColumn.filterType === 'checkbox' || filterColumn.filterMultiple) && (
               <Box className="py-1">
                 {filterColumn.filters?.map((filterItem) => {
                   const currentList = Array.isArray(getColumnFilterValue(filterColumn))

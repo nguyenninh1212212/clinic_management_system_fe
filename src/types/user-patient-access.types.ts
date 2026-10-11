@@ -10,6 +10,12 @@ export enum RelationshipType {
   OTHER = 'OTHER',
 }
 
+export interface MyPatientsQueryParams {
+  search?: string;
+  relationship?: RelationshipType;
+  isLegalGuardian?: boolean;
+}
+
 export interface UserPatientAccess {
   id: string;
   userId: string;

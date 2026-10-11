@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Alert, Button, IconButton, Tooltip } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import UploadFileOutlinedIcon from "@mui/icons-material/UploadFileOutlined";
@@ -8,8 +8,8 @@ import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import { PageHeader } from "@/components/common/PageHeader";
 import { DataTable, Column } from "@/components/common/DataTable";
-import { SearchInput } from "@/components/common/SearchInput";
-import { Invoice } from "@/types";
+import { useListFilters } from "@/hooks/useListFilters";
+import { Invoice, InvoiceQueryParams } from "@/types";
 import { invoicesApi } from "@/api/endpoints/invoices.api";
 import { useInvoices } from "../hooks/useInvoices";
 import { ImportInvoiceModal } from "../components/ImportInvoiceModal";
@@ -21,22 +21,14 @@ export const InvoiceListPage: React.FC = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const { filters, replaceFilters } =
+    useListFilters<Omit<InvoiceQueryParams, "page" | "limit">>();
   const [importOpen, setImportOpen] = useState(false);
   const { data, isLoading, isError, error } = useInvoices({
     page,
     limit,
-    search: debouncedSearch || undefined,
+    ...filters,
   });
-
-  useEffect(() => {
-    const timer = window.setTimeout(
-      () => setDebouncedSearch(search.trim()),
-      350,
-    );
-    return () => window.clearTimeout(timer);
-  }, [search]);
 
   const download = async (id?: string) => {
     const response = await invoicesApi.export(id);
@@ -52,6 +44,10 @@ export const InvoiceListPage: React.FC = () => {
     {
       id: "invoiceNumber",
       label: "Mã hóa đơn",
+      filterFields: [
+        { key: "search", label: "Tìm hóa đơn", type: "input" },
+        { key: "patientId", label: "Mã bệnh nhân", type: "input" },
+      ],
       minWidth: 150,
       render: (row) => (
         <span className="font-mono text-xs font-bold text-sky-700">
@@ -102,6 +98,10 @@ export const InvoiceListPage: React.FC = () => {
     {
       id: "createdAt",
       label: "Ngày tạo",
+      filterFields: [
+        { key: "dateFrom", label: "Từ ngày", type: "date" },
+        { key: "dateTo", label: "Đến ngày", type: "date" },
+      ],
       minWidth: 140,
       render: (row) => (
         <span className="text-xs tabular-nums text-slate-500">
@@ -174,16 +174,7 @@ export const InvoiceListPage: React.FC = () => {
           </div>
         }
       />
-      <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <SearchInput
-          placeholder="Tìm theo mã hóa đơn hoặc tên người mua..."
-          value={search}
-          onChange={(value) => {
-            setSearch(value);
-            setPage(1);
-          }}
-          className="w-full sm:w-96"
-        />
+      <div className="bg-white p-4 rounded-xl border border-slate-200 flex justify-end gap-3">
         <div className="text-xs text-slate-500 tabular-nums">
           Tổng số:{" "}
           <strong className="text-slate-800">
@@ -203,6 +194,11 @@ export const InvoiceListPage: React.FC = () => {
         rows={data?.data || []}
         loading={isLoading}
         pagination={data?.pagination}
+        filters={filters}
+        onFilterChange={(nextFilters) => {
+          replaceFilters(nextFilters);
+          setPage(1);
+        }}
         onPageChange={setPage}
         onLimitChange={(value) => {
           setLimit(value);

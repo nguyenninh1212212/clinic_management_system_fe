@@ -19,6 +19,7 @@ export interface AuditLogQueryParams extends BaseQueryParams {
   userId?: string;
   action?: AuditAction;
   entityName?: string;
+  entityId?: string;
   dateFrom?: string;
   dateTo?: string;
 }

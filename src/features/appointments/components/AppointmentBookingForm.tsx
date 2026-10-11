@@ -5,11 +5,6 @@ import {
   Button,
   Card,
   CardContent,
-  FormControl,
-  FormHelperText,
-  InputLabel,
-  MenuItem,
-  Select,
   TextField,
 } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
@@ -17,7 +12,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import dayjs from "dayjs";
 import { PageHeader } from "@/components/common/PageHeader";
 import { usePatients } from "@/features/patients/hooks/usePatients";
-import { useDoctors } from "@/features/doctors/hooks/useDoctors";
+import { useDoctor } from "@/features/doctors/hooks/useDoctors";
+import { DoctorSelect } from "@/features/doctors/components/DoctorSelect";
 import {
   useCreateAppointment,
   useAppointments,
@@ -41,9 +37,7 @@ export const AppointmentBookingForm: React.FC = () => {
   const { data: patientsData, isLoading: loadingPatients } = usePatients({
     limit: 100,
   });
-  const { data: doctorsData, isLoading: loadingDoctors } = useDoctors({
-    limit: 100,
-  });
+  const { data: selectedDoctorData } = useDoctor(doctorId);
   const { data: shifts = [], isLoading: loadingShifts } = useDoctorShifts(
     doctorId,
     date,
@@ -54,9 +48,7 @@ export const AppointmentBookingForm: React.FC = () => {
       { enabled: Boolean(doctorId && date) },
     );
   const createMutation = useCreateAppointment();
-  const selectedDoctor = doctorsData?.data?.find(
-    (doctor) => doctor.id === doctorId,
-  );
+  const selectedDoctor = selectedDoctorData?.data;
   const bookedTimes = useMemo(
     () =>
       new Set(
@@ -146,30 +138,16 @@ export const AppointmentBookingForm: React.FC = () => {
                 />
               )}
             />
-            <FormControl fullWidth size="small" error={!doctorId}>
-              <InputLabel id="booking-doctor">Bác sĩ *</InputLabel>
-              <Select
-                labelId="booking-doctor"
-                label="Bác sĩ *"
-                value={doctorId}
-                onChange={(event) => {
-                  setDoctorId(event.target.value);
-                  setTime("");
-                }}
-                disabled={loadingDoctors}
-              >
-                <MenuItem value="">Chọn bác sĩ</MenuItem>
-                {doctorsData?.data?.map((doctor) => (
-                  <MenuItem key={doctor.id} value={doctor.id}>
-                    {doctor.user?.fullName} ·{" "}
-                    {doctor.specialty?.name || "Đa khoa"}
-                  </MenuItem>
-                ))}
-              </Select>
-              {!doctorId && (
-                <FormHelperText>Vui lòng chọn bác sĩ</FormHelperText>
-              )}
-            </FormControl>
+            <DoctorSelect
+              value={doctorId}
+              label="Bác sĩ *"
+              error={!doctorId}
+              helperText={!doctorId ? "Vui lòng chọn bác sĩ" : undefined}
+              onChange={(newDoctorId) => {
+                setDoctorId(newDoctorId);
+                setTime("");
+              }}
+            />
             <TextField
               fullWidth
               size="small"

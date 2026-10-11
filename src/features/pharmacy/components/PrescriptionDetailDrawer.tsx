@@ -8,6 +8,7 @@ import {
   IconButton,
   MenuItem,
   Select,
+  TextField,
   Typography,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
@@ -40,6 +41,8 @@ interface PrescriptionDetailDrawerProps {
 export const PrescriptionDetailDrawer: React.FC<
   PrescriptionDetailDrawerProps
 > = ({ prescription, onClose, onStatusChange }) => {
+  const [itemSearch, setItemSearch] = useState("");
+  const [medicineId, setMedicineId] = useState("");
   const [status, setStatus] = useState<PharmacyPrescriptionStatus>(
     PharmacyPrescriptionStatus.NEW,
   );
@@ -49,17 +52,26 @@ export const PrescriptionDetailDrawer: React.FC<
     enabled: Boolean(prescription?.id),
     staleTime: 30_000,
   });
+  const itemQueryParams = {
+    prescriptionId: prescription?.id || "",
+    ...(itemSearch.trim() ? { search: itemSearch.trim() } : {}),
+    ...(medicineId ? { medicineId } : {}),
+  };
+  const hasItemFilters = Boolean(itemSearch.trim() || medicineId);
   const itemQuery = useQuery({
-    queryKey: ["prescription-items", prescription?.id],
-    queryFn: () =>
-      prescriptionItemsApi.findByPrescription(prescription?.id || ""),
+    queryKey: queryKeys.prescriptionItems.byPrescription(prescription?.id || "", itemQueryParams),
+    queryFn: () => prescriptionItemsApi.findByPrescription(itemQueryParams),
     enabled:
       Boolean(prescription?.id) &&
-      !(detailQuery.data?.data?.items?.length || prescription?.items?.length),
+      (hasItemFilters || !(detailQuery.data?.data?.items?.length || prescription?.items?.length)),
     staleTime: 30_000,
   });
   const current = detailQuery.data?.data || prescription;
-  const items = current?.items?.length ? current.items : itemQuery.data || [];
+  const items = hasItemFilters
+    ? itemQuery.data || []
+    : current?.items?.length
+      ? current.items
+      : itemQuery.data || [];
   useEffect(() => {
     setStatus(
       getPrescriptionStatus(
@@ -135,6 +147,31 @@ export const PrescriptionDetailDrawer: React.FC<
             <div>
               <div className="mb-3 text-sm font-bold text-slate-900">
                 Danh sách thuốc
+              </div>
+              <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <TextField
+                  size="small"
+                  label="Tìm thuốc"
+                  value={itemSearch}
+                  onChange={(event) => setItemSearch(event.target.value)}
+                />
+                <Select
+                  size="small"
+                  displayEmpty
+                  value={medicineId}
+                  onChange={(event) => setMedicineId(event.target.value)}
+                  renderValue={(value) => {
+                    if (!value) return "Tất cả thuốc";
+                    return items.find((item) => item.medicineId === value)?.medicine?.name || "Thuốc đã chọn";
+                  }}
+                >
+                  <MenuItem value="">Tất cả thuốc</MenuItem>
+                  {(current?.items || itemQuery.data || []).map((item) => (
+                    <MenuItem key={item.medicineId} value={item.medicineId}>
+                      {item.medicine?.name || item.medicineId}
+                    </MenuItem>
+                  ))}
+                </Select>
               </div>
               {itemQuery.isLoading ? (
                 <CircularProgress size={20} />

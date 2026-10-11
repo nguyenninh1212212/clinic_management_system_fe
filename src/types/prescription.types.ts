@@ -80,7 +80,20 @@ export interface Prescription {
   updatedAt: string;
 }
 
-export interface PrescriptionQueryParams extends BaseQueryParams {}
+export interface PrescriptionQueryParams extends BaseQueryParams {
+  pharmacyStatus?: PharmacyPrescriptionStatus;
+  issuedAt?: string;
+  examinationId?: string;
+  patientId?: string;
+  search?: string;
+  validUntil?: string;
+}
+
+export interface PrescriptionItemQueryParams {
+  prescriptionId: string;
+  medicineId?: string;
+  search?: string;
+}
 
 export interface CreatePrescriptionDto {
   examinationId: string;

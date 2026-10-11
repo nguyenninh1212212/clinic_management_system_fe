@@ -1,10 +1,10 @@
 // src/api/endpoints/permissions.api.ts
 import { api } from '@/api/axios';
-import { Permission, CreatePermissionDto } from '@/types';
+import { Permission, CreatePermissionDto, PermissionQueryParams } from '@/types';
 
 export const permissionsApi = {
-  findAll: (): Promise<Permission[]> =>
-    api.get('/permissions').then((r) => {
+  findAll: (params?: PermissionQueryParams): Promise<Permission[]> =>
+    api.get('/permissions', { params }).then((r) => {
       const res = r.data;
       return Array.isArray(res) ? res : res?.data || [];
     }),

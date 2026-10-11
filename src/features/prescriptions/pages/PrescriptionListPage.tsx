@@ -30,8 +30,8 @@ import RemoveCircleOutlinedIcon from "@mui/icons-material/RemoveCircleOutlined";
 
 import { PageHeader } from "@/components/common/PageHeader";
 import { DataTable, Column } from "@/components/common/DataTable";
-import { SearchInput } from "@/components/common/SearchInput";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { useListFilters } from "@/hooks/useListFilters";
 
 import {
   usePrescriptions,
@@ -42,7 +42,7 @@ import {
 import { useExaminations } from "@/features/examinations/hooks/useExaminations";
 import { useMedicinesDropdown } from "@/features/medicines/hooks/useMedicines";
 
-import { Prescription, CreatePrescriptionItemDto, Medicine } from "@/types";
+import { Prescription, PrescriptionQueryParams, CreatePrescriptionItemDto, Medicine, PharmacyPrescriptionStatus } from "@/types";
 
 import dayjs from "dayjs";
 
@@ -54,7 +54,8 @@ export const PrescriptionListPage: React.FC = () => {
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [search, setSearch] = useState("");
+  const { filters, replaceFilters } =
+    useListFilters<Omit<PrescriptionQueryParams, "page" | "limit">>();
 
   // Delete state
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -85,12 +86,12 @@ export const PrescriptionListPage: React.FC = () => {
   const { data, isLoading } = usePrescriptions({
     page,
     limit,
-    search: search || undefined,
+    ...filters,
   });
 
   const { data: examsData } = useExaminations({
     limit: 50,
-    isExist:false
+    isExist: "false"
   });
 
   const { data: medicinesData } = useMedicinesDropdown(100);
@@ -187,6 +188,12 @@ export const PrescriptionListPage: React.FC = () => {
     {
       id: "patient",
       label: "Bệnh nhân",
+      filterFields: [{
+        key: "pharmacyStatus",
+        label: "Trạng thái cấp phát",
+        type: "select",
+        filters: Object.values(PharmacyPrescriptionStatus).map((value) => ({ text: value, value })),
+      }],
       minWidth: 180,
       render: (row) => (
         <Stack spacing={0.25}>
@@ -226,6 +233,7 @@ export const PrescriptionListPage: React.FC = () => {
     {
       id: "doctor",
       label: "Bác sĩ kê đơn",
+      filterFields: [{ key: "examinationId", label: "Mã phiếu khám", type: "input" }],
       minWidth: 160,
       render: (row) => (
         <Typography
@@ -282,6 +290,10 @@ export const PrescriptionListPage: React.FC = () => {
     {
       id: "createdAt",
       label: "Ngày kê đơn",
+      filterFields: [
+        { key: "issuedAt", label: "Ngày kê đơn", type: "date" },
+        { key: "validUntil", label: "Ngày hết hiệu lực", type: "date" },
+      ],
       minWidth: 130,
       render: (row) => (
         <Typography
@@ -385,16 +397,6 @@ export const PrescriptionListPage: React.FC = () => {
           flexWrap: "wrap",
         }}
       >
-        <SearchInput
-          placeholder="Tìm theo mã đơn hoặc chẩn đoán..."
-          value={search}
-          onChange={(value) => {
-            setSearch(value);
-            setPage(1);
-          }}
-          className="w-full sm:w-80"
-        />
-
         <Typography
           variant="caption"
           sx={{
@@ -422,6 +424,11 @@ export const PrescriptionListPage: React.FC = () => {
         rows={data?.data || []}
         loading={isLoading}
         pagination={data?.pagination}
+        filters={filters}
+        onFilterChange={(nextFilters) => {
+          replaceFilters(nextFilters);
+          setPage(1);
+        }}
         onPageChange={(p) => setPage(p)}
         onLimitChange={(l) => {
           setLimit(l);

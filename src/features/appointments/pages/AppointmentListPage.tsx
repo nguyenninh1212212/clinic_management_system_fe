@@ -3,11 +3,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  TextField,
   IconButton,
   Tooltip,
 } from '@mui/material';
@@ -22,8 +17,8 @@ import { StatusChip } from '@/components/common/StatusChip';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { AppointmentStatusDialog } from '../components/AppointmentStatusDialog';
 import { useAppointments, useDeleteAppointment } from '../hooks/useAppointments';
-import { useDoctors } from '@/features/doctors/hooks/useDoctors';
-import { Appointment, AppointmentStatus } from '@/types';
+import { Appointment, AppointmentQueryParams, AppointmentStatus } from '@/types';
+import { useListFilters } from '@/hooks/useListFilters';
 import dayjs from 'dayjs';
 
 export const AppointmentListPage: React.FC = () => {
@@ -31,9 +26,8 @@ export const AppointmentListPage: React.FC = () => {
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [status, setStatus] = useState<AppointmentStatus | ''>('');
-  const [doctorId, setDoctorId] = useState<string>('');
-  const [date, setDate] = useState<string>('');
+  const { filters, replaceFilters } =
+    useListFilters<Omit<AppointmentQueryParams, 'page' | 'limit'>>();
 
   // Status Dialog State
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
@@ -42,13 +36,10 @@ export const AppointmentListPage: React.FC = () => {
   // Delete State (Pending only)
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const { data: doctorsData } = useDoctors({ limit: 50 });
   const { data, isLoading } = useAppointments({
     page,
     limit,
-    status: status || undefined,
-    doctorId: doctorId || undefined,
-    date: date || undefined,
+    ...filters,
   });
 
   const deleteMutation = useDeleteAppointment();
@@ -82,6 +73,7 @@ export const AppointmentListPage: React.FC = () => {
     {
       id: 'patient',
       label: 'Bệnh nhân',
+      filterFields: [{ key: 'patientId', label: 'Mã bệnh nhân', type: 'input' }],
       minWidth: 180,
       render: (row) => (
         <div>
@@ -98,6 +90,7 @@ export const AppointmentListPage: React.FC = () => {
     {
       id: 'doctor',
       label: 'Bác sĩ phụ trách',
+      filterFields: [{ key: 'doctorId', label: 'Mã bác sĩ', type: 'input' }],
       minWidth: 160,
       render: (row) => (
         <span className="text-slate-700">
@@ -108,6 +101,11 @@ export const AppointmentListPage: React.FC = () => {
     {
       id: 'appointmentDate',
       label: 'Ngày hẹn khám',
+      filterFields: [
+        { key: 'date', label: 'Ngày hẹn', type: 'date' },
+        { key: 'dateFrom', label: 'Từ ngày', type: 'date' },
+        { key: 'dateTo', label: 'Đến ngày', type: 'date' },
+      ],
       minWidth: 150,
       render: (row) => (
         <div className="tabular-nums">
@@ -123,6 +121,12 @@ export const AppointmentListPage: React.FC = () => {
     {
       id: 'status',
       label: 'Trạng thái',
+      filterFields: [{
+        key: 'status',
+        label: 'Trạng thái',
+        type: 'select',
+        filters: Object.values(AppointmentStatus).map((value) => ({ text: value, value })),
+      }],
       minWidth: 150,
       render: (row) => (
         <button
@@ -138,6 +142,7 @@ export const AppointmentListPage: React.FC = () => {
     {
       id: 'notes',
       label: 'Ghi chú',
+      filterFields: [{ key: 'bookedByUserId', label: 'Mã người đặt', type: 'input' }],
       minWidth: 160,
       render: (row) => (
         <span className="text-slate-500 text-xs line-clamp-1">{row.notes || '—'}</span>
@@ -210,86 +215,16 @@ export const AppointmentListPage: React.FC = () => {
         }
       />
 
-      {/* Filter toolbar */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <TextField
-          label="Lọc theo ngày khám"
-          type="date"
-          size="small"
-          slotProps={{ inputLabel: { shrink: true } }}
-          value={date}
-          onChange={(e) => {
-            setDate(e.target.value);
-            setPage(1);
-          }}
-        />
-
-        <FormControl size="small">
-          <InputLabel id="appt-status-filter">Trạng thái cuộc hẹn</InputLabel>
-          <Select
-            labelId="appt-status-filter"
-            value={status}
-            label="Trạng thái cuộc hẹn"
-            onChange={(e) => {
-              setStatus(e.target.value as AppointmentStatus | '');
-              setPage(1);
-            }}
-          >
-            <MenuItem value="">Tất cả trạng thái</MenuItem>
-            <MenuItem value={AppointmentStatus.PENDING}>Chờ xác nhận</MenuItem>
-            <MenuItem value={AppointmentStatus.CONFIRMED}>Đã xác nhận</MenuItem>
-            <MenuItem value={AppointmentStatus.WAITING_TRIAGE}>Chờ phân loại</MenuItem>
-            <MenuItem value={AppointmentStatus.TRIAGED}>Đã phân loại sinh hiệu</MenuItem>
-            <MenuItem value={AppointmentStatus.IN_EXAMINATION}>Đang khám</MenuItem>
-            <MenuItem value={AppointmentStatus.COMPLETED}>Hoàn thành</MenuItem>
-            <MenuItem value={AppointmentStatus.CANCELLED}>Đã hủy</MenuItem>
-            <MenuItem value={AppointmentStatus.NO_SHOW}>Vắng mặt</MenuItem>
-          </Select>
-        </FormControl>
-
-        <FormControl size="small">
-          <InputLabel id="appt-doctor-filter">Bác sĩ phụ trách</InputLabel>
-          <Select
-            labelId="appt-doctor-filter"
-            value={doctorId}
-            label="Bác sĩ phụ trách"
-            onChange={(e) => {
-              setDoctorId(e.target.value);
-              setPage(1);
-            }}
-          >
-            <MenuItem value="">Tất cả bác sĩ</MenuItem>
-            {doctorsData?.data?.map((doc) => (
-              <MenuItem key={doc.id} value={doc.id}>
-                {doc.user?.fullName} ({doc.specialty?.name || 'Đa khoa'})
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <div className="flex items-center justify-end">
-          {(date || status || doctorId) && (
-            <Button
-              size="small"
-              color="inherit"
-              onClick={() => {
-                setDate('');
-                setStatus('');
-                setDoctorId('');
-                setPage(1);
-              }}
-            >
-              Xóa bộ lọc
-            </Button>
-          )}
-        </div>
-      </div>
-
       <DataTable
         columns={columns}
         rows={data?.data || []}
         loading={isLoading}
         pagination={data?.pagination}
+        filters={filters}
+        onFilterChange={(nextFilters) => {
+          replaceFilters(nextFilters);
+          setPage(1);
+        }}
         onPageChange={(p) => setPage(p)}
         onLimitChange={(l) => {
           setLimit(l);

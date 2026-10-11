@@ -8,6 +8,7 @@ import {
   CreateInventoryDto,
   CreateStockTransactionDto,
   InventoryQueryParams,
+  StockTransactionQueryParams,
   StockTransactionType,
 } from '@/types';
 
@@ -53,25 +54,10 @@ export function useDeleteInventory() {
   });
 }
 
-interface UseStockTransactionListParams {
-  page: number;
-  limit: number;
-  transactionType?: StockTransactionType;
-}
-
-export function useStockTransactionList(params: UseStockTransactionListParams) {
+export function useStockTransactionList(params: StockTransactionQueryParams) {
   return useQuery({
-    queryKey: queryKeys.stockTransactions.list({
-      page: params.page,
-      limit: params.limit,
-      transactionType: params.transactionType || undefined,
-    }),
-    queryFn: () =>
-      stockTransactionsApi.findAll({
-        page: params.page,
-        limit: params.limit,
-        transactionType: params.transactionType || undefined,
-      }),
+    queryKey: queryKeys.stockTransactions.list(params),
+    queryFn: () => stockTransactionsApi.findAll(params),
     staleTime: 30_000,
   });
 }

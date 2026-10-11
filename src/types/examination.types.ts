@@ -27,8 +27,13 @@ export interface Examination {
 }
 
 export interface ExaminationQueryParams extends BaseQueryParams {
+  isExist?: string;
   doctorId?: string;
-  isExist?:boolean
+  appointmentId?: string;
+  icd10Code?: string;
+  diagnosis?: string;
+  dateFrom?: string;
+  dateTo?: string;
 }
 
 export interface CreateExaminationDto {

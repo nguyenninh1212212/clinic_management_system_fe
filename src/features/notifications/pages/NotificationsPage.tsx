@@ -14,8 +14,9 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
 import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, Column } from '@/components/common/DataTable';
+import { useListFilters } from '@/hooks/useListFilters';
 import { useNotifications, useMarkNotificationRead, useDeleteNotification } from '../hooks/useNotifications';
-import { Notification } from '@/types';
+import { Notification, NotificationQueryParams } from '@/types';
 import dayjs from 'dayjs';
 
 export const NotificationsPage: React.FC = () => {
@@ -23,8 +24,10 @@ export const NotificationsPage: React.FC = () => {
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(15);
+  const { filters, replaceFilters } =
+    useListFilters<Omit<NotificationQueryParams, 'page' | 'limit'>>();
 
-  const { data, isLoading } = useNotifications({ page, limit });
+  const { data, isLoading } = useNotifications({ page, limit, ...filters });
   const markReadMutation = useMarkNotificationRead();
   const deleteMutation = useDeleteNotification();
 
@@ -32,6 +35,7 @@ export const NotificationsPage: React.FC = () => {
     {
       id: 'status',
       label: '',
+      filterFields: [{ key: 'isRead', label: 'Đã đọc', type: 'boolean' }],
       minWidth: 40,
       render: (row) =>
         !row.isRead ? (
@@ -43,6 +47,10 @@ export const NotificationsPage: React.FC = () => {
     {
       id: 'title',
       label: 'Nội dung thông báo',
+      filterFields: [
+        { key: 'search', label: 'Tìm thông báo', type: 'input' },
+        { key: 'type', label: 'Loại thông báo', type: 'input' },
+      ],
       minWidth: 320,
       render: (row) => (
         <div
@@ -68,6 +76,10 @@ export const NotificationsPage: React.FC = () => {
     {
       id: 'createdAt',
       label: 'Thời gian gửi',
+      filterFields: [
+        { key: 'dateFrom', label: 'Từ ngày', type: 'date' },
+        { key: 'dateTo', label: 'Đến ngày', type: 'date' },
+      ],
       minWidth: 150,
       render: (row) => (
         <span className="tabular-nums text-xs text-slate-500">
@@ -120,6 +132,11 @@ export const NotificationsPage: React.FC = () => {
         rows={data?.data || []}
         loading={isLoading}
         pagination={data?.pagination}
+        filters={filters}
+        onFilterChange={(nextFilters) => {
+          replaceFilters(nextFilters);
+          setPage(1);
+        }}
         onPageChange={(p) => setPage(p)}
         onLimitChange={(l) => {
           setLimit(l);

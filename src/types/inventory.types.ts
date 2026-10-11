@@ -31,9 +31,13 @@ export interface Inventory {
 
 export interface InventoryQueryParams extends BaseQueryParams {
   medicineId?: string;
+  batchNumber?: string;
+  warehouseLocation?: string;
+  expiryFrom?: string;
+  expiryTo?: string;
+  quantity?: number;
   expiringSoon?: boolean;
   lowStock?: boolean;
-  stockTransactionType?:StockTransactionType
 }
 
 export interface CreateInventoryDto {
@@ -56,6 +60,9 @@ export interface UpdateInventoryDto {
 export interface StockTransactionQueryParams extends BaseQueryParams {
   inventoryId?: string;
   transactionType?: StockTransactionType;
+  referenceId?: string;
+  quantity?: number;
+  note?: string;
   dateFrom?: string;
   dateTo?: string;
 }

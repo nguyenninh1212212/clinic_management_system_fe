@@ -52,7 +52,12 @@ export interface CreateInvoiceDto {
   items: CreateInvoiceItemDto[];
 }
 
-export interface InvoiceQueryParams extends BaseQueryParams {}
+export interface InvoiceQueryParams extends BaseQueryParams {
+  search?: string;
+  patientId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
 
 export interface InvoiceImportResult {
   message?: string;

@@ -2,12 +2,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/api/queryKeys';
 import { userPatientAccessApi } from '@/api/endpoints/user-patient-access.api';
 import { notifyApiFeedback } from '@/api/axios';
-import { GrantAccessDto, UpdateAccessDto } from '@/types';
+import { GrantAccessDto, MyPatientsQueryParams, UpdateAccessDto } from '@/types';
 
-export function useMyPatients() {
+export function useMyPatients(params?: MyPatientsQueryParams) {
   return useQuery({
-    queryKey: queryKeys.userPatientAccess.myPatients(),
-    queryFn: userPatientAccessApi.getMyPatients,
+    queryKey: queryKeys.userPatientAccess.myPatients(params),
+    queryFn: () => userPatientAccessApi.getMyPatients(params),
   });
 }
 
@@ -19,10 +19,10 @@ export function useCheckAccess(patientId: string) {
   });
 }
 
-export function usePatientAccessors(patientId: string) {
+export function usePatientAccessors(patientId: string, params?: MyPatientsQueryParams) {
   return useQuery({
-    queryKey: queryKeys.userPatientAccess.accessors(patientId),
-    queryFn: () => userPatientAccessApi.getAccessors(patientId),
+    queryKey: queryKeys.userPatientAccess.accessors(patientId, params),
+    queryFn: () => userPatientAccessApi.getAccessors(patientId, params),
     enabled: !!patientId,
   });
 }

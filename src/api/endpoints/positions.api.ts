@@ -12,8 +12,8 @@ export const positionsApi = {
   findAll: (params?: PositionQueryParams): Promise<PaginatedResponse<Position>> =>
     api.get('/positions', { params }).then((r) => r.data),
 
-  getActive: (): Promise<Position[]> =>
-    api.get('/positions/active').then((r) => {
+  getActive: (params?: Pick<PositionQueryParams, 'search' | 'level' | 'departmentId'>): Promise<Position[]> =>
+    api.get('/positions/active', { params }).then((r) => {
       const res = r.data;
       return Array.isArray(res) ? res : res?.data || [];
     }),

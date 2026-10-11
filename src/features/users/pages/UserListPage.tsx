@@ -24,9 +24,9 @@ import LockResetIcon from '@mui/icons-material/LockReset';
 import BlockIcon from '@mui/icons-material/Block';
 import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, Column } from '@/components/common/DataTable';
-import { SearchInput } from '@/components/common/SearchInput';
 import { StatusChip } from '@/components/common/StatusChip';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { useListFilters } from '@/hooks/useListFilters';
 import {
   useUserList,
   useActivePositions,
@@ -34,14 +34,14 @@ import {
   useUpdateUser,
   useChangeUserPassword,
 } from '../hooks/useUsers';
-import { User, UserRole, CreateUserDto, UpdateUserDto, Position } from '@/types';
+import { User, UserRole, CreateUserDto, UpdateUserDto, Position, UserQueryParams } from '@/types';
 import dayjs from 'dayjs';
 
 export const UserListPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [search, setSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState<UserRole | ''>('');
+  const { filters, replaceFilters } =
+    useListFilters<Omit<UserQueryParams, 'page' | 'limit'>>();
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [createEmail, setCreateEmail] = useState('');
@@ -68,11 +68,10 @@ export const UserListPage: React.FC = () => {
   const { data, isLoading } = useUserList({
     page,
     limit,
-    search: search || undefined,
-    role: roleFilter || undefined,
+    ...filters,
   });
 
-  // const { data: positionsList } = useActivePositions();
+  const { data: positionsList } = useActivePositions();
   const createMutation = useCreateUser();
   const updateMutation = useUpdateUser();
   const changePasswordMutation = useChangeUserPassword();
@@ -157,6 +156,7 @@ export const UserListPage: React.FC = () => {
     {
       id: 'fullName',
       label: 'Họ tên & Email',
+      filterFields: [{ key: 'search', label: 'Tìm người dùng', type: 'input' }],
       minWidth: 200,
       render: (row) => (
         <div>
@@ -168,12 +168,30 @@ export const UserListPage: React.FC = () => {
     {
       id: 'role',
       label: 'Vai trò (Role)',
+      filterFields: [{
+        key: 'role',
+        label: 'Vai trò',
+        type: 'select',
+        filters: Object.values(UserRole).map((value) => ({ text: value, value })),
+      }],
       minWidth: 140,
       render: (row) => <StatusChip status={row.role} type="role" />,
     },
     {
       id: 'position',
       label: 'Chức vụ',
+      filterFields: [
+        { key: 'departmentId', label: 'Mã phòng ban', type: 'number' },
+        {
+          key: 'positionId',
+          label: 'Chức vụ',
+          type: 'select',
+          filters: (positionsList || []).map((position) => ({
+            text: position.positionTitle,
+            value: position.id,
+          })),
+        },
+      ],
       minWidth: 160,
       render: (row) => (
         <span className="text-xs text-slate-700 font-medium">
@@ -184,6 +202,7 @@ export const UserListPage: React.FC = () => {
     {
       id: 'isActive',
       label: 'Trạng thái',
+      filterFields: [{ key: 'isActive', label: 'Tài khoản đang hoạt động', type: 'boolean' }],
       minWidth: 110,
       render: (row) => (
         <span
@@ -269,38 +288,6 @@ export const UserListPage: React.FC = () => {
       />
 
       <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
-          <SearchInput
-            placeholder="Tìm theo tên hoặc email..."
-            value={search}
-            onChange={(val) => {
-              setSearch(val);
-              setPage(1);
-            }}
-            className="sm:w-80"
-          />
-
-          <FormControl size="small" className="sm:w-48">
-            <InputLabel id="role-filter-label">Vai trò</InputLabel>
-            <Select
-              labelId="role-filter-label"
-              value={roleFilter}
-              label="Vai trò"
-              onChange={(e) => {
-                setRoleFilter(e.target.value as UserRole | '');
-                setPage(1);
-              }}
-            >
-              <MenuItem value="">Tất cả vai trò</MenuItem>
-              <MenuItem value={UserRole.SUPER_ADMIN}>Super Admin</MenuItem>
-              <MenuItem value={UserRole.ADMIN}>Quản trị viên (Admin)</MenuItem>
-              <MenuItem value={UserRole.MANAGER}>Quản lý (Manager)</MenuItem>
-              <MenuItem value={UserRole.STAFF}>Nhân viên y tế (Staff)</MenuItem>
-              <MenuItem value={UserRole.USER}>Bác sĩ / Người dùng (User)</MenuItem>
-            </Select>
-          </FormControl>
-        </div>
-
         <div className="text-xs text-slate-500 tabular-nums">
           Tổng số: <strong className="text-slate-800">{data?.pagination?.total || 0}</strong> tài khoản
         </div>
@@ -311,6 +298,11 @@ export const UserListPage: React.FC = () => {
         rows={data?.data || []}
         loading={isLoading}
         pagination={data?.pagination}
+        filters={filters}
+        onFilterChange={(nextFilters) => {
+          replaceFilters(nextFilters);
+          setPage(1);
+        }}
         onPageChange={(p) => setPage(p)}
         onLimitChange={(l) => {
           setLimit(l);

@@ -18,7 +18,13 @@ export interface TriageResult {
   updatedAt: string;
 }
 
-export interface TriageResultQueryParams extends BaseQueryParams {}
+export interface TriageResultQueryParams extends BaseQueryParams {
+  appointmentId?: string;
+  triageLevel?: TriageLevel;
+  chiefComplaint?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
 
 export interface CreateTriageResultDto {
   appointmentId: string;

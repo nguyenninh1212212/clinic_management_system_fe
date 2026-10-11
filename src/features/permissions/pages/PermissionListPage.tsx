@@ -21,19 +21,18 @@ import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import SecurityIcon from '@mui/icons-material/Security';
 import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, Column } from '@/components/common/DataTable';
-import { SearchInput } from '@/components/common/SearchInput';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { useListFilters } from '@/hooks/useListFilters';
 import {
   usePermissionList,
   useCreatePermission,
   useUpdatePermission,
   useDeletePermission,
 } from '../hooks/usePermissions';
-import { Permission, PermissionAction, CreatePermissionDto } from '@/types';
+import { Permission, PermissionAction, PermissionQueryParams, ResourceType, CreatePermissionDto } from '@/types';
 
 export const PermissionListPage: React.FC = () => {
-  const [search, setSearch] = useState('');
-  const [actionFilter, setActionFilter] = useState<PermissionAction | ''>('');
+  const { filters, replaceFilters } = useListFilters<PermissionQueryParams>();
 
   // Dialog State
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -48,7 +47,7 @@ export const PermissionListPage: React.FC = () => {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [deleteName, setDeleteName] = useState('');
 
-  const { data = [], isLoading } = usePermissionList();
+  const { data = [], isLoading } = usePermissionList(filters);
 
   const createMutation = useCreatePermission();
   const updateMutation = useUpdatePermission();
@@ -95,18 +94,6 @@ export const PermissionListPage: React.FC = () => {
     }
   };
 
-  const filteredData = data.filter((item) => {
-    const matchesSearch =
-      !search ||
-      item.permissionCode.toLowerCase().includes(search.toLowerCase()) ||
-      item.permissionName.toLowerCase().includes(search.toLowerCase()) ||
-      item.resource.toLowerCase().includes(search.toLowerCase());
-
-    const matchesAction = !actionFilter || item.action === actionFilter;
-
-    return matchesSearch && matchesAction;
-  });
-
   const columns: Column<Permission>[] = [
     {
       id: 'id',
@@ -117,6 +104,7 @@ export const PermissionListPage: React.FC = () => {
     {
       id: 'permissionCode',
       label: 'Mã quyền (Code)',
+      filterFields: [{ key: 'search', label: 'Tìm quyền', type: 'input' }],
       minWidth: 200,
       render: (row) => (
         <div className="flex items-center gap-2">
@@ -136,6 +124,12 @@ export const PermissionListPage: React.FC = () => {
     {
       id: 'resource',
       label: 'Tài nguyên (Resource)',
+      filterFields: [{
+        key: 'resource',
+        label: 'Tài nguyên',
+        type: 'select',
+        filters: Object.values(ResourceType).map((value) => ({ text: value, value })),
+      }],
       minWidth: 140,
       render: (row) => (
         <span className="text-xs font-mono bg-sky-50 text-sky-700 px-2 py-0.5 rounded">
@@ -146,6 +140,12 @@ export const PermissionListPage: React.FC = () => {
     {
       id: 'action',
       label: 'Hành động',
+      filterFields: [{
+        key: 'action',
+        label: 'Hành động',
+        type: 'select',
+        filters: Object.values(PermissionAction).map((value) => ({ text: value, value })),
+      }],
       minWidth: 120,
       render: (row) => (
         <span className="text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
@@ -210,41 +210,17 @@ export const PermissionListPage: React.FC = () => {
       />
 
       <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
-          <SearchInput
-            placeholder="Tìm theo mã hoặc tên quyền..."
-            value={search}
-            onChange={(val) => setSearch(val)}
-            className="sm:w-80"
-          />
-
-          <FormControl size="small" className="sm:w-48">
-            <InputLabel id="action-filter-label">Hành động</InputLabel>
-            <Select
-              labelId="action-filter-label"
-              value={actionFilter}
-              label="Hành động"
-              onChange={(e) => setActionFilter(e.target.value as PermissionAction | '')}
-            >
-              <MenuItem value="">Tất cả hành động</MenuItem>
-              {Object.values(PermissionAction).map((a) => (
-                <MenuItem key={a} value={a}>
-                  {a}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </div>
-
         <div className="text-xs text-slate-500 tabular-nums">
-          Tổng số: <strong className="text-slate-800">{filteredData.length}</strong> quyền
+          Tổng số: <strong className="text-slate-800">{data.length}</strong> quyền
         </div>
       </div>
 
       <DataTable
         columns={columns}
-        rows={filteredData}
+        rows={data}
         loading={isLoading}
+        filters={filters}
+        onFilterChange={replaceFilters}
         emptyTitle="Chưa có quyền nào trong hệ thống"
         emptyDescription="Tạo quyền mới để thiết lập ma trận kiểm soát truy cập chức năng."
         emptyActionText="Thêm quyền đầu tiên"

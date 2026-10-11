@@ -3,12 +3,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/api/queryKeys';
 import { permissionsApi } from '@/api/endpoints/permissions.api';
 import { notifyApiFeedback } from '@/api/axios';
-import { CreatePermissionDto } from '@/types';
+import { CreatePermissionDto, PermissionQueryParams } from '@/types';
 
-export function usePermissionList() {
+export function usePermissionList(params?: PermissionQueryParams) {
   return useQuery({
-    queryKey: queryKeys.permissions.all,
-    queryFn: () => permissionsApi.findAll(),
+    queryKey: queryKeys.permissions.list(params || {}),
+    queryFn: () => permissionsApi.findAll(params),
     staleTime: 60_000,
   });
 }

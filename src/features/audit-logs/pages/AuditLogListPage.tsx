@@ -1,7 +1,6 @@
 // src/features/audit-logs/pages/AuditLogListPage.tsx
 import { Column, DataTable } from '@/components/common/DataTable';
 import { PageHeader } from '@/components/common/PageHeader';
-import { SearchInput } from '@/components/common/SearchInput';
 import { AuditAction, AuditLog } from '@/types';
 import {
   Button,
@@ -9,31 +8,26 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
   Typography,
 } from '@mui/material';
 import dayjs from 'dayjs';
 import React, { useState } from 'react';
 import { useAuditLogs } from '../hooks/useAuditLogs';
+import { useListFilters } from '@/hooks/useListFilters';
+import { AuditLogQueryParams } from '@/types';
 
 export const AuditLogListPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [action, setAction] = useState<AuditAction>();
-  const [entity, setEntity] = useState<string>();
-  const [search, setSearch] = useState<string>();
+  const { filters, replaceFilters } =
+    useListFilters<Omit<AuditLogQueryParams, 'page' | 'limit'>>();
 
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
 
   const { data, isLoading } = useAuditLogs({
     page,
     limit,
-    entityName: entity || undefined,
-    search: search || undefined,
-    action: action || undefined,
+    ...filters,
   });
 
   const getActionBadge = (act: string) => {
@@ -76,6 +70,7 @@ export const AuditLogListPage: React.FC = () => {
     {
       id: 'user',
       label: 'Người thao tác',
+      filterFields: [{ key: 'userId', label: 'Mã người dùng', type: 'input' }],
       minWidth: 160,
       render: (row) => (
         <div>
@@ -91,12 +86,22 @@ export const AuditLogListPage: React.FC = () => {
     {
       id: 'action',
       label: 'Hành động',
+      filterFields: [{
+        key: 'action',
+        label: 'Hành động',
+        type: 'select',
+        filters: Object.values(AuditAction).map((value) => ({ text: value, value })),
+      }],
       minWidth: 130,
       render: (row) => getActionBadge(row.action),
     },
     {
       id: 'entity',
       label: 'Đối tượng thực thể',
+      filterFields: [
+        { key: 'entityName', label: 'Tên thực thể', type: 'input' },
+        { key: 'entityId', label: 'Mã thực thể', type: 'input' },
+      ],
       minWidth: 140,
       render: (row) => (
         <div>
@@ -107,6 +112,10 @@ export const AuditLogListPage: React.FC = () => {
     {
       id: 'createdAt',
       label: 'Thời gian',
+      filterFields: [
+        { key: 'dateFrom', label: 'Từ ngày', type: 'date' },
+        { key: 'dateTo', label: 'Đến ngày', type: 'date' },
+      ],
       minWidth: 140,
       render: (row) => (
         <span className="tabular-nums font-mono text-xs text-slate-600">
@@ -139,64 +148,16 @@ export const AuditLogListPage: React.FC = () => {
         breadcrumbs={[{ label: 'Trang chủ', href: '/dashboard' }, { label: 'Nhật ký kiểm toán' }]}
       />
 
-      <div className="bg-white p-4 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <SearchInput
-          placeholder="Tìm theo thực thể, IP, hoặc mã..."
-          value={search}
-          onChange={(val) => {
-            setSearch(val);
-            setPage(1);
-          }}
-        />
-
-        <FormControl size="small">
-          <InputLabel id="action-filter">Lọc theo hành động</InputLabel>
-          <Select
-            labelId="action-filter"
-            value={action}
-            label="Lọc theo hành động"
-            onChange={(e) => {
-              setAction(e.target.value);
-              setPage(1);
-            }}
-          >
-            <MenuItem value="">Tất cả hành động</MenuItem>
-            <MenuItem value="CREATE">CREATE (Tạo mới)</MenuItem>
-            <MenuItem value="UPDATE">UPDATE (Cập nhật)</MenuItem>
-            <MenuItem value="DELETE">DELETE (Xóa)</MenuItem>
-            <MenuItem value="LOGIN">LOGIN (Đăng nhập)</MenuItem>
-            <MenuItem value="LOGOUT">LOGOUT (Đăng xuất)</MenuItem>
-          </Select>
-        </FormControl>
-
-        <FormControl size="small">
-          <InputLabel id="entity-filter">Lọc theo thực thể</InputLabel>
-          <Select
-            labelId="entity-filter"
-            value={entity}
-            label="Lọc theo thực thể"
-            onChange={(e) => {
-              setEntity(e.target.value);
-              setPage(1);
-            }}
-          >
-            <MenuItem value="">Tất cả thực thể</MenuItem>
-            <MenuItem value="Patient">Bệnh nhân (Patient)</MenuItem>
-            <MenuItem value="Appointment">Lịch hẹn (Appointment)</MenuItem>
-            <MenuItem value="Doctor">Bác sĩ (Doctor)</MenuItem>
-            <MenuItem value="Examination">Phiếu khám (Examination)</MenuItem>
-            <MenuItem value="Prescription">Đơn thuốc (Prescription)</MenuItem>
-            <MenuItem value="InventoryItem">Kho dược (InventoryItem)</MenuItem>
-            <MenuItem value="User">Người dùng (User)</MenuItem>
-          </Select>
-        </FormControl>
-      </div>
-
       <DataTable
         columns={columns}
         rows={data?.data || []}
         loading={isLoading}
         pagination={data?.pagination}
+        filters={filters}
+        onFilterChange={(nextFilters) => {
+          replaceFilters(nextFilters);
+          setPage(1);
+        }}
         onPageChange={(p) => setPage(p)}
         onLimitChange={(l) => {
           setLimit(l);

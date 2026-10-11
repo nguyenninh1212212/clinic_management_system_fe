@@ -3,10 +3,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Avatar,
   IconButton,
   Tooltip,
@@ -17,12 +13,12 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, Column } from '@/components/common/DataTable';
-import { SearchInput } from '@/components/common/SearchInput';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { useDoctors, useDeleteDoctor } from '../hooks/useDoctors';
 import { useSpecialtiesDropdown } from '@/features/specialties/hooks/useSpecialties';
 import { usePermission } from '@/hooks/usePermission';
-import { Doctor, DoctorDegree } from '@/types';
+import { Doctor, DoctorDegree, DoctorQueryParams } from '@/types';
+import { useListFilters } from '@/hooks/useListFilters';
 
 export const DoctorListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -30,9 +26,8 @@ export const DoctorListPage: React.FC = () => {
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [search, setSearch] = useState('');
-  const [specialtyId, setSpecialtyId] = useState<number | ''>('');
-  const [degree, setDegree] = useState<DoctorDegree | ''>('');
+  const { filters, replaceFilters } =
+    useListFilters<Omit<DoctorQueryParams, 'page' | 'limit'>>();
 
   // Delete State
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -42,9 +37,7 @@ export const DoctorListPage: React.FC = () => {
   const { data, isLoading } = useDoctors({
     page,
     limit,
-    search: search || undefined,
-    specialtyId: specialtyId ? Number(specialtyId) : undefined,
-    degree: degree || undefined,
+    ...filters,
   });
 
   const deleteMutation = useDeleteDoctor();
@@ -94,6 +87,10 @@ export const DoctorListPage: React.FC = () => {
     {
       id: 'fullName',
       label: 'Bác sĩ',
+      filterFields: [
+        { key: 'search', label: 'Tìm bác sĩ', type: 'input' },
+        { key: 'isActive', label: 'Đang hoạt động', type: 'boolean' },
+      ],
       minWidth: 180,
       render: (row) => (
         <div>
@@ -110,6 +107,15 @@ export const DoctorListPage: React.FC = () => {
     {
       id: 'specialty',
       label: 'Chuyên khoa',
+      filterFields: [{
+        key: 'specialtyId',
+        label: 'Chuyên khoa',
+        type: 'select',
+        filters: (specialties || []).map((specialty) => ({
+          text: specialty.name,
+          value: specialty.id,
+        })),
+      }],
       minWidth: 140,
       render: (row) => (
         <span className="font-medium text-slate-700">
@@ -120,6 +126,12 @@ export const DoctorListPage: React.FC = () => {
     {
       id: 'degree',
       label: 'Học vị / Học hàm',
+      filterFields: [{
+        key: 'degree',
+        label: 'Học vị',
+        type: 'select',
+        filters: Object.values(DoctorDegree).map((value) => ({ text: value, value })),
+      }],
       minWidth: 160,
       render: (row) => (
         <span className="text-xs text-sky-800 font-medium bg-sky-50 px-2 py-0.5 rounded">
@@ -130,6 +142,7 @@ export const DoctorListPage: React.FC = () => {
     {
       id: 'licenseNumber',
       label: 'Số CCHN',
+      filterFields: [{ key: 'licenseNumber', label: 'Số giấy phép', type: 'input' }],
       minWidth: 130,
       render: (row) => (
         <span className="font-mono text-xs tabular-nums text-slate-600 font-medium">
@@ -140,6 +153,7 @@ export const DoctorListPage: React.FC = () => {
     {
       id: 'yearsOfExperience',
       label: 'Kinh nghiệm',
+      filterFields: [{ key: 'yearsOfExperience', label: 'Số năm kinh nghiệm', type: 'number' }],
       minWidth: 120,
       render: (row) => (
         <span className="tabular-nums text-xs text-slate-700 font-medium">
@@ -214,58 +228,7 @@ export const DoctorListPage: React.FC = () => {
         }
       />
 
-      <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1">
-          <SearchInput
-            placeholder="Tìm theo tên hoặc số CCHN..."
-            value={search}
-            onChange={(val) => {
-              setSearch(val);
-              setPage(1);
-            }}
-          />
-
-          <FormControl size="small">
-            <InputLabel id="specialty-filter">Chuyên khoa</InputLabel>
-            <Select
-              labelId="specialty-filter"
-              value={specialtyId}
-              label="Chuyên khoa"
-              onChange={(e) => {
-                setSpecialtyId(e.target.value as number | '');
-                setPage(1);
-              }}
-            >
-              <MenuItem value="">Tất cả chuyên khoa</MenuItem>
-              {specialties?.map((s) => (
-                <MenuItem key={s.id} value={s.id}>
-                  {s.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <FormControl size="small">
-            <InputLabel id="degree-filter">Học vị</InputLabel>
-            <Select
-              labelId="degree-filter"
-              value={degree}
-              label="Học vị"
-              onChange={(e) => {
-                setDegree(e.target.value as DoctorDegree | '');
-                setPage(1);
-              }}
-            >
-              <MenuItem value="">Tất cả học vị</MenuItem>
-              <MenuItem value={DoctorDegree.MD}>Bác sĩ (MD)</MenuItem>
-              <MenuItem value={DoctorDegree.MASTER}>Thạc sĩ</MenuItem>
-              <MenuItem value={DoctorDegree.PHD}>Tiến sĩ</MenuItem>
-              <MenuItem value={DoctorDegree.ASSOCIATE_PROFESSOR}>Phó Giáo sư</MenuItem>
-              <MenuItem value={DoctorDegree.PROFESSOR}>Giáo sư</MenuItem>
-            </Select>
-          </FormControl>
-        </div>
-
+      <div className="space-y-3">
         <div className="text-xs text-slate-500 text-right tabular-nums">
           Tổng số: <strong className="text-slate-800">{data?.pagination?.total || 0}</strong> bác sĩ
         </div>
@@ -276,6 +239,11 @@ export const DoctorListPage: React.FC = () => {
         rows={data?.data || []}
         loading={isLoading}
         pagination={data?.pagination}
+        filters={filters}
+        onFilterChange={(nextFilters) => {
+          replaceFilters(nextFilters);
+          setPage(1);
+        }}
         onPageChange={(p) => setPage(p)}
         onLimitChange={(l) => {
           setLimit(l);

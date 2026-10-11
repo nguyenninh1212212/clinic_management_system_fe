@@ -4,38 +4,25 @@ import { queryKeys } from '@/api/queryKeys';
 import { usersApi } from '@/api/endpoints/users.api';
 import { positionsApi } from '@/api/endpoints/positions.api';
 import { notifyApiFeedback } from '@/api/axios';
-import { CreateUserDto, UpdateUserDto, UserRole } from '@/types';
+import { CreateUserDto, UpdateUserDto, UserQueryParams, PositionQueryParams } from '@/types';
 
-interface UseUserListParams {
+interface UseUserListParams extends UserQueryParams {
   page: number;
   limit: number;
-  search?: string;
-  role?: UserRole;
 }
 
 export function useUserList(params: UseUserListParams) {
   return useQuery({
-    queryKey: queryKeys.users.list({
-      page: params.page,
-      limit: params.limit,
-      search: params.search || undefined,
-      role: params.role || undefined,
-    }),
-    queryFn: () =>
-      usersApi.findAll({
-        page: params.page,
-        limit: params.limit,
-        search: params.search || undefined,
-        role: params.role || undefined,
-      }),
+    queryKey: queryKeys.users.list(params),
+    queryFn: () => usersApi.findAll(params),
     staleTime: 60_000,
   });
 }
 
-export function useActivePositions() {
+export function useActivePositions(params?: Pick<PositionQueryParams, 'search' | 'level' | 'departmentId'>) {
   return useQuery({
-    queryKey: queryKeys.positions.active(),
-    queryFn: () => positionsApi.getActive(),
+    queryKey: queryKeys.positions.active(params),
+    queryFn: () => positionsApi.getActive(params),
     staleTime: 5 * 60_000,
   });
 }

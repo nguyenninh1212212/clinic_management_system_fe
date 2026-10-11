@@ -1,9 +1,16 @@
-import React, { useMemo, useState } from "react";
-import { Alert, CircularProgress } from "@mui/material";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Stack,
+  Typography,
+} from "@mui/material";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/common/PageHeader";
-import { useDoctors } from "@/features/doctors/hooks/useDoctors";
+import { useDoctors, useInfiniteDoctors } from "@/features/doctors/hooks/useDoctors";
 import { useSpecialtiesDropdown } from "@/features/specialties/hooks/useSpecialties";
 import { useAppointments } from "../hooks/useAppointments";
 import { useDoctorShifts } from "@/features/doctors/hooks/useDoctorShifts";
@@ -29,7 +36,7 @@ const appointmentAt = (minute: number, appointments: Appointment[]) =>
   appointments.find(
     (appointment) =>
       dayjs(appointment.appointmentDate).hour() * 60 +
-        dayjs(appointment.appointmentDate).minute() ===
+      dayjs(appointment.appointmentDate).minute() ===
       minute,
   );
 
@@ -53,42 +60,68 @@ const DoctorScheduleColumn: React.FC<{
       status: status || undefined,
     });
   const appointments = appointmentsData?.data || [];
-  if (loadingShifts || loadingAppointments)
+  if (loadingShifts || loadingAppointments) {
     return (
-      <div className="flex min-h-130 items-center justify-center border-l border-slate-200">
+      <Box className="flex min-h-130 items-center justify-center border-l border-slate-200">
         <CircularProgress size={22} />
-      </div>
+      </Box>
     );
+  }
+
   return (
-    <div className="border-l border-slate-200">
-      {Array.from({ length: (END_MINUTE - START_MINUTE) / 30 }, (_, index) => {
-        const minute = START_MINUTE + index * 30;
-        const appointment = appointmentAt(minute, appointments);
-        const working = inShift(minute, shifts);
-        return (
-          <button
-            key={minute}
-            type="button"
-            onClick={() =>
-              appointment
-                ? onAppointment(appointment)
-                : working
-                  ? onEmpty(doctor.id, timeLabel(minute))
-                  : undefined
-            }
-            className={`relative flex h-12 w-full border-b border-slate-100 px-2 py-1 text-left text-[11px] ${appointment ? (appointment.status === AppointmentStatus.CANCELLED ? "bg-rose-50 text-rose-700" : appointment.status === AppointmentStatus.COMPLETED ? "bg-slate-100 text-slate-600" : "bg-amber-50 text-amber-800") : working ? "bg-emerald-50/50 text-emerald-700 hover:bg-emerald-100" : "bg-slate-50 text-slate-300"} ${!appointment && working ? "cursor-pointer" : ""}`}
-          >
-            <span>
+    <Box className="border-l border-slate-200">
+      {Array.from(
+        { length: (END_MINUTE - START_MINUTE) / 30 },
+        (_, index) => {
+          const minute = START_MINUTE + index * 30;
+          const appointment = appointmentAt(minute, appointments);
+          const working = inShift(minute, shifts);
+
+          return (
+            <Button
+              key={minute}
+              fullWidth
+              disableElevation
+              onClick={() =>
+                appointment
+                  ? onAppointment(appointment)
+                  : working
+                    ? onEmpty(doctor.id, timeLabel(minute))
+                    : undefined
+              }
+              className="!h-12 !justify-start !rounded-none !border-b !border-slate-100 !px-2 !py-1 !text-left !text-[11px]"
+              sx={{
+                color: appointment
+                  ? appointment.status === AppointmentStatus.CANCELLED
+                    ? "error.dark"
+                    : "text.primary"
+                  : working
+                    ? "success.dark"
+                    : "text.disabled",
+                bgcolor: appointment
+                  ? appointment.status === AppointmentStatus.CANCELLED
+                    ? "error.50"
+                    : appointment.status === AppointmentStatus.COMPLETED
+                      ? "grey.100"
+                      : "warning.50"
+                  : working
+                    ? "success.50"
+                    : "grey.50",
+                "&:hover": {
+                  bgcolor: working && !appointment ? "success.100" : undefined,
+                },
+              }}
+            >
               {appointment
                 ? `${appointment.patient?.fullName || "Đã đặt"} · ${appointment.status}`
                 : working
                   ? "Trống · Đặt lịch"
                   : "Ngoài ca"}
-            </span>
-          </button>
-        );
-      })}
-    </div>
+            </Button>
+          );
+        },
+      )}
+    </Box>
   );
 };
 
@@ -100,23 +133,57 @@ export const DoctorScheduleCalendar: React.FC = () => {
   const [status, setStatus] = useState<AppointmentStatus | "">("");
   const [selectedAppointment, setSelectedAppointment] =
     useState<Appointment | null>(null);
+  const [doctorPage, setDoctorPage] = useState(1);
+  const DOCTORS_PER_PAGE = 5;
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
   const {
     data: doctorsData,
     isLoading,
     isError,
-  } = useDoctors({
-    limit: 100,
-    search: search || undefined,
-    specialtyId: specialtyId ? Number(specialtyId) : undefined,
-  });
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteDoctors(
+    search || undefined,
+    specialtyId ? Number(specialtyId) : undefined,
+  );
+
+  const doctors = useMemo(
+    () => doctorsData?.pages.flatMap((page) => page.data) ?? [],
+    [doctorsData],
+  );
+
+  useEffect(() => {
+    const target = loadMoreRef.current;
+
+    if (!target || !hasNextPage || isFetchingNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          fetchNextPage();
+        }
+      },
+      {
+        root: target.closest(".doctor-calendar-scroll"),
+        rootMargin: "0px 300px 0px 0px",
+        threshold: 0,
+      },
+    );
+
+    observer.observe(target);
+
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
   const { data: specialties = [] } = useSpecialtiesDropdown();
-  const doctors = useMemo(() => doctorsData?.data || [], [doctorsData]);
+
   const minutes = Array.from(
     { length: (END_MINUTE - START_MINUTE) / 30 },
     (_, index) => START_MINUTE + index * 30,
   );
   return (
-    <div className="space-y-4">
+    <Stack spacing={2}>
       <PageHeader
         title="Lịch làm việc bác sĩ"
         subtitle="Theo dõi ca làm, slot trống và lịch hẹn theo ngày"
@@ -125,6 +192,7 @@ export const DoctorScheduleCalendar: React.FC = () => {
           { label: "Lịch làm việc" },
         ]}
       />
+
       <ScheduleFilters
         date={date}
         search={search}
@@ -140,37 +208,40 @@ export const DoctorScheduleCalendar: React.FC = () => {
         <Alert severity="error">Không thể tải danh sách bác sĩ.</Alert>
       )}
       {isLoading ? (
-        <div className="flex justify-center py-16">
+        <Box className="flex justify-center py-16">
           <CircularProgress />
-        </div>
+        </Box>
       ) : !doctors.length ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white py-16 text-center text-sm text-slate-500">
-          Không có bác sĩ phù hợp.
-        </div>
+        <Box className="rounded-xl border border-dashed border-slate-300 bg-white py-16 text-center">
+          <Typography variant="body2" color="text.secondary">
+            Không có bác sĩ phù hợp.
+          </Typography>
+        </Box>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-          <div
+        <Box className="doctor-calendar-scroll overflow-x-auto rounded-xl border border-slate-200 bg-white">
+          <Box
             className="grid min-w-225"
-            style={{
-              gridTemplateColumns:
-                "72px repeat(" + doctors.length + ", minmax(180px, 1fr))",
+            sx={{
+              gridTemplateColumns: `72px repeat(${doctors.length}, minmax(180px, 1fr))`,
             }}
           >
+
             <div className="sticky left-0 z-10 border-b border-slate-200 bg-slate-50 p-3 text-xs font-bold text-slate-500">
               Giờ
             </div>
             {doctors.map((doctor) => (
-              <div
+              <DoctorScheduleColumn
                 key={doctor.id}
-                className="border-b border-l border-slate-200 bg-sky-50 p-3 text-center"
-              >
-                <div className="truncate text-sm font-bold text-slate-900">
-                  {doctor.user?.fullName || "Bác sĩ"}
-                </div>
-                <div className="truncate text-[11px] text-slate-500">
-                  {doctor.specialty?.name || "Đa khoa"}
-                </div>
-              </div>
+                doctor={doctor}
+                date={date}
+                status={status}
+                onEmpty={(doctorId, time) =>
+                  navigate(
+                    `/appointments/new?doctorId=${doctorId}&date=${date}&time=${time}`,
+                  )
+                }
+                onAppointment={setSelectedAppointment}
+              />
             ))}
             <div className="bg-slate-50">
               {minutes.map((minute) => (
@@ -196,8 +267,9 @@ export const DoctorScheduleCalendar: React.FC = () => {
                 onAppointment={setSelectedAppointment}
               />
             ))}
-          </div>
-        </div>
+            {/* Nội dung các cột lịch hiện tại */}
+          </Box>
+        </Box>
       )}
       <div className="flex flex-wrap gap-3 text-xs text-slate-600">
         <span>
@@ -221,6 +293,7 @@ export const DoctorScheduleCalendar: React.FC = () => {
         appointment={selectedAppointment}
         onClose={() => setSelectedAppointment(null)}
       />
-    </div>
+    </Stack>
+
   );
 };

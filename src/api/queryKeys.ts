@@ -48,8 +48,8 @@ export const queryKeys = {
   },
   prescriptionItems: {
     all: ['prescription-items'] as const,
-    byPrescription: (prescriptionId: string) =>
-      [...queryKeys.prescriptionItems.all, prescriptionId] as const,
+    byPrescription: (prescriptionId: string, params?: object) =>
+      [...queryKeys.prescriptionItems.all, prescriptionId, params] as const,
     detail: (id: string) => [...queryKeys.prescriptionItems.all, 'detail', id] as const,
   },
   medicines: {
@@ -80,7 +80,7 @@ export const queryKeys = {
     all: ['positions'] as const,
     lists: () => [...queryKeys.positions.all, 'list'] as const,
     list: (p: object) => [...queryKeys.positions.lists(), p] as const,
-    active: () => [...queryKeys.positions.all, 'active'] as const,
+    active: (params?: object) => [...queryKeys.positions.all, 'active', params] as const,
     detail: (id: number) => [...queryKeys.positions.all, 'detail', id] as const,
   },
   users: {
@@ -92,6 +92,7 @@ export const queryKeys = {
   },
   permissions: {
     all: ['permissions'] as const,
+    list: (params: object) => [...queryKeys.permissions.all, 'list', params] as const,
   },
   notifications: {
     all: ['notifications'] as const,
@@ -109,8 +110,9 @@ export const queryKeys = {
   },
   userPatientAccess: {
     all: ['user-patient-access'] as const,
-    myPatients: () => [...queryKeys.userPatientAccess.all, 'my-patients'] as const,
+    myPatients: (params?: object) => [...queryKeys.userPatientAccess.all, 'my-patients', params] as const,
     check: (patientId: string) => [...queryKeys.userPatientAccess.all, 'check', patientId] as const,
-    accessors: (patientId: string) => [...queryKeys.userPatientAccess.all, 'accessors', patientId] as const,
+    accessors: (patientId: string, params?: object) =>
+      [...queryKeys.userPatientAccess.all, 'accessors', patientId, params] as const,
   },
 };

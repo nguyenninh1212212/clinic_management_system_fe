@@ -8,8 +8,7 @@ import {
   FormControlLabel,
   FormHelperText,
   FormLabel,
-  Switch,
-  Dialog,
+    Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -27,8 +26,8 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 
 import { PageHeader } from "@/components/common/PageHeader";
 import { DataTable, Column } from "@/components/common/DataTable";
-import { SearchInput } from "@/components/common/SearchInput";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { useListFilters } from "@/hooks/useListFilters";
 
 import {
   useInventory,
@@ -38,14 +37,16 @@ import {
 } from "../hooks/useInventory";
 
 import { useMedicinesAll } from "@/features/medicines/hooks/useMedicines";
-import { Inventory, StockTransactionType } from "@/types";
+import { Inventory, InventoryQueryParams, StockTransactionType } from "@/types";
 import dayjs from "dayjs";
+import { ModalInventoryImport } from "@/components/modal/ModalInventoryImport";
 
 export const InventoryListPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [search, setSearch] = useState("");
-  const [lowStockOnly, setLowStockOnly] = useState(false);
+  const { filters, replaceFilters } =
+    useListFilters<Omit<InventoryQueryParams, "page" | "limit">>();
+  const [openExcelModal, setOpenExcelModal] = useState(false);
 
   // =========================
   // New Batch Form
@@ -99,8 +100,7 @@ export const InventoryListPage: React.FC = () => {
   const { data, isLoading } = useInventory({
     page,
     limit,
-    search: search || undefined,
-    lowStock: lowStockOnly ? true : undefined,
+    ...filters,
   });
 
   const { data: medicinesList } = useMedicinesAll();
@@ -250,6 +250,10 @@ export const InventoryListPage: React.FC = () => {
     {
       id: "batchNumber",
       label: "Số lô (Batch)",
+      filterFields: [
+        { key: "batchNumber", label: "Số lô", type: "input" },
+        { key: "warehouseLocation", label: "Vị trí kho", type: "input" },
+      ],
       minWidth: 120,
       render: (row) => (
         <span className="font-mono text-xs font-bold text-slate-800 tabular-nums">
@@ -261,6 +265,15 @@ export const InventoryListPage: React.FC = () => {
     {
       id: "medicine",
       label: "Thuốc / Biệt dược",
+      filterFields: [{
+        key: "medicineId",
+        label: "Thuốc",
+        type: "select",
+        filters: (medicinesList || []).map((medicine) => ({
+          text: medicine.name,
+          value: medicine.id,
+        })),
+      }],
       minWidth: 200,
       render: (row) => (
         <div>
@@ -274,6 +287,10 @@ export const InventoryListPage: React.FC = () => {
     {
       id: "quantity",
       label: "Tồn kho / Tối thiểu",
+      filterFields: [
+        { key: "quantity", label: "Số lượng", type: "number" },
+        { key: "lowStock", label: "Dưới ngưỡng tồn", type: "boolean" },
+      ],
       minWidth: 160,
       render: (row) => {
         const isLow = row.quantity <= 10;
@@ -282,9 +299,8 @@ export const InventoryListPage: React.FC = () => {
           <div>
             <div className="flex items-center gap-1.5">
               <span
-                className={`font-bold tabular-nums text-sm ${
-                  isLow ? "text-rose-600" : "text-slate-900"
-                }`}
+                className={`font-bold tabular-nums text-sm ${isLow ? "text-rose-600" : "text-slate-900"
+                  }`}
               >
                 {row.quantity.toLocaleString("vi-VN")}{" "}
                 {row.medicine?.unit || "viên"}
@@ -324,6 +340,11 @@ export const InventoryListPage: React.FC = () => {
     {
       id: "expiryDate",
       label: "Hạn dùng (EXP)",
+      filterFields: [
+        { key: "expiryFrom", label: "Hạn dùng từ", type: "date" },
+        { key: "expiryTo", label: "Hạn dùng đến", type: "date" },
+        { key: "expiringSoon", label: "Sắp hết hạn", type: "boolean" },
+      ],
       minWidth: 160,
       render: (row) => (
         <div>
@@ -381,6 +402,7 @@ export const InventoryListPage: React.FC = () => {
           { label: "Kho dược" },
         ]}
         action={
+          <> 
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -388,41 +410,19 @@ export const InventoryListPage: React.FC = () => {
           >
             Nhập lô thuốc mới
           </Button>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setOpenExcelModal(true)}
+            >
+              Import Excel
+            </Button>
+            </>
         }
       />
 
       {/* Search */}
       <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 flex-1">
-          <SearchInput
-            placeholder="Tìm theo số lô hoặc tên thuốc..."
-            value={search}
-            onChange={(val) => {
-              setSearch(val);
-              setPage(1);
-            }}
-            className="sm:w-80"
-          />
-
-          <FormControlLabel
-            control={
-              <Switch
-                checked={lowStockOnly}
-                onChange={(e) => {
-                  setLowStockOnly(e.target.checked);
-                  setPage(1);
-                }}
-                color="error"
-              />
-            }
-            label={
-              <span className="text-xs font-semibold text-rose-700">
-                Chỉ hiển thị thuốc sắp hết hàng
-              </span>
-            }
-          />
-        </div>
-
         <div className="text-xs text-slate-500 tabular-nums">
           Tổng số:{" "}
           <strong className="text-slate-800">
@@ -438,6 +438,11 @@ export const InventoryListPage: React.FC = () => {
         rows={data?.data || []}
         loading={isLoading}
         pagination={data?.pagination}
+        filters={filters}
+        onFilterChange={(nextFilters) => {
+          replaceFilters(nextFilters);
+          setPage(1);
+        }}
         onPageChange={(p) => setPage(p)}
         onLimitChange={(l) => {
           setLimit(l);
@@ -910,6 +915,8 @@ export const InventoryListPage: React.FC = () => {
         onConfirm={handleDeleteConfirm}
         onClose={() => setDeleteId(null)}
       />
+
+      <ModalInventoryImport open={openExcelModal} handleClose={() => setOpenExcelModal(false)} />
     </div>
   );
 };

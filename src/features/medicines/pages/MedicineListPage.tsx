@@ -23,8 +23,8 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { useQueryClient } from '@tanstack/react-query';
 import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, Column } from '@/components/common/DataTable';
-import { SearchInput } from '@/components/common/SearchInput';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { useListFilters } from '@/hooks/useListFilters';
 import { notifyApiFeedback } from '@/api/axios';
 import { medicinesApi } from '@/api/endpoints/medicines.api';
 import { queryKeys } from '@/api/queryKeys';
@@ -34,7 +34,7 @@ import {
   useUpdateMedicine,
   useDeleteMedicine,
 } from '../hooks/useMedicines';
-import { Medicine, MedicineCategory, CreateMedicineDto } from '@/types';
+import { Medicine, MedicineCategory, CreateMedicineDto, MedicineQueryParams } from '@/types';
 import * as XLSX from 'xlsx';
 export const MedicineListPage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -42,8 +42,8 @@ export const MedicineListPage: React.FC = () => {
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [search, setSearch] = useState('');
-  const [category, setCategory] = useState<MedicineCategory | ''>('');
+  const { filters, replaceFilters } =
+    useListFilters<Omit<MedicineQueryParams, 'page' | 'limit'>>();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMedicine, setEditingMedicine] = useState<Medicine | null>(null);
   const [name, setName] = useState('');
@@ -62,8 +62,7 @@ export const MedicineListPage: React.FC = () => {
   const { data, isLoading } = useMedicines({
     page,
     limit,
-    search: search || undefined,
-    category: category || undefined,
+    ...filters,
   });
 
   const createMutation = useCreateMedicine();
@@ -183,6 +182,11 @@ export const MedicineListPage: React.FC = () => {
     {
       id: 'name',
       label: 'Tên biệt dược / Hoạt chất',
+      filterFields: [
+        { key: 'search', label: 'Tìm thuốc', type: 'input' },
+        { key: 'genericName', label: 'Tên hoạt chất', type: 'input' },
+        { key: 'isActive', label: 'Đang kinh doanh', type: 'boolean' },
+      ],
       minWidth: 220,
       render: (row) => (
         <div>
@@ -205,6 +209,12 @@ export const MedicineListPage: React.FC = () => {
     {
       id: 'category',
       label: 'Nhóm thuốc',
+      filterFields: [{
+        key: 'category',
+        label: 'Nhóm thuốc',
+        type: 'select',
+        filters: Object.values(MedicineCategory).map((value) => ({ text: value, value })),
+      }],
       minWidth: 150,
       render: (row) => (
         <span className="text-xs font-semibold bg-slate-100 text-slate-700 px-2 py-0.5 rounded">
@@ -215,12 +225,14 @@ export const MedicineListPage: React.FC = () => {
     {
       id: 'unit',
       label: 'Đơn vị tính',
+      filterFields: [{ key: 'unit', label: 'Đơn vị tính', type: 'input' }],
       minWidth: 100,
       render: (row) => <span className="text-xs text-slate-700">{row.unit}</span>,
     },
     {
       id: 'totalStock',
       label: 'Tổng tồn kho',
+      filterFields: [{ key: 'lowStock', label: 'Sắp hết hàng', type: 'boolean' }],
       minWidth: 130,
       render: (row) => (
         <div>
@@ -241,6 +253,10 @@ export const MedicineListPage: React.FC = () => {
     {
       id: 'manufacturer',
       label: 'Hãng sản xuất / SĐK',
+      filterFields: [
+        { key: 'manufacturer', label: 'Hãng sản xuất', type: 'input' },
+        { key: 'registrationNumber', label: 'Số đăng ký', type: 'input' },
+      ],
       minWidth: 180,
       render: (row) => (
         <div className="text-xs">
@@ -319,38 +335,6 @@ export const MedicineListPage: React.FC = () => {
       />
 
       <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
-          <SearchInput
-            placeholder="Tìm theo tên biệt dược hoặc hoạt chất..."
-            value={search}
-            onChange={(val) => {
-              setSearch(val);
-              setPage(1);
-            }}
-            className="sm:w-80"
-          />
-
-          <FormControl size="small" className="sm:w-56">
-            <InputLabel id="category-filter-label">Nhóm tác dụng dược lý</InputLabel>
-            <Select
-              labelId="category-filter-label"
-              value={category}
-              label="Nhóm tác dụng dược lý"
-              onChange={(e) => {
-                setCategory(e.target.value as MedicineCategory | '');
-                setPage(1);
-              }}
-            >
-              <MenuItem value="">Tất cả nhóm thuốc</MenuItem>
-              {Object.values(MedicineCategory).map((c) => (
-                <MenuItem key={c} value={c}>
-                  {c}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </div>
-
         <div className="text-xs text-slate-500 tabular-nums">
           Tổng cộng: <strong className="text-slate-800">{data?.pagination?.total || 0}</strong> loại thuốc
         </div>
@@ -361,6 +345,11 @@ export const MedicineListPage: React.FC = () => {
         rows={data?.data || []}
         loading={isLoading}
         pagination={data?.pagination}
+        filters={filters}
+        onFilterChange={(nextFilters) => {
+          replaceFilters(nextFilters);
+          setPage(1);
+        }}
         onPageChange={(p) => setPage(p)}
         onLimitChange={(l) => {
           setLimit(l);

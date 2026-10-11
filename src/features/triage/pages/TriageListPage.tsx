@@ -2,10 +2,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Button,
   Dialog,
   DialogTitle,
@@ -14,25 +10,22 @@ import {
 } from '@mui/material';
 import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, Column } from '@/components/common/DataTable';
+import { useListFilters } from '@/hooks/useListFilters';
 import { StatusChip } from '@/components/common/StatusChip';
 import { useTriageList } from '../hooks/useTriageList';
-import { TriageResult, TriageLevel } from '@/types';
+import { TriageResult, TriageLevel, TriageResultQueryParams } from '@/types';
 import dayjs from 'dayjs';
 
 export const TriageListPage: React.FC = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [triageLevel, setTriageLevel] = useState<TriageLevel | ''>('');
+  const { filters, replaceFilters } =
+    useListFilters<Omit<TriageResultQueryParams, 'page' | 'limit'>>();
 
   const [selectedTriage, setSelectedTriage] = useState<TriageResult | null>(null);
 
-  const { data, isLoading } = useTriageList({ page, limit });
-
-  // Client filter by triage level if selected
-  const filteredRows = triageLevel
-    ? (data?.data || []).filter((r) => r.triageLevel === triageLevel)
-    : data?.data || [];
+  const { data, isLoading } = useTriageList({ page, limit, ...filters });
 
   const columns: Column<TriageResult>[] = [
     {
@@ -48,6 +41,7 @@ export const TriageListPage: React.FC = () => {
     {
       id: 'appointmentId',
       label: 'Mã cuộc hẹn',
+      filterFields: [{ key: 'appointmentId', label: 'Mã cuộc hẹn', type: 'input' }],
       minWidth: 160,
       render: (row) => (
         <div>
@@ -64,6 +58,12 @@ export const TriageListPage: React.FC = () => {
     {
       id: 'triageLevel',
       label: 'Phân loại cấp cứu',
+      filterFields: [{
+        key: 'triageLevel',
+        label: 'Mức độ ưu tiên',
+        type: 'select',
+        filters: Object.values(TriageLevel).map((value) => ({ text: value, value })),
+      }],
       minWidth: 160,
       render: (row) => <StatusChip status={row.triageLevel} type="triage" />,
     },
@@ -99,6 +99,7 @@ export const TriageListPage: React.FC = () => {
     {
       id: 'chiefComplaint',
       label: 'Lý do vào viện',
+      filterFields: [{ key: 'chiefComplaint', label: 'Lý do vào viện', type: 'input' }],
       minWidth: 180,
       render: (row) => (
         <span className="text-slate-600 text-xs line-clamp-1">
@@ -109,6 +110,10 @@ export const TriageListPage: React.FC = () => {
     {
       id: 'createdAt',
       label: 'Thời gian đo',
+      filterFields: [
+        { key: 'dateFrom', label: 'Từ ngày', type: 'date' },
+        { key: 'dateTo', label: 'Đến ngày', type: 'date' },
+      ],
       minWidth: 130,
       render: (row) => (
         <span className="text-slate-500 text-xs tabular-nums">
@@ -142,25 +147,6 @@ export const TriageListPage: React.FC = () => {
       />
 
       <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <FormControl size="small" className="sm:w-80">
-          <InputLabel id="triage-filter-label">Mức độ ưu tiên cấp cứu</InputLabel>
-          <Select
-            labelId="triage-filter-label"
-            value={triageLevel}
-            label="Mức độ ưu tiên cấp cứu"
-            onChange={(e) => {
-              setTriageLevel(e.target.value as TriageLevel | '');
-            }}
-          >
-            <MenuItem value="">Tất cả các mức độ</MenuItem>
-            <MenuItem value={TriageLevel.LEVEL_1}>Cấp 1 - Nguy kịch (Đỏ)</MenuItem>
-            <MenuItem value={TriageLevel.LEVEL_2}>Cấp 2 - Nặng (Cam)</MenuItem>
-            <MenuItem value={TriageLevel.LEVEL_3}>Cấp 3 - Trung bình (Vàng)</MenuItem>
-            <MenuItem value={TriageLevel.LEVEL_4}>Cấp 4 - Nhẹ (Xanh lá)</MenuItem>
-            <MenuItem value={TriageLevel.LEVEL_5}>Cấp 5 - Không khẩn cấp (Xanh lam)</MenuItem>
-          </Select>
-        </FormControl>
-
         <div className="text-xs text-slate-500 tabular-nums">
           Tổng số: <strong className="text-slate-800">{data?.pagination?.total || 0}</strong> lượt phân loại
         </div>
@@ -168,9 +154,14 @@ export const TriageListPage: React.FC = () => {
 
       <DataTable
         columns={columns}
-        rows={filteredRows}
+        rows={data?.data || []}
         loading={isLoading}
         pagination={data?.pagination}
+        filters={filters}
+        onFilterChange={(nextFilters) => {
+          replaceFilters(nextFilters);
+          setPage(1);
+        }}
         onPageChange={(p) => setPage(p)}
         onLimitChange={(l) => {
           setLimit(l);

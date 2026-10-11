@@ -36,8 +36,12 @@ export interface Doctor {
 }
 
 export interface DoctorQueryParams extends BaseQueryParams {
+  search?: string;
   specialtyId?: number;
   degree?: DoctorDegree;
+  licenseNumber?: string;
+  yearsOfExperience?: number;
+  isActive?: boolean;
 }
 
 export interface CreateDoctorDto {

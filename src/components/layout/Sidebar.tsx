@@ -148,12 +148,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
           visible: true,
         },
         {
-          label: 'Nhập dữ liệu kho',
-          path: '/inventory/import',
-          icon: <UploadFileOutlinedIcon fontSize="small" />,
-          visible: true,
-        },
-        {
           label: 'Giao dịch kho',
           path: '/stock-transactions',
           icon: <SwapHorizOutlinedIcon fontSize="small" />,

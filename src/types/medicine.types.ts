@@ -19,7 +19,14 @@ export interface Medicine {
 }
 
 export interface MedicineQueryParams extends BaseQueryParams {
+  search?: string;
   category?: MedicineCategory;
+  lowStock?: boolean;
+  genericName?: string;
+  unit?: string;
+  manufacturer?: string;
+  registrationNumber?: string;
+  isActive?: boolean;
 }
 
 export interface CreateMedicineDto {

@@ -20,8 +20,8 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, Column } from '@/components/common/DataTable';
-import { SearchInput } from '@/components/common/SearchInput';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { useListFilters } from '@/hooks/useListFilters';
 import { MaterialIconPicker, renderMaterialIcon } from '@/components/common/MaterialIconPicker';
 import {
   useSpecialties,
@@ -31,14 +31,15 @@ import {
 } from '../hooks/useSpecialties';
 import { specialtySchema, SpecialtyFormValues } from '../schemas/specialty.schema';
 import { usePermission } from '@/hooks/usePermission';
-import { Specialty } from '@/types';
+import { Specialty, SpecialtyQueryParams } from '@/types';
 
 export const SpecialtyListPage: React.FC = () => {
   const { canManageSpecialties, canDeleteSpecialty } = usePermission();
 
-  const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const { filters, replaceFilters } =
+    useListFilters<Omit<SpecialtyQueryParams, 'page' | 'limit'>>();
 
   // Dialog State
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -51,7 +52,7 @@ export const SpecialtyListPage: React.FC = () => {
   const { data, isLoading } = useSpecialties({
     page,
     limit,
-    search: search || undefined,
+    ...filters,
   });
 
   const createMutation = useCreateSpecialty();
@@ -151,6 +152,10 @@ export const SpecialtyListPage: React.FC = () => {
     {
       id: 'name',
       label: 'Tên chuyên khoa',
+      filterFields: [
+        { key: 'search', label: 'Tìm chuyên khoa', type: 'input' },
+        { key: 'isActive', label: 'Đang hoạt động', type: 'boolean' },
+      ],
       minWidth: 200,
       render: (row) => <span className="font-semibold text-slate-800">{row.name}</span>,
     },
@@ -219,16 +224,7 @@ export const SpecialtyListPage: React.FC = () => {
         }
       />
 
-      <div className="bg-white p-4 rounded-xl border border-slate-200 flex items-center justify-between gap-4">
-        <SearchInput
-          placeholder="Tìm tên chuyên khoa..."
-          value={search}
-          onChange={(val) => {
-            setSearch(val);
-            setPage(1);
-          }}
-          className="w-full sm:w-80"
-        />
+      <div className="bg-white p-4 rounded-xl border border-slate-200 flex items-center justify-end gap-4">
         <div className="text-xs text-slate-500 tabular-nums">
           Tổng số: <strong className="text-slate-800">{data?.pagination?.total || 0}</strong> chuyên khoa
         </div>
@@ -239,6 +235,11 @@ export const SpecialtyListPage: React.FC = () => {
         rows={data?.data || []}
         loading={isLoading}
         pagination={data?.pagination}
+        filters={filters}
+        onFilterChange={(nextFilters) => {
+          replaceFilters(nextFilters);
+          setPage(1);
+        }}
         onPageChange={(p) => setPage(p)}
         onLimitChange={(l) => {
           setLimit(l);

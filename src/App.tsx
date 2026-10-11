@@ -46,7 +46,6 @@ import { PrescriptionDetailPage } from "@/features/prescriptions/pages/Prescript
 import { MedicineListPage } from "@/features/medicines/pages/MedicineListPage";
 import { InventoryListPage } from "@/features/inventory/pages/InventoryListPage";
 import { StockTransactionsPage } from "@/features/inventory/pages/StockTransactionsPage";
-import { InventoryImportPage } from "@/pages/InventoryImportPage";
 
 // Doctors, Specialties & Positions
 import { DoctorListPage } from "@/features/doctors/pages/DoctorListPage";
@@ -149,7 +148,6 @@ export const routeElements = (
       {/* Medicines & Inventory */}
       <Route path="medicines" element={<MedicineListPage />} />
       <Route path="inventory" element={<InventoryListPage />} />
-      <Route path="inventory/import" element={<InventoryImportPage />} />
       <Route path="stock-transactions" element={<StockTransactionsPage />} />
 
       <Route path="doctors" element={<DoctorListPage />} />

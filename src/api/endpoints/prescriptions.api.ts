@@ -13,6 +13,9 @@ export const prescriptionsApi = {
   findAll: (params?: PrescriptionQueryParams): Promise<PaginatedResponse<Prescription>> =>
     api.get('/prescriptions', { params }).then((r) => r.data),
 
+  findByPatient: (id:string,params?: PrescriptionQueryParams): Promise<PaginatedResponse<Prescription>> =>
+    api.get(`/prescriptions/patient/${id}`, { params }).then((r) => r.data),
+
   findById: (id: string): Promise<Prescription> =>
     api.get(`/prescriptions/${id}`).then((r) => r.data),
 

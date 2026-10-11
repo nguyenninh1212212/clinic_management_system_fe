@@ -3,10 +3,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   IconButton,
   Tooltip,
 } from '@mui/material';
@@ -15,8 +11,7 @@ import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import { PageHeader } from '@/components/common/PageHeader';
-import { DataTable, Column, ColumnFilterValue } from '@/components/common/DataTable';
-import { SearchInput } from '@/components/common/SearchInput';
+import { DataTable, Column } from '@/components/common/DataTable';
 import { StatusChip } from '@/components/common/StatusChip';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { usePatients, useDeletePatient } from '../hooks/usePatients';
@@ -58,23 +53,17 @@ export const PatientListPage: React.FC = () => {
       minWidth: 60,
       render: (_row, idx) => (
         <span className="text-slate-400 tabular-nums">
-          {(filter.page - 1) * filter.limit + idx + 1}
+          {(filter.page! - 1) * filter.limit! + idx + 1}
         </span>
       ),
     },
     {
       id: 'fullName',
       label: 'Họ và tên',
-      filterType: 'input',
-      filterPlaceholder: 'Tìm họ tên, SĐT, CCCD...',
-      filteredValue: filter.fullname,
-      onChange: (val) => {
-        setFilter((prev) => ({
-          ...prev,
-          search: val || undefined,
-          page: 1,
-        }));
-      },
+      filterFields: [
+        { key: 'search', label: 'Tìm bệnh nhân', type: 'input' },
+        { key: 'patientCode', label: 'Mã hồ sơ', type: 'input' },
+      ],
       minWidth: 180,
       render: (row) => (
         <div>
@@ -93,20 +82,15 @@ export const PatientListPage: React.FC = () => {
     {
       id: 'gender',
       label: 'Giới tính',
-      filterType: 'select',
-      filters: [
-        { text: 'Nam', value: Gender.MALE },
-        { text: 'Nữ', value: Gender.FEMALE },
-        { text: 'Khác', value: Gender.OTHER },
+      filterFields: [
+        {
+          key: 'gender',
+          label: 'Giới tính',
+          type: 'select',
+          filters: Object.values(Gender).map((value) => ({ text: value, value })),
+        },
+        { key: 'isActive', label: 'Hồ sơ đang hoạt động', type: 'boolean' },
       ],
-      filteredValue: filter.gender,
-      onChange: (val) => {
-        setFilter((prev) => ({
-          ...prev,
-          gender: (val as Gender) || undefined,
-          page: 1,
-        }));
-      },
       minWidth: 100,
       render: (row) => <StatusChip status={row.gender} type="gender" />,
     },
@@ -123,6 +107,9 @@ export const PatientListPage: React.FC = () => {
     {
       id: 'phone',
       label: 'Số điện thoại',
+      filterFields: [
+        { key: 'phoneNumber', label: 'Tìm sdt', type: 'input' },
+      ],
       minWidth: 130,
       render: (row) => (
         <span className="tabular-nums font-mono text-slate-700 text-xs font-medium">
@@ -133,6 +120,9 @@ export const PatientListPage: React.FC = () => {
     {
       id: 'identityNumber',
       label: 'Số CCCD/CMND',
+      filterFields: [
+        { key: 'identityNumber', label: 'Tìm theo cccd', type: 'input' },
+      ],
       minWidth: 140,
       render: (row) => (
         <span className="tabular-nums font-mono text-slate-600 text-xs">
@@ -219,7 +209,6 @@ export const PatientListPage: React.FC = () => {
 
       {/* Filter toolbar */}
       <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-
         <div className="text-xs text-slate-500 text-right tabular-nums">
           Tổng số: <strong className="text-slate-800">{data?.pagination?.total || 0}</strong> bệnh nhân
         </div>
@@ -230,6 +219,14 @@ export const PatientListPage: React.FC = () => {
         rows={data?.data || []}
         loading={isLoading}
         pagination={data?.pagination}
+        filters={filter}
+        onFilterChange={(nextFilters) =>
+          setFilter((current) => ({
+            ...nextFilters,
+            page: 1,
+            limit: current.limit ?? 10,
+          }))
+        }
         onPageChange={(p) => setFilter((prev) => ({ ...prev, page: p }))}
         onLimitChange={(l) => {
           setFilter((prev) => ({ ...prev, limit: l, page: 1 }));

@@ -25,7 +25,7 @@ import {
 } from '../schemas/examination.schema';
 import { useCreateExamination } from '../hooks/useExaminations';
 import { useAppointments } from '@/features/appointments/hooks/useAppointments';
-import { useDoctors } from '@/features/doctors/hooks/useDoctors';
+import { DoctorSelect } from '@/features/doctors/components/DoctorSelect';
 import { AppointmentStatus } from '@/types';
 
 export const ExaminationCreatePage: React.FC = () => {
@@ -39,10 +39,6 @@ export const ExaminationCreatePage: React.FC = () => {
   const { data: appointmentsData, isLoading: loadingAppts } = useAppointments({
     limit: 50,
   });
-  const { data: doctorsData, isLoading: loadingDocs } = useDoctors({
-    limit: 50,
-  });
-
   const {
     register,
     handleSubmit,
@@ -164,30 +160,19 @@ export const ExaminationCreatePage: React.FC = () => {
 
               {/* Doctor */}
               <div>
-                <FormControl fullWidth error={!!errors.doctorId}>
-                  <InputLabel id="doctor-select-label">Bác sĩ khám *</InputLabel>
-                  <Controller
-                    name="doctorId"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        {...field}
-                        labelId="doctor-select-label"
-                        label="Bác sĩ khám *"
-                        disabled={loadingDocs}
-                      >
-                        {doctorsData?.data?.map((d) => (
-                          <MenuItem key={d.id} value={d.id}>
-                            {d.user?.fullName} — {d.specialty?.name || 'Đa khoa'}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    )}
-                  />
-                  {errors.doctorId && (
-                    <FormHelperText>{errors.doctorId.message}</FormHelperText>
+                <Controller
+                  name="doctorId"
+                  control={control}
+                  render={({ field }) => (
+                    <DoctorSelect
+                      value={field.value}
+                      onChange={field.onChange}
+                      label="Bác sĩ khám *"
+                      error={!!errors.doctorId}
+                      helperText={errors.doctorId?.message}
+                    />
                   )}
-                </FormControl>
+                />
               </div>
 
               {/* Diagnosis */}

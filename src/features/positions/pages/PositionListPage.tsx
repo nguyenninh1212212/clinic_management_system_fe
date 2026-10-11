@@ -21,15 +21,15 @@ import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined';
 import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, Column } from '@/components/common/DataTable';
-import { SearchInput } from '@/components/common/SearchInput';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { useListFilters } from '@/hooks/useListFilters';
 import {
   usePositionList,
   useCreatePosition,
   useUpdatePosition,
   useDeletePosition,
 } from '../hooks/usePositions';
-import { Position, PositionLevel, CreatePositionDto, UpdatePositionDto } from '@/types';
+import { Position, PositionLevel, PositionQueryParams, CreatePositionDto, UpdatePositionDto } from '@/types';
 import { usePermission } from '@/hooks/usePermission';
 
 export const PositionListPage: React.FC = () => {
@@ -37,8 +37,8 @@ export const PositionListPage: React.FC = () => {
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [search, setSearch] = useState('');
-  const [levelFilter, setLevelFilter] = useState<PositionLevel | ''>('');
+  const { filters, replaceFilters } =
+    useListFilters<Omit<PositionQueryParams, 'page' | 'limit'>>();
 
   // Dialog State
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -55,8 +55,7 @@ export const PositionListPage: React.FC = () => {
   const { data, isLoading } = usePositionList({
     page,
     limit,
-    search: search || undefined,
-    level: levelFilter || undefined,
+    ...filters,
   });
 
   const createMutation = useCreatePosition();
@@ -115,6 +114,7 @@ export const PositionListPage: React.FC = () => {
     {
       id: 'positionCode',
       label: 'Mã chức danh',
+      filterFields: [{ key: 'search', label: 'Tìm vị trí', type: 'input' }],
       minWidth: 140,
       render: (row) => (
         <span className="font-mono font-semibold text-slate-800 text-xs bg-slate-100 px-2 py-0.5 rounded">
@@ -136,6 +136,12 @@ export const PositionListPage: React.FC = () => {
     {
       id: 'level',
       label: 'Cấp bậc',
+      filterFields: [{
+        key: 'level',
+        label: 'Cấp bậc',
+        type: 'select',
+        filters: Object.values(PositionLevel).map((value) => ({ text: value, value })),
+      }],
       minWidth: 130,
       render: (row) => (
         <span className="text-xs font-semibold px-2 py-0.5 rounded bg-sky-50 text-sky-700">
@@ -154,6 +160,10 @@ export const PositionListPage: React.FC = () => {
     {
       id: 'isActive',
       label: 'Trạng thái',
+      filterFields: [
+        { key: 'departmentId', label: 'Mã phòng ban', type: 'number' },
+        { key: 'isActive', label: 'Đang hoạt động', type: 'boolean' },
+      ],
       minWidth: 120,
       render: (row) => (
         <span
@@ -223,38 +233,6 @@ export const PositionListPage: React.FC = () => {
       />
 
       <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
-          <SearchInput
-            placeholder="Tìm theo mã hoặc tên vị trí..."
-            value={search}
-            onChange={(val) => {
-              setSearch(val);
-              setPage(1);
-            }}
-            className="sm:w-80"
-          />
-
-          <FormControl size="small" className="sm:w-48">
-            <InputLabel id="pos-level-label">Cấp bậc</InputLabel>
-            <Select
-              labelId="pos-level-label"
-              value={levelFilter}
-              label="Cấp bậc"
-              onChange={(e) => {
-                setLevelFilter(e.target.value as PositionLevel | '');
-                setPage(1);
-              }}
-            >
-              <MenuItem value="">Tất cả cấp bậc</MenuItem>
-              {Object.values(PositionLevel).map((lvl) => (
-                <MenuItem key={lvl} value={lvl}>
-                  {lvl}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </div>
-
         <div className="text-xs text-slate-500 tabular-nums">
           Tổng số: <strong className="text-slate-800">{data?.pagination?.total || 0}</strong> vị trí
         </div>
@@ -265,6 +243,11 @@ export const PositionListPage: React.FC = () => {
         rows={data?.data || []}
         loading={isLoading}
         pagination={data?.pagination}
+        filters={filters}
+        onFilterChange={(nextFilters) => {
+          replaceFilters(nextFilters);
+          setPage(1);
+        }}
         onPageChange={(p) => setPage(p)}
         onLimitChange={(l) => {
           setLimit(l);

@@ -27,6 +27,9 @@ export interface AppointmentQueryParams extends BaseQueryParams {
   doctorId?: string;
   status?: AppointmentStatus;
   date?: string; // YYYY-MM-DD
+  bookedByUserId?: string;
+  dateFrom?: string;
+  dateTo?: string;
 }
 
 export interface CreateAppointmentDto {

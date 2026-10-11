@@ -3,27 +3,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/api/queryKeys';
 import { triageResultsApi } from '@/api/endpoints/triage-results.api';
 import { notifyApiFeedback } from '@/api/axios';
-import { TriageLevel, CreateTriageResultDto, UpdateTriageResultDto } from '@/types';
+import { TriageResultQueryParams, CreateTriageResultDto, UpdateTriageResultDto } from '@/types';
 
-interface UseTriageListParams {
+interface UseTriageListParams extends TriageResultQueryParams {
   page: number;
   limit: number;
-  triageLevel?: TriageLevel;
 }
 
 export function useTriageList(params: UseTriageListParams) {
   return useQuery({
-    queryKey: queryKeys.triageResults.list({
-      page: params.page,
-      limit: params.limit,
-      triageLevel: params.triageLevel || undefined,
-    }),
-    queryFn: () =>
-      triageResultsApi.findAll({
-        page: params.page,
-        limit: params.limit,
-        triageLevel: params.triageLevel || undefined,
-      }),
+    queryKey: queryKeys.triageResults.list(params),
+    queryFn: () => triageResultsApi.findAll(params),
     staleTime: 30_000,
   });
 }

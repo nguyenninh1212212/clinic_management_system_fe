@@ -16,6 +16,7 @@ export interface Position {
 }
 
 export interface PositionQueryParams extends BaseQueryParams {
+  search?: string;
   level?: PositionLevel;
   departmentId?: number;
   isActive?: boolean;

@@ -8,10 +8,6 @@ import {
   CardContent,
   TextField,
   Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   CircularProgress,
   Alert,
 } from "@mui/material";
@@ -19,7 +15,8 @@ import SaveIcon from "@mui/icons-material/Save";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { PageHeader } from "@/components/common/PageHeader";
 import { useAppointment, useUpdateAppointment } from "../hooks/useAppointments";
-import { useDoctors } from "@/features/doctors/hooks/useDoctors";
+import { useDoctor } from "@/features/doctors/hooks/useDoctors";
+import { DoctorSelect } from "@/features/doctors/components/DoctorSelect";
 import { AppointmentStatus } from "@/types";
 import { useAppointments } from "../hooks/useAppointments";
 import { hasDoctorConflict, isThirtyMinuteSlot, isWithinDoctorShift } from "../utils/appointmentAvailability";
@@ -40,8 +37,7 @@ export const AppointmentEditPage: React.FC = () => {
 
   const { data: appointmentData, isLoading } = useAppointment(id || "");
   const updateMutation = useUpdateAppointment();
-  const { data: doctorsData } = useDoctors({ limit: 100 });
-  const appointment = appointmentData?.data;
+  const appointment = appointmentData;
   const {
     register,
     handleSubmit,
@@ -60,7 +56,8 @@ export const AppointmentEditPage: React.FC = () => {
 
   const selectedDoctorId = watch("doctorId");
   const appointmentDateValue = watch("appointmentDate");
-  const selectedDoctor = doctorsData?.data?.find((doctor) => doctor.id === selectedDoctorId);
+  const { data: selectedDoctorData } = useDoctor(selectedDoctorId);
+  const selectedDoctor = selectedDoctorData?.data;
   const appointmentDate = dayjs(appointmentDateValue);
   const { data: doctorAppointmentsData, isLoading: loadingDoctorAppointments } = useAppointments(
     { page: 1, limit: 100, doctorId: selectedDoctorId || undefined, date: appointmentDate.isValid() ? appointmentDate.format("YYYY-MM-DD") : undefined },
@@ -172,30 +169,19 @@ export const AppointmentEditPage: React.FC = () => {
             <div className="space-y-4">
               {/* Doctor */}
               <div>
-                <FormControl fullWidth error={!!errors.doctorId}>
-                  <InputLabel id="doctor-edit-select-label">
-                    Bác sĩ phụ trách
-                  </InputLabel>
-                  <Controller
-                    name="doctorId"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        {...field}
-                        labelId="doctor-edit-select-label"
-                        label="Bác sĩ phụ trách"
-                      >
-                        <MenuItem value="">-- Chọn bác sĩ --</MenuItem>
-                        {doctorsData?.data?.map((d) => (
-                          <MenuItem key={d.id} value={d.id}>
-                            {d.user?.fullName} —{" "}
-                            {d.specialty?.name || "Đa khoa"}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    )}
-                  />
-                </FormControl>
+                <Controller
+                  name="doctorId"
+                  control={control}
+                  render={({ field }) => (
+                    <DoctorSelect
+                      value={field.value}
+                      onChange={field.onChange}
+                      label="Bác sĩ phụ trách"
+                      error={!!errors.doctorId}
+                      helperText={errors.doctorId?.message}
+                    />
+                  )}
+                />
               </div>
 
               {/* Appointment Date */}
