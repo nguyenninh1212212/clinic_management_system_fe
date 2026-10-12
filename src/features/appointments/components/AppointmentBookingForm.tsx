@@ -20,6 +20,8 @@ import {
 } from "../hooks/useAppointments";
 import { useDoctorShifts } from "@/features/doctors/hooks/useDoctorShifts";
 import { AppointmentSlotGrid } from "./AppointmentSlotGrid";
+import { useAppSocket } from "@/hooks/useSocket";
+import { useAppointmentSocket } from "../service/appointmentSocketService";
 
 export const AppointmentBookingForm: React.FC = () => {
   const navigate = useNavigate();
@@ -27,6 +29,11 @@ export const AppointmentBookingForm: React.FC = () => {
   const [patientId, setPatientId] = useState(
     searchParams.get("patientId") || "",
   );
+  const socket = useAppSocket();
+
+  const st = useAppointmentSocket(socket);
+  console.log(st);
+
   const [doctorId, setDoctorId] = useState(searchParams.get("doctorId") || "");
   const [date, setDate] = useState(
     searchParams.get("date") || dayjs().format("YYYY-MM-DD"),
@@ -44,8 +51,15 @@ export const AppointmentBookingForm: React.FC = () => {
   );
   const { data: appointmentsData, isLoading: loadingAppointments } =
     useAppointments(
-      { page: 1, limit: 100, doctorId: doctorId || undefined, date },
-      { enabled: Boolean(doctorId && date) },
+      {
+        page: 1,
+        limit: 100,
+        doctorId: doctorId || undefined,
+        date,
+      },
+      {
+        enabled: Boolean(doctorId && date),
+      },
     );
   const createMutation = useCreateAppointment();
   const selectedDoctor = selectedDoctorData?.data;
@@ -73,20 +87,19 @@ export const AppointmentBookingForm: React.FC = () => {
       return setValidationError("Khung giờ này đã có người đặt.");
     setValidationError("");
     try {
-      const created = await createMutation.mutateAsync({
+       await createMutation.mutateAsync({
         patientId,
         doctorId,
         appointmentDate: `${date}T${time}:00+07:00`,
         notes: notes || undefined,
       });
-      navigate(`/appointments/${created.id}`);
     } catch (error: any) {
       const message = error?.response?.data?.message;
       setValidationError(
         Array.isArray(message)
           ? message.join(", ")
           : message ||
-          "Không thể đặt lịch. Vui lòng kiểm tra lại ca làm và khung giờ.",
+              "Không thể đặt lịch. Vui lòng kiểm tra lại ca làm và khung giờ.",
       );
     }
   };

@@ -182,11 +182,11 @@ export const PatientListPage: React.FC = () => {
                 <DeleteOutlineIcon fontSize="small" />
               </IconButton>
             </Tooltip>
-          )}
+          )}                                                
         </div>
       ),
     },
-  ];
+  ];                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
 
   return (
     <div className="space-y-4">

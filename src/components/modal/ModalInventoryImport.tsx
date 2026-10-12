@@ -1,7 +1,7 @@
 import { notifyApiFeedback } from '@/api/axios';
+import { inventoryApi } from '@/api/endpoints/inventory.api';
 import { queryKeys } from '@/api/queryKeys';
 import { UploadExcel } from '@/components/UploadExcel';
-import { inventoryService } from '@/services/inventoryService';
 import type { InventoryImportResponse } from '@/types/inventory';
 import { inventoryImportColumns, inventoryImportHeaders } from '@/types/inventory';
 import { Alert, Modal, Snackbar } from '@mui/material';
@@ -27,7 +27,7 @@ export function ModalInventoryImport({ open, handleClose }: { open: boolean; han
   const queryClient = useQueryClient();
 
   const importMutation = useMutation({
-    mutationFn: (selectedFile: File) => inventoryService.importExcel(selectedFile),
+    mutationFn: (selectedFile: File) => inventoryApi.importExcel(selectedFile),
     onSuccess: async (response) => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
       const count = getImportedCount(response);

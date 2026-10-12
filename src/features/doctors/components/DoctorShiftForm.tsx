@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import { Alert, Button, Card, CardContent, TextField } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import dayjs from "dayjs";
@@ -9,6 +9,7 @@ interface DoctorShiftFormProps {
   defaultDate: string;
   existingShifts: DoctorShift[];
   isSaving: boolean;
+  setDate:Dispatch<SetStateAction<string>>;
   onSubmit: (values: {
     workDate: string;
     startTime: string;
@@ -20,6 +21,7 @@ export const DoctorShiftForm: React.FC<DoctorShiftFormProps> = ({
   doctorId,
   defaultDate,
   existingShifts,
+  setDate,
   isSaving,
   onSubmit,
 }) => {
@@ -53,7 +55,7 @@ export const DoctorShiftForm: React.FC<DoctorShiftFormProps> = ({
             type="date"
             label="Ngày làm việc"
             value={workDate}
-            onChange={(event) => setWorkDate(event.target.value)}
+            onChange={(event) =>  {setDate(event.target.value) ;setWorkDate(event.target.value)}}
             slotProps={{ inputLabel: { shrink: true } }}
           />
           <TextField

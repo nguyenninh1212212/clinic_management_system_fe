@@ -18,7 +18,7 @@ export const appointmentsApi = {
     api.get(`/appointments/${id}`).then((r) => r.data.data),
 
   create: (dto: CreateAppointmentDto): Promise<Appointment> =>
-    api.post('/appointments', dto).then((r) => r.data.data),
+    api.post('/appointments', dto).then((r) => r.data.message),
 
   update: (id: string, dto: UpdateAppointmentDto): Promise<ApiResponse<Appointment>> =>
     api.patch(`/appointments/${id}`, dto).then((r) => r.data),

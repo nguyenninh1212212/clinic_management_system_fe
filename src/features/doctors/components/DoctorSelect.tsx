@@ -20,7 +20,6 @@ interface DoctorSelectProps {
   error?: boolean;
   helperText?: string;
   disabled?: boolean;
-  specialtyId?: number;
   size?: 'small' | 'medium';
 }
 
@@ -31,7 +30,6 @@ export const DoctorSelect: React.FC<DoctorSelectProps> = ({
   error = false,
   helperText,
   disabled = false,
-  specialtyId,
   size = 'small',
 }) => {
   const [open, setOpen] = useState(false);
@@ -50,14 +48,13 @@ export const DoctorSelect: React.FC<DoctorSelectProps> = ({
     queryKey: [
       ...queryKeys.doctors.lists(),
       'select',
-      { search: search || undefined, specialtyId },
+      { search: search  },
     ],
     queryFn: ({ pageParam }) =>
       doctorsApi.findAll({
         page: pageParam,
         limit: PAGE_SIZE,
         search: search || undefined,
-        specialtyId,
       }),
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>

@@ -14,7 +14,6 @@ interface AuthState {
   clearAuth: () => void;
 }
 
-// Persist token in sessionStorage for page refreshes while keeping security best practice
 const INITIAL_TOKEN = sessionStorage.getItem('access_token');
 const INITIAL_USER = (() => {
   try {
@@ -76,3 +75,5 @@ export const useAuthStore = create<AuthState>((set) => ({
     });
   },
 }));
+
+export const selectAccessToken = (state: AuthState) => state.accessToken;
