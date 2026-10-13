@@ -1,24 +1,24 @@
 // src/api/endpoints/notifications.api.ts
-import { api } from '@/api/axios';
+import { api } from "@/api/axios";
 import {
   Notification,
-  CreateNotificationDto,
   NotificationQueryParams,
   PaginatedResponse,
-} from '@/types';
+} from "@/types";
 
 export const notificationsApi = {
-  findAll: (params?: NotificationQueryParams): Promise<PaginatedResponse<Notification>> =>
-    api.get('/notifications', { params }).then((r) => r.data),
+  findAll: (
+    params?: NotificationQueryParams,
+  ): Promise<PaginatedResponse<Notification>> =>
+    api.get("/notifications", { params }).then((r) => r.data),
 
   markRead: (id: number): Promise<void> =>
     api.put(`/notifications/${id}/read`).then((r) => r.data),
 
-  create: (dto: CreateNotificationDto): Promise<Notification> =>
-    api.post('/notifications', dto).then((r) => r.data.data),
-
   removeBulk: (ids: number[]): Promise<void> =>
-    api.delete(`/notifications`, {
-    data: ids,
-  }).then((r) => r.data),
+    api
+      .delete(`/notifications`, {
+        data: ids,
+      })
+      .then((r) => r.data),
 };
