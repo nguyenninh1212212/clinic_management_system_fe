@@ -5,10 +5,11 @@ import { doctorsApi } from '@/api/endpoints/doctors.api';
 import { notifyApiFeedback } from '@/api/axios';
 import type { Doctor, CreateDoctorDto, UpdateDoctorDto, DoctorQueryParams } from '@/types';
 
-export function useDoctors(params?: DoctorQueryParams) {
+export function useDoctors(params?: DoctorQueryParams, enabled = true) {
   return useQuery({
     queryKey: queryKeys.doctors.list(params || {}),
     queryFn: () => doctorsApi.findAll(params),
+    enabled,
     placeholderData: keepPreviousData,
     staleTime: 60_000,
   });

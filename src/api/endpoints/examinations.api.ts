@@ -7,9 +7,13 @@ import {
   ExaminationQueryParams,
   PaginatedResponse,
   ApiResponse,
+  ChartDateQuery,
+  ExaminationCharts,
 } from '@/types';
 
 export const examinationsApi = {
+  getCharts: (params?: ChartDateQuery): Promise<ApiResponse<ExaminationCharts>> =>
+    api.get('/examinations/charts', { params }).then((r) => r.data),
   findAll: (params?: ExaminationQueryParams): Promise<PaginatedResponse<Examination>> =>
     api.get('/examinations', { params }).then((r) => r.data),
 

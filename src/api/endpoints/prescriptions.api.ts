@@ -7,9 +7,13 @@ import {
   PrescriptionQueryParams,
   PaginatedResponse,
   ApiResponse,
+  ChartDateQuery,
+  PrescriptionCharts,
 } from '@/types';
 
 export const prescriptionsApi = {
+  getCharts: (params?: ChartDateQuery): Promise<ApiResponse<PrescriptionCharts>> =>
+    api.get('/prescriptions/charts', { params }).then((r) => r.data),
   findAll: (params?: PrescriptionQueryParams): Promise<PaginatedResponse<Prescription>> =>
     api.get('/prescriptions', { params }).then((r) => r.data),
 

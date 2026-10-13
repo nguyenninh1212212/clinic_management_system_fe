@@ -7,10 +7,13 @@ import {
   InventoryQueryParams,
   PaginatedResponse,
   ApiResponse,
+  InventoryCharts,
 } from "@/types";
 import { InventoryImportResponse } from "@/types/inventory";
 
 export const inventoryApi = {
+  getCharts: (): Promise<ApiResponse<InventoryCharts>> =>
+    api.get('/inventory/charts').then((r) => r.data),
   findAll: (
     params?: InventoryQueryParams,
   ): Promise<PaginatedResponse<Inventory>> =>

@@ -17,6 +17,7 @@ export interface Appointment {
   patient?: Patient;
   doctor?: Doctor;
   triageResult?: TriageResult;
+  queueNumber?:number;
   examination?: Examination;
   createdAt: string;
   updatedAt: string;

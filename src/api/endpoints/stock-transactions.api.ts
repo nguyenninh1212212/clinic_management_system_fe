@@ -6,9 +6,13 @@ import {
   StockTransactionQueryParams,
   PaginatedResponse,
   ApiResponse,
+  ChartDateQuery,
+  StockTransactionCharts,
 } from '@/types';
 
 export const stockTransactionsApi = {
+  getCharts: (params?: ChartDateQuery): Promise<ApiResponse<StockTransactionCharts>> =>
+    api.get('/stock-transactions/charts', { params }).then((r) => r.data),
   findAll: (params?: StockTransactionQueryParams): Promise<PaginatedResponse<StockTransaction>> =>
     api.get('/stock-transactions', { params }).then((r) => r.data),
 

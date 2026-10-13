@@ -8,10 +8,16 @@ import {
   Button,
   IconButton,
   Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Stack,
 } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
-import NotificationsActiveOutlinedIcon from "@mui/icons-material/NotificationsActiveOutlined";
+import AddIcon from "@mui/icons-material/Add";
 import { PageHeader } from "@/components/common/PageHeader";
 import { DataTable, Column } from "@/components/common/DataTable";
 import { useListFilters } from "@/hooks/useListFilters";
@@ -20,12 +26,13 @@ import {
   useMarkNotificationRead,
   useDeleteNotification,
 } from "../hooks/useNotifications";
-import { Notification, NotificationQueryParams } from "@/types";
+import { CreateNotificationDto, Notification, NotificationQueryParams } from "@/types";
 import dayjs from "dayjs";
 import { createNotificationSocket } from "@/features/notifications/service/notificationSocketService";
 import type { NotificationPayload } from "@/features/notifications/service/notificationSocketService";
 import { selectAccessToken, useAuthStore } from "@/stores/auth.store";
 import { useQueryClient } from "@tanstack/react-query";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 
 export const NotificationsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -39,6 +46,15 @@ export const NotificationsPage: React.FC = () => {
   const markReadMutation = useMarkNotificationRead();
   const deleteMutation = useDeleteNotification();
   const queryClient = useQueryClient();
+  const [createOpen, setCreateOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Notification | null>(null);
+  const [createForm, setCreateForm] = useState<CreateNotificationDto>({
+    userId: "",
+    title: "",
+    message: "",
+    type: "SYSTEM",
+    link: "",
+  });
 
   const token = useAuthStore(selectAccessToken);
 
@@ -50,6 +66,12 @@ export const NotificationsPage: React.FC = () => {
     },
     [queryClient],
   );
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    await deleteMutation.mutateAsync([deleteTarget.id]);
+    setDeleteTarget(null);
+  };
 
   useEffect(() => {
     if (!token) return;
@@ -143,7 +165,7 @@ export const NotificationsPage: React.FC = () => {
           <Tooltip title="Xóa thông báo">
             <IconButton
               size="small"
-              onClick={() => deleteMutation.mutate(row.id)}
+              onClick={() => setDeleteTarget(row)}
               className="text-slate-400 hover:text-rose-600"
             >
               <DeleteOutlineIcon fontSize="small" />
@@ -163,6 +185,11 @@ export const NotificationsPage: React.FC = () => {
           { label: "Trang chủ", href: "/dashboard" },
           { label: "Thông báo" },
         ]}
+        action={
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)}>
+            Tạo thông báo
+          </Button>
+        }
       />
 
       <DataTable
@@ -182,6 +209,17 @@ export const NotificationsPage: React.FC = () => {
         }}
         emptyTitle="Không có thông báo nào"
         emptyDescription="Bạn đã đọc hết các thông báo hệ thống."
+      />
+
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Xóa thông báo"
+        content={`Bạn có chắc muốn xóa thông báo “${deleteTarget?.title || ""}”?`}
+        confirmText="Xóa thông báo"
+        isLoading={deleteMutation.isPending}
+        onConfirm={() => void handleDelete()}
+        onClose={() => setDeleteTarget(null)}
       />
     </div>
   );

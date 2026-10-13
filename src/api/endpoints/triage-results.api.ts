@@ -7,9 +7,13 @@ import {
   TriageResultQueryParams,
   PaginatedResponse,
   ApiResponse,
+  ChartDateQuery,
+  TriageCharts,
 } from '@/types';
 
 export const triageResultsApi = {
+  getCharts: (params?: ChartDateQuery): Promise<ApiResponse<TriageCharts>> =>
+    api.get('/triage-results/charts', { params }).then((r) => r.data),
   findAll: (params?: TriageResultQueryParams): Promise<PaginatedResponse<TriageResult>> =>
     api.get('/triage-results', { params }).then((r) => r.data),
 

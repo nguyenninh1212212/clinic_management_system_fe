@@ -62,7 +62,6 @@ export const PatientListPage: React.FC = () => {
       label: 'Họ và tên',
       filterFields: [
         { key: 'search', label: 'Tìm bệnh nhân', type: 'input' },
-        { key: 'patientCode', label: 'Mã hồ sơ', type: 'input' },
       ],
       minWidth: 180,
       render: (row) => (

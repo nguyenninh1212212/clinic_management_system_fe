@@ -19,3 +19,4 @@ export * from './notification.types';
 export * from './audit-log.types';
 export * from './invoice.types';
 export * from './user-patient-access.types';
+export * from './dashboard-chart.types';

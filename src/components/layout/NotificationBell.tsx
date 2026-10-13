@@ -107,8 +107,8 @@ export const NotificationBell: React.FC = () => {
         onClose={handleClose}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-        PaperProps={{
-          sx: { width: 340, maxHeight: 440, borderRadius: 3, mt: 1 },
+        slotProps={{
+          paper: { sx: { width: 340, maxHeight: 440, borderRadius: 3, mt: 1 } },
         }}
       >
         <Box className="px-4 py-2.5 flex items-center justify-between">

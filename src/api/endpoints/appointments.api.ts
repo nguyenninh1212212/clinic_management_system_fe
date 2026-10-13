@@ -8,9 +8,13 @@ import {
   AppointmentQueryParams,
   PaginatedResponse,
   ApiResponse,
+  AppointmentCharts,
+  ChartDateQuery,
 } from '@/types';
 
 export const appointmentsApi = {
+  getCharts: (params?: ChartDateQuery): Promise<ApiResponse<AppointmentCharts>> =>
+    api.get('/appointments/charts', { params }).then((r) => r.data),
   findAll: (params?: AppointmentQueryParams): Promise<PaginatedResponse<Appointment>> =>
     api.get('/appointments', { params }).then((r) => r.data),
 

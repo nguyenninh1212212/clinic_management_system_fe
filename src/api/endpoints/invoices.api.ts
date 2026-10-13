@@ -6,9 +6,13 @@ import {
   InvoiceImportResult,
   InvoiceQueryParams,
   PaginatedResponse,
+  ChartDateQuery,
+  InvoiceCharts,
 } from '@/types';
 
 export const invoicesApi = {
+  getCharts: (params?: ChartDateQuery): Promise<ApiResponse<InvoiceCharts>> =>
+    api.get('/invoices/charts', { params }).then((r) => r.data),
   findAll: (params?: InvoiceQueryParams): Promise<PaginatedResponse<Invoice>> =>
     api.get('/invoices', { params }).then((response) => response.data),
 

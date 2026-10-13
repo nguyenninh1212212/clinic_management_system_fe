@@ -19,6 +19,7 @@ export interface Patient {
 export interface PatientQueryParams extends BaseQueryParams {
   gender?: Gender;
   search?: string;
+  phoneNumber?: string;
   isActive?: boolean;
   patientCode?: string;
 }

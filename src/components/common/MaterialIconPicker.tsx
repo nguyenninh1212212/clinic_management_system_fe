@@ -146,7 +146,7 @@ export const MaterialIconPicker: React.FC<MaterialIconPickerProps> = ({ value, o
           )}
         </Box>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography variant="caption" color="text.secondary" display="block">
+          <Typography variant="caption" color="text.secondary" style={{display:"block"}} >
             Biểu tượng (Icon)
           </Typography>
           <Typography variant="body2" color={value ? 'text.primary' : 'text.disabled'} noWrap>
@@ -156,11 +156,10 @@ export const MaterialIconPicker: React.FC<MaterialIconPickerProps> = ({ value, o
         <MuiIcons.KeyboardArrowDown fontSize="small" sx={{ color: 'text.secondary', flexShrink: 0 }} />
       </Box>
 
-      {/* Picker Dialog */}
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle sx={{ pb: 1 }}>
-          <Typography fontWeight={700}>Chọn biểu tượng Material Icons</Typography>
-          <Typography variant="body2" color="text.secondary" mt={0.5}>
+          <Typography style={{fontWeight:700}}>Chọn biểu tượng Material Icons</Typography>
+          <Typography variant='body2' color="text.secondary" sx={{ mt: 0.5 }}>
             Chọn icon phù hợp với chuyên khoa của bạn
           </Typography>
         </DialogTitle>
@@ -187,7 +186,7 @@ export const MaterialIconPicker: React.FC<MaterialIconPickerProps> = ({ value, o
 
         <DialogContent sx={{ pt: 1 }}>
           {filtered.length === 0 ? (
-            <Box textAlign="center" py={6} color="text.disabled">
+            <Box style={{textAlign:"center"}} sx={{py:6}} color="text.disabled">
               <MuiIcons.SearchOff sx={{ fontSize: 48, mb: 1 }} />
               <Typography>Không tìm thấy icon phù hợp</Typography>
             </Box>

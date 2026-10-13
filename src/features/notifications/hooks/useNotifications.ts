@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/api/queryKeys';
 import { notificationsApi } from '@/api/endpoints/notifications.api';
 import { notifyApiFeedback } from '@/api/axios';
-import { NotificationQueryParams } from '@/types';
+import { CreateNotificationDto, NotificationQueryParams } from '@/types';
 
 export function useNotifications(params: NotificationQueryParams & { page: number; limit: number }) {
   return useQuery({
@@ -23,10 +23,12 @@ export function useMarkNotificationRead() {
   });
 }
 
+
+
 export function useDeleteNotification() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => notificationsApi.remove(id),
+    mutationFn: (ids: number[]) => notificationsApi.removeBulk(ids),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
       notifyApiFeedback('Đã xóa thông báo', 'info');

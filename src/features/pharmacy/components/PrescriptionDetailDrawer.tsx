@@ -17,7 +17,7 @@ import { useQuery } from "@tanstack/react-query";
 import { prescriptionsApi } from "@/api/endpoints/prescriptions.api";
 import { prescriptionItemsApi } from "@/api/endpoints/prescription-items.api";
 import { queryKeys } from "@/api/queryKeys";
-import { PharmacyPrescriptionStatus, Prescription } from "@/types";
+import { Inventory, PharmacyPrescriptionStatus, Prescription, PrescriptionItem } from "@/types";
 import dayjs from "dayjs";
 import { getPrescriptionStatus } from "./PrescriptionCard";
 
@@ -63,10 +63,10 @@ export const PrescriptionDetailDrawer: React.FC<
     queryFn: () => prescriptionItemsApi.findByPrescription(itemQueryParams),
     enabled:
       Boolean(prescription?.id) &&
-      (hasItemFilters || !(detailQuery.data?.data?.items?.length || prescription?.items?.length)),
+      (hasItemFilters || !(detailQuery.data?.items?.length || prescription?.items?.length)),
     staleTime: 30_000,
   });
-  const current = detailQuery.data?.data || prescription;
+  const current = detailQuery.data || prescription;
   const items = hasItemFilters
     ? itemQuery.data || []
     : current?.items?.length
@@ -162,11 +162,11 @@ export const PrescriptionDetailDrawer: React.FC<
                   onChange={(event) => setMedicineId(event.target.value)}
                   renderValue={(value) => {
                     if (!value) return "Tất cả thuốc";
-                    return items.find((item) => item.medicineId === value)?.medicine?.name || "Thuốc đã chọn";
+                    return items.find((item:PrescriptionItem) => item.medicineId === value)?.medicine?.name || "Thuốc đã chọn";
                   }}
                 >
                   <MenuItem value="">Tất cả thuốc</MenuItem>
-                  {(current?.items || itemQuery.data || []).map((item) => (
+                  {(current?.items || itemQuery.data || []).map((item:PrescriptionItem) => (
                     <MenuItem key={item.medicineId} value={item.medicineId}>
                       {item.medicine?.name || item.medicineId}
                     </MenuItem>
@@ -177,7 +177,7 @@ export const PrescriptionDetailDrawer: React.FC<
                 <CircularProgress size={20} />
               ) : (
                 <div className="space-y-2">
-                  {items.map((item) => (
+                  {items.map((item:PrescriptionItem) => (
                     <div
                       key={item.id}
                       className="rounded-lg border border-slate-200 p-3"

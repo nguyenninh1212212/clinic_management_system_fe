@@ -1,5 +1,5 @@
 // src/features/users/pages/UserListPage.tsx
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Button,
   Dialog,
@@ -17,50 +17,58 @@ import {
   Switch,
   FormControlLabel,
   Alert,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import LockResetIcon from '@mui/icons-material/LockReset';
-import BlockIcon from '@mui/icons-material/Block';
-import { PageHeader } from '@/components/common/PageHeader';
-import { DataTable, Column } from '@/components/common/DataTable';
-import { StatusChip } from '@/components/common/StatusChip';
-import { ConfirmDialog } from '@/components/common/ConfirmDialog';
-import { useListFilters } from '@/hooks/useListFilters';
+  Divider,
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import LockResetIcon from "@mui/icons-material/LockReset";
+import BlockIcon from "@mui/icons-material/Block";
+import { PageHeader } from "@/components/common/PageHeader";
+import { DataTable, Column } from "@/components/common/DataTable";
+import { StatusChip } from "@/components/common/StatusChip";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { useListFilters } from "@/hooks/useListFilters";
 import {
   useUserList,
   useActivePositions,
   useCreateUser,
   useUpdateUser,
   useChangeUserPassword,
-} from '../hooks/useUsers';
-import { User, UserRole, CreateUserDto, UpdateUserDto, Position, UserQueryParams } from '@/types';
-import dayjs from 'dayjs';
+} from "../hooks/useUsers";
+import {
+  User,
+  UserRole,
+  CreateUserDto,
+  UpdateUserDto,
+  Position,
+  UserQueryParams,
+} from "@/types";
+import dayjs from "dayjs";
 
 export const UserListPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const { filters, replaceFilters } =
-    useListFilters<Omit<UserQueryParams, 'page' | 'limit'>>();
+    useListFilters<Omit<UserQueryParams, "page" | "limit">>();
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [createEmail, setCreateEmail] = useState('');
-  const [createPassword, setCreatePassword] = useState('');
-  const [createFullName, setCreateFullName] = useState('');
+  const [createEmail, setCreateEmail] = useState("");
+  const [createPassword, setCreatePassword] = useState("");
+  const [createFullName, setCreateFullName] = useState("");
   const [createRole, setCreateRole] = useState<UserRole>(UserRole.USER);
   const [createPositionId, setCreatePositionId] = useState<number>();
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editRole, setEditRole] = useState<UserRole>(UserRole.USER);
-  const [editPositionId, setEditPositionId] = useState<number | ''>('');
-  const [editFullName, setEditFullName] = useState('');
+  const [editPositionId, setEditPositionId] = useState<number | "">("");
+  const [editFullName, setEditFullName] = useState("");
   const [editIsActive, setEditIsActive] = useState(true);
 
   // Change Password Dialog
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [targetUserId, setTargetUserId] = useState<string | null>(null);
-  const [newPassword, setNewPassword] = useState('');
+  const [newPassword, setNewPassword] = useState("");
 
   // Deactivate User Dialog
   const [deactivateUser, setDeactivateUser] = useState<User | null>(null);
@@ -78,9 +86,9 @@ export const UserListPage: React.FC = () => {
 
   const handleOpenEdit = (u: User) => {
     setEditingUser(u);
-    setEditFullName(u.fullName || '');
+    setEditFullName(u.fullName || "");
     setEditRole(u.role);
-    setEditPositionId(u.positionId || '');
+    setEditPositionId(u.positionId || "");
     setEditIsActive(u.isActive !== false);
     setEditDialogOpen(true);
   };
@@ -92,7 +100,7 @@ export const UserListPage: React.FC = () => {
       dto: {
         fullName: editFullName,
         role: editRole,
-        positionId: editPositionId !== '' ? Number(editPositionId) : undefined,
+        positionId: editPositionId !== "" ? Number(editPositionId) : undefined,
         isActive: editIsActive,
       },
     });
@@ -132,7 +140,7 @@ export const UserListPage: React.FC = () => {
       });
       setPasswordDialogOpen(false);
       setTargetUserId(null);
-      setNewPassword('');
+      setNewPassword("");
     } catch {
       // The backend error is displayed in the dialog.
     }
@@ -140,13 +148,13 @@ export const UserListPage: React.FC = () => {
 
   const columns: Column<User>[] = [
     {
-      id: 'avatar',
-      label: 'Ảnh',
+      id: "avatar",
+      label: "Ảnh",
       minWidth: 60,
       render: (row) => (
         <Avatar
           src={row.avatar}
-          sx={{ width: 34, height: 34, bgcolor: '#0284c7' }}
+          sx={{ width: 34, height: 34, bgcolor: "#0284c7" }}
           className="text-xs font-semibold"
         >
           {row.fullName?.charAt(0) || row.email.charAt(0).toUpperCase()}
@@ -154,38 +162,45 @@ export const UserListPage: React.FC = () => {
       ),
     },
     {
-      id: 'fullName',
-      label: 'Họ tên & Email',
-      filterFields: [{ key: 'search', label: 'Tìm người dùng', type: 'input' }],
+      id: "fullName",
+      label: "Họ tên & Email",
+      filterFields: [{ key: "search", label: "Tìm người dùng", type: "input" }],
       minWidth: 200,
       render: (row) => (
         <div>
-          <div className="font-semibold text-slate-800 text-sm">{row.fullName}</div>
+          <div className="font-semibold text-slate-800 text-sm">
+            {row.fullName}
+          </div>
           <div className="text-xs text-slate-400 font-mono">{row.email}</div>
         </div>
       ),
     },
     {
-      id: 'role',
-      label: 'Vai trò (Role)',
-      filterFields: [{
-        key: 'role',
-        label: 'Vai trò',
-        type: 'select',
-        filters: Object.values(UserRole).map((value) => ({ text: value, value })),
-      }],
+      id: "role",
+      label: "Vai trò (Role)",
+      filterFields: [
+        {
+          key: "role",
+          label: "Vai trò",
+          type: "select",
+          filters: Object.values(UserRole).map((value) => ({
+            text: value,
+            value,
+          })),
+        },
+      ],
       minWidth: 140,
       render: (row) => <StatusChip status={row.role} type="role" />,
     },
     {
-      id: 'position',
-      label: 'Chức vụ',
+      id: "position",
+      label: "Chức vụ",
       filterFields: [
-        { key: 'departmentId', label: 'Mã phòng ban', type: 'number' },
+        { key: "departmentId", label: "Mã phòng ban", type: "number" },
         {
-          key: 'positionId',
-          label: 'Chức vụ',
-          type: 'select',
+          key: "positionId",
+          label: "Chức vụ",
+          type: "select",
           filters: (positionsList || []).map((position) => ({
             text: position.positionTitle,
             value: position.id,
@@ -195,41 +210,43 @@ export const UserListPage: React.FC = () => {
       minWidth: 160,
       render: (row) => (
         <span className="text-xs text-slate-700 font-medium">
-          {row.position?.positionTitle || '—'}
+          {row.position?.positionTitle || "—"}
         </span>
       ),
     },
     {
-      id: 'isActive',
-      label: 'Trạng thái',
-      filterFields: [{ key: 'isActive', label: 'Tài khoản đang hoạt động', type: 'boolean' }],
+      id: "isActive",
+      label: "Trạng thái",
+      filterFields: [
+        { key: "isActive", label: "Tài khoản đang hoạt động", type: "boolean" },
+      ],
       minWidth: 110,
       render: (row) => (
         <span
           className={`text-xs font-semibold px-2 py-0.5 rounded ${
             row.isActive !== false
-              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-              : 'bg-slate-100 text-slate-500'
+              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+              : "bg-slate-100 text-slate-500"
           }`}
         >
-          {row.isActive !== false ? 'Hoạt động' : 'Tạm khóa'}
+          {row.isActive !== false ? "Hoạt động" : "Tạm khóa"}
         </span>
       ),
     },
     {
-      id: 'createdAt',
-      label: 'Ngày tham gia',
+      id: "createdAt",
+      label: "Ngày tham gia",
       minWidth: 120,
       render: (row) => (
         <span className="text-xs tabular-nums text-slate-500">
-          {dayjs(row.createdAt).format('DD/MM/YYYY')}
+          {dayjs(row.createdAt).format("DD/MM/YYYY")}
         </span>
       ),
     },
     {
-      id: 'actions',
-      label: 'Thao tác',
-      align: 'right',
+      id: "actions",
+      label: "Thao tác",
+      align: "right",
       minWidth: 140,
       render: (row) => (
         <div className="flex items-center justify-end gap-1">
@@ -256,11 +273,17 @@ export const UserListPage: React.FC = () => {
             </IconButton>
           </Tooltip>
 
-          <Tooltip title={row.isActive ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}>
+          <Tooltip
+            title={row.isActive ? "Khóa tài khoản" : "Mở khóa tài khoản"}
+          >
             <IconButton
               size="small"
               onClick={() => setDeactivateUser(row)}
-              className={row.isActive ? 'text-slate-500 hover:text-rose-600' : 'text-slate-500 hover:text-emerald-600'}
+              className={
+                row.isActive
+                  ? "text-slate-500 hover:text-rose-600"
+                  : "text-slate-500 hover:text-emerald-600"
+              }
             >
               <BlockIcon fontSize="small" />
             </IconButton>
@@ -275,7 +298,10 @@ export const UserListPage: React.FC = () => {
       <PageHeader
         title="Quản trị Người dùng Hệ thống"
         subtitle="Quản lý tài khoản cán bộ nhân viên, phân vai trò và kiểm soát bảo mật"
-        breadcrumbs={[{ label: 'Trang chủ', href: '/dashboard' }, { label: 'Người dùng' }]}
+        breadcrumbs={[
+          { label: "Trang chủ", href: "/dashboard" },
+          { label: "Người dùng" },
+        ]}
         action={
           <Button
             variant="contained"
@@ -289,7 +315,11 @@ export const UserListPage: React.FC = () => {
 
       <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="text-xs text-slate-500 tabular-nums">
-          Tổng số: <strong className="text-slate-800">{data?.pagination?.total || 0}</strong> tài khoản
+          Tổng số:{" "}
+          <strong className="text-slate-800">
+            {data?.pagination?.total || 0}
+          </strong>{" "}
+          tài khoản
         </div>
       </div>
 
@@ -314,7 +344,6 @@ export const UserListPage: React.FC = () => {
         onEmptyAction={() => setCreateDialogOpen(true)}
       />
 
-      {/* Create Dialog */}
       <Dialog
         open={createDialogOpen}
         onClose={() => setCreateDialogOpen(false)}
@@ -324,11 +353,13 @@ export const UserListPage: React.FC = () => {
         <DialogTitle className="font-bold text-slate-900">
           Tạo tài khoản người dùng mới
         </DialogTitle>
-        <DialogContent className="space-y-4 pt-2">
+        <Divider />
+
+        <DialogContent className="space-y-4 pt-2 flex flex-col gap-5">
           {changePasswordMutation.isError && (
             <Alert severity="error">
               {(changePasswordMutation.error as any)?.response?.data?.message ||
-                'Không thể đổi mật khẩu. Vui lòng kiểm tra lại và thử lại.'}
+                "Không thể đổi mật khẩu. Vui lòng kiểm tra lại và thử lại."}
             </Alert>
           )}
           <TextField
@@ -362,18 +393,30 @@ export const UserListPage: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-3">
             <FormControl fullWidth size="small">
-              <InputLabel id="create-role-label">Phân quyền vai trò *</InputLabel>
+              <InputLabel id="create-role-label">
+                Phân quyền vai trò *
+              </InputLabel>
               <Select
                 labelId="create-role-label"
                 value={createRole}
                 label="Phân quyền vai trò *"
                 onChange={(e) => setCreateRole(e.target.value as UserRole)}
               >
-                <MenuItem value={UserRole.USER}>Bác sĩ / Khám chữa (USER)</MenuItem>
-                <MenuItem value={UserRole.STAFF}>Nhân viên tiếp đón / Dược (STAFF)</MenuItem>
-                <MenuItem value={UserRole.MANAGER}>Trưởng phòng / Quản lý (MANAGER)</MenuItem>
-                <MenuItem value={UserRole.ADMIN}>Quản trị viên cơ sở (ADMIN)</MenuItem>
-                <MenuItem value={UserRole.SUPER_ADMIN}>Tổng quản trị viên (SUPER_ADMIN)</MenuItem>
+                <MenuItem value={UserRole.USER}>
+                  Bác sĩ / Khám chữa (USER)
+                </MenuItem>
+                <MenuItem value={UserRole.STAFF}>
+                  Nhân viên tiếp đón / Dược (STAFF)
+                </MenuItem>
+                <MenuItem value={UserRole.MANAGER}>
+                  Trưởng phòng / Quản lý (MANAGER)
+                </MenuItem>
+                <MenuItem value={UserRole.ADMIN}>
+                  Quản trị viên cơ sở (ADMIN)
+                </MenuItem>
+                <MenuItem value={UserRole.SUPER_ADMIN}>
+                  Tổng quản trị viên (SUPER_ADMIN)
+                </MenuItem>
               </Select>
             </FormControl>
 
@@ -404,9 +447,14 @@ export const UserListPage: React.FC = () => {
           <Button
             onClick={handleCreate}
             variant="contained"
-            disabled={!createEmail || !createPassword || !createFullName || createMutation.isPending}
+            disabled={
+              !createEmail ||
+              !createPassword ||
+              !createFullName ||
+              createMutation.isPending
+            }
           >
-            {createMutation.isPending ? 'Đang tạo...' : 'Tạo tài khoản'}
+            {createMutation.isPending ? "Đang tạo..." : "Tạo tài khoản"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -439,11 +487,19 @@ export const UserListPage: React.FC = () => {
                 label="Vai trò"
                 onChange={(e) => setEditRole(e.target.value as UserRole)}
               >
-                <MenuItem value={UserRole.USER}>Bác sĩ / Người dùng (USER)</MenuItem>
-                <MenuItem value={UserRole.STAFF}>Nhân viên tiếp đón (STAFF)</MenuItem>
+                <MenuItem value={UserRole.USER}>
+                  Bác sĩ / Người dùng (USER)
+                </MenuItem>
+                <MenuItem value={UserRole.STAFF}>
+                  Nhân viên tiếp đón (STAFF)
+                </MenuItem>
                 <MenuItem value={UserRole.MANAGER}>Quản lý (MANAGER)</MenuItem>
-                <MenuItem value={UserRole.ADMIN}>Quản trị viên (ADMIN)</MenuItem>
-                <MenuItem value={UserRole.SUPER_ADMIN}>Tổng quản trị viên (SUPER_ADMIN)</MenuItem>
+                <MenuItem value={UserRole.ADMIN}>
+                  Quản trị viên (ADMIN)
+                </MenuItem>
+                <MenuItem value={UserRole.SUPER_ADMIN}>
+                  Tổng quản trị viên (SUPER_ADMIN)
+                </MenuItem>
               </Select>
             </FormControl>
 
@@ -487,7 +543,7 @@ export const UserListPage: React.FC = () => {
             variant="contained"
             disabled={updateMutation.isPending}
           >
-            {updateMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
+            {updateMutation.isPending ? "Đang lưu..." : "Lưu thay đổi"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -520,9 +576,13 @@ export const UserListPage: React.FC = () => {
           <Button
             onClick={handleChangePassword}
             variant="contained"
-            disabled={newPassword.length < 6 || changePasswordMutation.isPending}
+            disabled={
+              newPassword.length < 6 || changePasswordMutation.isPending
+            }
           >
-            {changePasswordMutation.isPending ? 'Đang cập nhật...' : 'Đổi mật khẩu'}
+            {changePasswordMutation.isPending
+              ? "Đang cập nhật..."
+              : "Đổi mật khẩu"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -530,10 +590,12 @@ export const UserListPage: React.FC = () => {
       {/* Toggle Active Confirmation */}
       <ConfirmDialog
         open={Boolean(deactivateUser)}
-        title={deactivateUser?.isActive ? 'Khóa tài khoản?' : 'Mở khóa tài khoản?'}
-        content={`Bạn có chắc muốn ${deactivateUser?.isActive ? 'khóa' : 'mở khóa'} tài khoản "${deactivateUser?.fullName || deactivateUser?.email}"?`}
-        confirmText={deactivateUser?.isActive ? 'Khóa tài khoản' : 'Mở khóa'}
-        confirmColor={deactivateUser?.isActive ? 'error' : 'primary'}
+        title={
+          deactivateUser?.isActive ? "Khóa tài khoản?" : "Mở khóa tài khoản?"
+        }
+        content={`Bạn có chắc muốn ${deactivateUser?.isActive ? "khóa" : "mở khóa"} tài khoản "${deactivateUser?.fullName || deactivateUser?.email}"?`}
+        confirmText={deactivateUser?.isActive ? "Khóa tài khoản" : "Mở khóa"}
+        confirmColor={deactivateUser?.isActive ? "error" : "primary"}
         isLoading={updateMutation.isPending}
         onConfirm={() => {
           if (deactivateUser) handleToggleActive(deactivateUser);

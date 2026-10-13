@@ -2,6 +2,7 @@
 import { api } from '@/api/axios';
 import {
   Notification,
+  CreateNotificationDto,
   NotificationQueryParams,
   PaginatedResponse,
 } from '@/types';
@@ -12,4 +13,12 @@ export const notificationsApi = {
 
   markRead: (id: number): Promise<void> =>
     api.put(`/notifications/${id}/read`).then((r) => r.data),
+
+  create: (dto: CreateNotificationDto): Promise<Notification> =>
+    api.post('/notifications', dto).then((r) => r.data.data),
+
+  removeBulk: (ids: number[]): Promise<void> =>
+    api.delete(`/notifications`, {
+    data: ids,
+  }).then((r) => r.data),
 };
