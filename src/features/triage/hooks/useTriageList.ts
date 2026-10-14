@@ -25,8 +25,10 @@ export function useUpsertTriage(appointmentId: string) {
       id
         ? triageResultsApi.update(id, dto as UpdateTriageResultDto)
         : triageResultsApi.create(dto as CreateTriageResultDto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.detail(appointmentId) });
+    onSuccess: (response) => {
+      const triage = response.data;
+      queryClient.setQueryData(queryKeys.appointments.detail(appointmentId), (cached: any) => cached ? { ...cached, triageResult: triage } : cached);
+      void queryClient.refetchQueries({ queryKey: queryKeys.appointments.detail(appointmentId), type: 'all' });
       notifyApiFeedback('Lưu sinh hiệu thành công', 'info');
     },
   });

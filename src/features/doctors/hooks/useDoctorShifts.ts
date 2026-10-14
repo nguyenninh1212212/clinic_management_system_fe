@@ -17,8 +17,11 @@ export function useCreateDoctorShift() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ doctorId, dto }: { doctorId: string; dto: CreateDoctorShiftDto }) => doctorShiftsApi.create(doctorId, dto),
-    onSuccess: (_shift, variables) => {
-      queryClient.invalidateQueries({ queryKey: [...queryKeys.doctors.all, 'shifts', variables.doctorId] });
+    onSuccess: (shift, variables) => {
+      queryClient.setQueriesData({ queryKey: [...queryKeys.doctors.all, 'shifts', variables.doctorId] }, (cached: any) =>
+        Array.isArray(cached) && !cached.some((item: any) => item.id === shift.id) ? [...cached, shift] : cached,
+      );
+      void queryClient.refetchQueries({ queryKey: [...queryKeys.doctors.all, 'shifts', variables.doctorId], type: 'all' });
       notifyApiFeedback('Phân công ca làm thành công', 'info');
     },
   });
@@ -28,8 +31,11 @@ export function useDeleteDoctorShift() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (shiftId: string) => doctorShiftsApi.remove(shiftId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.doctors.all });
+    onSuccess: (_data, shiftId) => {
+      queryClient.setQueriesData({ queryKey: [...queryKeys.doctors.all, 'shifts'] }, (cached: any) =>
+        Array.isArray(cached) ? cached.filter((item: any) => item.id !== shiftId) : cached,
+      );
+      void queryClient.refetchQueries({ queryKey: [...queryKeys.doctors.all, 'shifts'], type: 'all' });
       notifyApiFeedback('Đã xóa ca làm của bác sĩ', 'info');
     },
   });

@@ -24,8 +24,14 @@ export function useCreateInvoice() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (dto: CreateInvoiceDto) => invoicesApi.create(dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.invoices.lists() });
+    onSuccess: (response) => {
+      const created = response.data;
+      queryClient.setQueryData(queryKeys.invoices.detail(created.id), created);
+      queryClient.setQueriesData({ queryKey: queryKeys.invoices.lists() }, (cached: any) => {
+        if (!cached || !Array.isArray(cached.data) || cached.data.some((item: any) => item.id === created.id) || cached.pagination?.page !== 1) return cached;
+        return { ...cached, data: [created, ...cached.data].slice(0, cached.pagination?.limit ?? cached.data.length + 1), pagination: cached.pagination ? { ...cached.pagination, total: cached.pagination.total + 1 } : cached.pagination };
+      });
+      void queryClient.refetchQueries({ queryKey: queryKeys.invoices.lists(), type: 'all' });
       notifyApiFeedback('Tạo hóa đơn thành công', 'info');
     },
   });
@@ -36,7 +42,8 @@ export function useImportInvoices() {
   return useMutation({
     mutationFn: (file: File) => invoicesApi.importFromExcel(file),
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.invoices.lists() });
+      // The import endpoint returns counts only, so reload rows instead of patching incomplete data.
+      void queryClient.refetchQueries({ queryKey: queryKeys.invoices.lists(), type: 'all' });
       notifyApiFeedback(`Import hóa đơn thành công${result.count || result.importedCount ? `: ${result.count || result.importedCount} hóa đơn` : ''}`, 'info');
     },
   });

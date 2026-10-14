@@ -189,7 +189,11 @@ export function DataTable<T extends Record<string, any>>({
   };
 
   const triggerFieldFilter = (fieldKey: string, value: ColumnFilterValue | undefined) => {
-    const normalizedValue = typeof value === 'string' ? value.trim() || undefined : value;
+    // Preserve whitespace while the user is typing (e.g. a full name).
+    // Treat a whitespace-only value as an empty filter without trimming valid input.
+    const normalizedValue = typeof value === 'string' && value.trim() === ''
+      ? undefined
+      : value;
     const nextFilters = { ...internalFilters, ...propsFilters };
     if (normalizedValue === undefined || normalizedValue === '') {
       delete nextFilters[fieldKey];

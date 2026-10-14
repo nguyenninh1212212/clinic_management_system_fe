@@ -3,6 +3,7 @@ import { Socket } from 'socket.io-client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/stores/auth.store';
 import { queryKeys } from '@/api/queryKeys';
+import { prescriptionsApi } from '@/api/endpoints/prescriptions.api';
 import {
   PharmacyPrescriptionCreatedPayload,
   PharmacyPrescriptionUpdatedPayload,
@@ -47,7 +48,10 @@ export const PharmacySocketProvider: React.FC<PharmacySocketProviderProps> = ({ 
       onUpdated: (payload) => updatedRef.current(payload),
       onStatus: setStatus,
       onReconnect: () => {
-        queryClient.invalidateQueries({ queryKey: queryKeys.prescriptions.all });
+        const params = { page: 1, limit: 100 };
+        void prescriptionsApi.findAll(params).then((data) => {
+          queryClient.setQueryData(queryKeys.prescriptions.list(params), data);
+        }).catch(() => undefined);
       },
     });
     socketRef.current = socket;

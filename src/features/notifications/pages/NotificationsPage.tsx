@@ -32,6 +32,7 @@ import { createNotificationSocket } from "@/features/notifications/service/notif
 import type { NotificationPayload } from "@/features/notifications/service/notificationSocketService";
 import { selectAccessToken, useAuthStore } from "@/stores/auth.store";
 import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/api/queryKeys";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 
 export const NotificationsPage: React.FC = () => {
@@ -60,9 +61,15 @@ export const NotificationsPage: React.FC = () => {
 
   const handleNotification = useCallback(
     (payload: NotificationPayload) => {
-      void queryClient.invalidateQueries({
-        queryKey: ["notifications"],
+      if (payload.id == null) return;
+      queryClient.setQueriesData({ queryKey: queryKeys.notifications.all }, (cached: any) => {
+        if (!cached || !Array.isArray(cached.data)) return cached;
+        const exists = cached.data.some((item: Notification) => item.id === payload.id);
+        if (exists) return { ...cached, data: cached.data.map((item: Notification) => item.id === payload.id ? { ...item, ...payload } : item) };
+        if (!payload.createdAt || payload.isRead === undefined || !payload.userId || cached.pagination?.page !== 1) return cached;
+        return { ...cached, data: [{ ...payload } as Notification, ...cached.data].slice(0, cached.pagination.limit), pagination: { ...cached.pagination, total: cached.pagination.total + 1 } };
       });
+      void queryClient.refetchQueries({ queryKey: queryKeys.notifications.all, type: 'all' });
     },
     [queryClient],
   );

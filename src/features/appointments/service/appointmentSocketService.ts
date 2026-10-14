@@ -28,8 +28,13 @@ export function useAppointmentSocket(socket: Socket | null) {
         payload,
       );
 
-      void queryClient.invalidateQueries({
-        queryKey: ['appointments'],
+      const appointment = payload.appointment;
+      if (!appointment?.id) return;
+      queryClient.setQueriesData({ queryKey: ['appointments'] }, (cached: any) => {
+        const patch = (item: any) => item.id === appointment.id ? { ...item, ...appointment, status: appointment.status ?? payload.status ?? item.status } : item;
+        if (Array.isArray(cached?.data)) return { ...cached, data: cached.data.map(patch) };
+        if (cached && typeof cached === 'object' && cached.id != null) return patch(cached);
+        return cached;
       });
     };
 

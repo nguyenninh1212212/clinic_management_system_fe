@@ -1,26 +1,31 @@
-// src/features/audit-logs/pages/AuditLogListPage.tsx
-import { Column, DataTable } from '@/components/common/DataTable';
-import { PageHeader } from '@/components/common/PageHeader';
-import { AuditAction, AuditLog } from '@/types';
+import { Column, DataTable } from "@/components/common/DataTable";
+import { PageHeader } from "@/components/common/PageHeader";
+import { useListFilters } from "@/hooks/useListFilters";
+import { AuditAction, AuditLog, AuditLogQueryParams } from "@/types";
 import {
+  Box,
   Button,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
+  Paper,
+  Stack,
+  Tooltip,
   Typography,
-} from '@mui/material';
-import dayjs from 'dayjs';
-import React, { useState } from 'react';
-import { useAuditLogs } from '../hooks/useAuditLogs';
-import { useListFilters } from '@/hooks/useListFilters';
-import { AuditLogQueryParams } from '@/types';
+} from "@mui/material";
+import dayjs from "dayjs";
+import React, { useState } from "react";
+import { useAuditLogs } from "../hooks/useAuditLogs";
 
 export const AuditLogListPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+
   const { filters, replaceFilters } =
-    useListFilters<Omit<AuditLogQueryParams, 'page' | 'limit'>>();
+    useListFilters<Omit<AuditLogQueryParams, "page" | "limit">>();
 
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
 
@@ -30,109 +35,198 @@ export const AuditLogListPage: React.FC = () => {
     ...filters,
   });
 
-  const getActionBadge = (act: string) => {
-    const actUpper = act.toUpperCase();
-    if (actUpper.includes('CREATE') || actUpper.includes('POST')) {
-      return (
-        <span className="text-xs font-semibold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200">
-          {act}
-        </span>
-      );
+  const getActorName = (log: AuditLog) =>
+    log.user?.fullName || log.user?.email || "Hệ thống";
+
+  const formatAuditValue = (
+    value: AuditLog["oldValue"] | AuditLog["newValue"],
+  ): string => {
+    if (value == null) return "Không có dữ liệu";
+
+    if (typeof value === "string") {
+      try {
+        return JSON.stringify(JSON.parse(value), null, 2);
+      } catch {
+        return value;
+      }
     }
-    if (actUpper.includes('UPDATE') || actUpper.includes('PATCH') || actUpper.includes('PUT')) {
-      return (
-        <span className="text-xs font-semibold bg-sky-50 text-sky-700 px-2 py-0.5 rounded border border-sky-200">
-          {act}
-        </span>
-      );
+
+    return JSON.stringify(value, null, 2) ?? String(value);
+  };
+
+  const getActionColor = (
+    action: string,
+  ): "success" | "info" | "error" | "default" => {
+    const actionUpper = action.toUpperCase();
+
+    if (actionUpper.includes("CREATE") || actionUpper.includes("POST")) {
+      return "success";
     }
-    if (actUpper.includes('DELETE')) {
-      return (
-        <span className="text-xs font-semibold bg-rose-50 text-rose-700 px-2 py-0.5 rounded border border-rose-200">
-          {act}
-        </span>
-      );
+
+    if (
+      actionUpper.includes("UPDATE") ||
+      actionUpper.includes("PATCH") ||
+      actionUpper.includes("PUT")
+    ) {
+      return "info";
     }
-    return (
-      <span className="text-xs font-semibold bg-slate-100 text-slate-700 px-2 py-0.5 rounded">
-        {act}
-      </span>
-    );
+
+    if (actionUpper.includes("DELETE")) {
+      return "error";
+    }
+
+    return "default";
   };
 
   const columns: Column<AuditLog>[] = [
     {
-      id: 'id',
-      label: 'Mã log',
+      id: "id",
+      label: "Mã log",
       minWidth: 70,
-      render: (row) => <span className="font-mono text-slate-400 text-xs">#{row.id}</span>,
+      render: (row) => (
+        <Typography
+          variant="caption"
+          sx={{
+            fontFamily: "monospace",
+            color: "text.secondary",
+            whiteSpace: "nowrap",
+          }}
+        >
+          #{row.id}
+        </Typography>
+      ),
     },
     {
-      id: 'user',
-      label: 'Người thao tác',
-      filterFields: [{ key: 'userId', label: 'Mã người dùng', type: 'input' }],
-      minWidth: 160,
+      id: "user",
+      label: "Người thao tác",
+      filterFields: [{ key: "userId", label: "Mã người dùng", type: "input" }],
+      minWidth: 180,
       render: (row) => (
-        <div>
-          <div className="font-semibold text-slate-800 text-xs">
-            {row.createdByUser.fullName || row.createdByUser.email || 'Hệ thống'}
-          </div>
+        <Stack spacing={0.5}>
           {row.ipAddress && (
-            <div className="text-[10px] text-slate-400 font-mono">IP: {row.ipAddress}</div>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontFamily: "monospace" }}
+            >
+              IP: {row.ipAddress}
+            </Typography>
           )}
-        </div>
+
+          {row.user && (
+            <Typography variant="caption" color="text.secondary">
+              {row.user.fullName}
+              {row.user.email ? ` · ${row.user.email}` : ""}
+            </Typography>
+          )}
+          {row.userAgent && (
+            <Tooltip title={row.userAgent} arrow placement="top">
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{
+                  display: "block",
+                  maxWidth: 220,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  cursor: "help",
+                }}
+              >
+                {row.userAgent}
+              </Typography>
+            </Tooltip>
+          )}
+        </Stack>
       ),
     },
     {
-      id: 'action',
-      label: 'Hành động',
-      filterFields: [{
-        key: 'action',
-        label: 'Hành động',
-        type: 'select',
-        filters: Object.values(AuditAction).map((value) => ({ text: value, value })),
-      }],
-      minWidth: 130,
-      render: (row) => getActionBadge(row.action),
-    },
-    {
-      id: 'entity',
-      label: 'Đối tượng thực thể',
+      id: "action",
+      label: "Hành động",
       filterFields: [
-        { key: 'entityName', label: 'Tên thực thể', type: 'input' },
-        { key: 'entityId', label: 'Mã thực thể', type: 'input' },
+        {
+          key: "action",
+          label: "Hành động",
+          type: "select",
+          filters: Object.values(AuditAction).map((value) => ({
+            text: value,
+            value,
+          })),
+        },
       ],
       minWidth: 140,
       render: (row) => (
-        <div>
-          <span className="font-mono text-xs font-semibold text-slate-700">{row.entityName}</span>
-        </div>
+        <Chip
+          label={row.action}
+          color={getActionColor(row.action)}
+          size="small"
+          variant="outlined"
+          sx={{
+            fontWeight: 600,
+            borderRadius: 1,
+            maxWidth: "100%",
+          }}
+        />
       ),
     },
     {
-      id: 'createdAt',
-      label: 'Thời gian',
+      id: "entity",
+      label: "Đối tượng thực thể",
       filterFields: [
-        { key: 'dateFrom', label: 'Từ ngày', type: 'date' },
-        { key: 'dateTo', label: 'Đến ngày', type: 'date' },
+        { key: "entityName", label: "Tên thực thể", type: "input" },
+        { key: "entityId", label: "Mã thực thể", type: "input" },
       ],
-      minWidth: 140,
+      minWidth: 150,
       render: (row) => (
-        <span className="tabular-nums font-mono text-xs text-slate-600">
-          {dayjs(row.createdAt).format('HH:mm:ss DD/MM/YYYY')}
-        </span>
+        <Stack spacing={0.5}>
+          <Typography
+            variant="body2"
+            style={{ fontWeight: 600 }}
+            sx={{ overflowWrap: "anywhere" }}
+          >
+            {row.entityName || "—"}
+          </Typography>
+
+          {row.entityId && (
+            <Typography variant="caption" color="text.secondary">
+              ID: {row.entityId}
+            </Typography>
+          )}
+        </Stack>
       ),
     },
     {
-      id: 'actions',
-      label: 'Chi tiết',
-      align: 'right',
-      minWidth: 90,
+      id: "createdAt",
+      label: "Thời gian",
+      filterFields: [
+        { key: "dateFrom", label: "Từ ngày", type: "date" },
+        { key: "dateTo", label: "Đến ngày", type: "date" },
+      ],
+      minWidth: 155,
+      render: (row) => (
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{
+            fontFamily: "monospace",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {dayjs(row.createdAt).format("HH:mm:ss DD/MM/YYYY")}
+        </Typography>
+      ),
+    },
+    {
+      id: "actions",
+      label: "Chi tiết",
+      align: "right",
+      minWidth: 100,
       render: (row) => (
         <Button
           size="small"
+          variant="outlined"
           onClick={() => setSelectedLog(row)}
-          className="text-xs text-sky-700"
+          sx={{ whiteSpace: "nowrap" }}
         >
           Xem log
         </Button>
@@ -140,12 +234,57 @@ export const AuditLogListPage: React.FC = () => {
     },
   ];
 
+  const renderAuditValue = (title: string, value: string, color: string) => (
+    <Box sx={{ minWidth: 0 }}>
+      <Typography
+        variant="subtitle2"
+        style={{ fontWeight: 700 }}
+        color="text.secondary"
+        sx={{ mb: 1 }}
+      >
+        {title}
+      </Typography>
+
+      <Paper
+        variant="outlined"
+        sx={{
+          bgcolor: "grey.900",
+          color,
+          borderColor: "grey.800",
+          borderRadius: 2,
+          overflow: "auto",
+          maxHeight: 360,
+          minHeight: 160,
+        }}
+      >
+        <Box
+          component="pre"
+          sx={{
+            m: 0,
+            p: 2,
+            fontFamily: "monospace",
+            fontSize: 12,
+            lineHeight: 1.7,
+            whiteSpace: "pre-wrap",
+            overflowWrap: "anywhere",
+            wordBreak: "break-word",
+          }}
+        >
+          {value}
+        </Box>
+      </Paper>
+    </Box>
+  );
+
   return (
-    <div className="space-y-4">
+    <Stack spacing={3}>
       <PageHeader
         title="Nhật ký Kiểm toán & Bảo mật (Audit Logs)"
         subtitle="Ghi nhận vết can thiệp dữ liệu, phân quyền và các thao tác nhạy cảm trên hệ thống"
-        breadcrumbs={[{ label: 'Trang chủ', href: '/dashboard' }, { label: 'Nhật ký kiểm toán' }]}
+        breadcrumbs={[
+          { label: "Trang chủ", href: "/dashboard" },
+          { label: "Nhật ký kiểm toán" },
+        ]}
       />
 
       <DataTable
@@ -158,72 +297,163 @@ export const AuditLogListPage: React.FC = () => {
           replaceFilters(nextFilters);
           setPage(1);
         }}
-        onPageChange={(p) => setPage(p)}
-        onLimitChange={(l) => {
-          setLimit(l);
+        onPageChange={(nextPage) => setPage(nextPage)}
+        onLimitChange={(nextLimit) => {
+          setLimit(nextLimit);
           setPage(1);
         }}
         emptyTitle="Chưa có bản ghi nhật ký kiểm toán nào"
         emptyDescription="Các thao tác cập nhật, thêm mới và xóa sẽ được ghi nhận tự động tại đây."
       />
 
-      {/* Log Detail Dialog */}
       <Dialog
         open={Boolean(selectedLog)}
         onClose={() => setSelectedLog(null)}
-        maxWidth="md"
+        maxWidth="lg"
         fullWidth
+        scroll="paper"
       >
-        <DialogTitle className="font-bold text-slate-900">
-          Chi tiết Vết Kiểm toán #{selectedLog?.id}
+        <DialogTitle sx={{ pb: 1 }}>
+          <Typography variant="h6" style={{ fontWeight: 700 }}>
+            Chi tiết vết kiểm toán
+            {selectedLog ? ` #${selectedLog.id}` : ""}
+          </Typography>
         </DialogTitle>
-        <DialogContent className="space-y-4 pt-2">
-          {selectedLog && (
-            <>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-slate-50 rounded-lg text-xs">
-                <div>
-                  <span className="text-slate-400">Người thực hiện:</span>
-                  <div className="font-semibold text-slate-800 mt-0.5">
-                    {selectedLog.createdByUser.fullName || selectedLog.createdByUser.email || 'System'}
-                  </div>
-                </div>
-                <div>
-                  <span className="text-slate-400">Hành động:</span>
-                  <div className="font-semibold text-slate-800 mt-0.5">{selectedLog.action}</div>
-                </div>
-                <div>
-                  <span className="text-slate-400">Thực thể & ID:</span>
-                  <div className="font-semibold font-mono text-slate-800 mt-0.5">
-                    {selectedLog.entityName}
-                  </div>
-                </div>
-                <div>
-                  <span className="text-slate-400">Thời gian:</span>
-                  <div className="font-mono text-slate-800 mt-0.5 tabular-nums">
-                    {dayjs(selectedLog.createdAt).format('HH:mm:ss DD/MM/YYYY')}
-                  </div>
-                </div>
-              </div>
 
-              {/* {selectedLog.details && (
-                <div>
-                  <Typography variant="subtitle2" className="text-xs font-bold text-slate-700 mb-1">
-                    Dữ liệu chi tiết:
+        <Divider />
+
+        <DialogContent sx={{ py: 3 }}>
+          {selectedLog && (
+            <Stack spacing={3}>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    sm: "repeat(2, minmax(0, 1fr))",
+                    lg: "repeat(4, minmax(0, 1fr))",
+                  },
+                  gap: 2,
+                }}
+              >
+                <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    Người thực hiện
                   </Typography>
-                  <pre className="p-3 bg-slate-900 text-emerald-400 font-mono text-xs rounded-lg overflow-x-auto max-h-60">
-                    {JSON.stringify(selectedLog.details, null, 2)}
-                  </pre>
-                </div>
-              )} */}
-            </>
+                  <Typography
+                    variant="body2"
+                    style={{ fontWeight: 600 }}
+                    sx={{ mt: 0.5, overflowWrap: "anywhere" }}
+                  >
+                    {getActorName(selectedLog)}
+                  </Typography>
+                </Paper>
+
+                <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    Hành động
+                  </Typography>
+                  <Box sx={{ mt: 0.5 }}>
+                    <Chip
+                      label={selectedLog.action}
+                      color={getActionColor(selectedLog.action)}
+                      size="small"
+                      variant="outlined"
+                    />
+                  </Box>
+                </Paper>
+
+                <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    Thực thể & ID
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    style={{ fontWeight: 600 }}
+                    sx={{
+                      mt: 0.5,
+                      fontFamily: "monospace",
+                      overflowWrap: "anywhere",
+                    }}
+                  >
+                    {selectedLog.entityName || "—"}
+                    {selectedLog.entityId ? ` · #${selectedLog.entityId}` : ""}
+                  </Typography>
+                </Paper>
+
+                <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    Thời gian
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    style={{
+                      fontWeight: 600,
+                    }}
+                    sx={{
+                      mt: 0.5,
+                      fontFamily: "monospace",
+                      fontVariantNumeric: "tabular-nums",
+                    }}
+                  >
+                    {dayjs(selectedLog.createdAt).format("HH:mm:ss DD/MM/YYYY")}
+                  </Typography>
+                </Paper>
+              </Box>
+
+              {selectedLog.ipAddress && (
+                <Box>
+                  <Typography
+                    variant="subtitle2"
+                    color="text.secondary"
+                    sx={{ mb: 0.5 }}
+                  >
+                    Địa chỉ IP
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontFamily: "monospace" }}>
+                    {selectedLog.ipAddress}
+                  </Typography>
+                </Box>
+              )}
+
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "minmax(0, 1fr)",
+                    md: "repeat(2, minmax(0, 1fr))",
+                  },
+                  gap: 2,
+                }}
+              >
+                {renderAuditValue(
+                  "Dữ liệu trước thao tác",
+                  formatAuditValue(selectedLog.oldValue),
+                  "#f1f5f9",
+                )}
+
+                {renderAuditValue(
+                  "Dữ liệu sau thao tác",
+                  formatAuditValue(selectedLog.newValue),
+                  "#6ee7b7",
+                )}
+              </Box>
+            </Stack>
           )}
         </DialogContent>
-        <DialogActions className="px-6 pb-4">
-          <Button onClick={() => setSelectedLog(null)} color="inherit">
+
+        <Divider />
+
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button
+            onClick={() => setSelectedLog(null)}
+            color="inherit"
+            variant="outlined"
+          >
             Đóng
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </Stack>
   );
 };

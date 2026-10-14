@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 
 import {
@@ -8,7 +7,7 @@ import {
   FormControlLabel,
   FormHelperText,
   FormLabel,
-    Dialog,
+  Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -40,6 +39,7 @@ import { useMedicinesAll } from "@/features/medicines/hooks/useMedicines";
 import { Inventory, InventoryQueryParams, StockTransactionType } from "@/types";
 import dayjs from "dayjs";
 import { ModalInventoryImport } from "@/components/modal/ModalInventoryImport";
+import { notifyApiFeedback } from "@/api/axios";
 
 export const InventoryListPage: React.FC = () => {
   const [page, setPage] = useState(1);
@@ -76,8 +76,7 @@ export const InventoryListPage: React.FC = () => {
 
   const [txDialogOpen, setTxDialogOpen] = useState(false);
 
-  const [selectedItem, setSelectedItem] =
-    useState<Inventory | null>(null);
+  const [selectedItem, setSelectedItem] = useState<Inventory | null>(null);
 
   const [txType, setTxType] = useState<StockTransactionType>(
     StockTransactionType.IN,
@@ -125,17 +124,10 @@ export const InventoryListPage: React.FC = () => {
   // New Batch
   // =========================
 
-  const handleCreateBatch = async (
-    event: React.FormEvent<HTMLFormElement>,
-  ) => {
+  const handleCreateBatch = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (
-      !medicineId ||
-      !batchNumber.trim() ||
-      quantity <= 0 ||
-      unitPrice < 0
-    ) {
+    if (!medicineId || !batchNumber.trim() || quantity <= 0 || unitPrice < 0) {
       return;
     }
 
@@ -155,9 +147,7 @@ export const InventoryListPage: React.FC = () => {
       setMedicineId("");
       setBatchNumber("");
       setQuantity(100);
-      setExpiryDate(
-        dayjs().add(1, "year").format("YYYY-MM-DD"),
-      );
+      setExpiryDate(dayjs().add(1, "year").format("YYYY-MM-DD"));
       setMinStockLevel(20);
       setMaxStockLevel(500);
       setUnitPrice(5000);
@@ -172,9 +162,9 @@ export const InventoryListPage: React.FC = () => {
   // =========================
 
   const handleExecuteTransaction = async (
-    event: React.FormEvent<HTMLFormElement>,
+    e: React.FormEvent<HTMLFormElement>,
   ) => {
-    event.preventDefault();
+    e.preventDefault();
 
     if (!selectedItem || txQuantity <= 0) {
       return;
@@ -187,16 +177,11 @@ export const InventoryListPage: React.FC = () => {
         quantity: txQuantity,
         note: txReason.trim() || undefined,
       });
-
+      notifyApiFeedback("Nhập lô hàng thành công", "info");
       setTxDialogOpen(false);
-    } catch {
-      // Handled by interceptor
-    }
+    } catch {}
   };
 
-  // =========================
-  // Delete
-  // =========================
 
   const handleDeleteConfirm = async () => {
     if (!deleteId) return;
@@ -265,15 +250,17 @@ export const InventoryListPage: React.FC = () => {
     {
       id: "medicine",
       label: "Thuốc / Biệt dược",
-      filterFields: [{
-        key: "medicineId",
-        label: "Thuốc",
-        type: "select",
-        filters: (medicinesList || []).map((medicine) => ({
-          text: medicine.name,
-          value: medicine.id,
-        })),
-      }],
+      filterFields: [
+        {
+          key: "medicineId",
+          label: "Thuốc",
+          type: "select",
+          filters: (medicinesList || []).map((medicine) => ({
+            text: medicine.name,
+            value: medicine.id,
+          })),
+        },
+      ],
       minWidth: 200,
       render: (row) => (
         <div>
@@ -299,8 +286,9 @@ export const InventoryListPage: React.FC = () => {
           <div>
             <div className="flex items-center gap-1.5">
               <span
-                className={`font-bold tabular-nums text-sm ${isLow ? "text-rose-600" : "text-slate-900"
-                  }`}
+                className={`font-bold tabular-nums text-sm ${
+                  isLow ? "text-rose-600" : "text-slate-900"
+                }`}
               >
                 {row.quantity.toLocaleString("vi-VN")}{" "}
                 {row.medicine?.unit || "viên"}
@@ -353,9 +341,7 @@ export const InventoryListPage: React.FC = () => {
           </div>
 
           {row.expiryDate && (
-            <div className="mt-0.5">
-              {getExpiryStatus(row.expiryDate)}
-            </div>
+            <div className="mt-0.5">{getExpiryStatus(row.expiryDate)}</div>
           )}
         </div>
       ),
@@ -402,14 +388,14 @@ export const InventoryListPage: React.FC = () => {
           { label: "Kho dược" },
         ]}
         action={
-          <> 
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => setNewBatchOpen(true)}
-          >
-            Nhập lô thuốc mới
-          </Button>
+          <>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setNewBatchOpen(true)}
+            >
+              Nhập lô thuốc mới
+            </Button>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
@@ -417,7 +403,7 @@ export const InventoryListPage: React.FC = () => {
             >
               Import Excel
             </Button>
-            </>
+          </>
         }
       />
 
@@ -464,26 +450,15 @@ export const InventoryListPage: React.FC = () => {
         maxWidth="sm"
         fullWidth
       >
-        <Box
-          component="form"
-          onSubmit={handleCreateBatch}
-        >
+        <Box component="form" onSubmit={handleCreateBatch}>
           <DialogTitle className="font-bold text-slate-900">
             Nhập lô thuốc mới vào kho
           </DialogTitle>
 
           <DialogContent className="space-y-4 pt-2">
             {/* Medicine */}
-            <FormControl
-              fullWidth
-              size="small"
-              required
-              error={!medicineId}
-            >
-              <FormLabel
-                htmlFor="batch-medicine"
-                className="mb-1"
-              >
+            <FormControl fullWidth size="small" required error={!medicineId}>
+              <FormLabel htmlFor="batch-medicine" className="mb-1">
                 Thuốc
               </FormLabel>
 
@@ -498,10 +473,7 @@ export const InventoryListPage: React.FC = () => {
                 </MenuItem>
 
                 {medicinesList?.map((medicine) => (
-                  <MenuItem
-                    key={medicine.id}
-                    value={medicine.id}
-                  >
+                  <MenuItem key={medicine.id} value={medicine.id}>
                     {medicine.name} ({medicine.unit})
                   </MenuItem>
                 ))}
@@ -523,46 +495,32 @@ export const InventoryListPage: React.FC = () => {
               }}
             >
               {/* Batch Number */}
-              <FormControl
-                fullWidth
-                required
-                error={!batchNumber.trim()}
-              >
-                <FormLabel htmlFor="batch-number">
-                  Số lô sản xuất
-                </FormLabel>
+              <FormControl fullWidth required error={!batchNumber.trim()}>
+                <FormLabel htmlFor="batch-number">Số lô sản xuất</FormLabel>
 
                 <TextField
                   id="batch-number"
                   size="small"
                   placeholder="LOT2026-001"
                   value={batchNumber}
-                  onChange={(e) =>
-                    setBatchNumber(e.target.value)
-                  }
+                  onChange={(e) => setBatchNumber(e.target.value)}
                 />
 
                 <FormHelperText>
-                  {!batchNumber.trim()
-                    ? "Vui lòng nhập số lô"
-                    : " "}
+                  {!batchNumber.trim() ? "Vui lòng nhập số lô" : " "}
                 </FormHelperText>
               </FormControl>
 
               {/* Expiry */}
               <FormControl fullWidth required>
-                <FormLabel htmlFor="expiry-date">
-                  Hạn sử dụng
-                </FormLabel>
+                <FormLabel htmlFor="expiry-date">Hạn sử dụng</FormLabel>
 
                 <TextField
                   id="expiry-date"
                   type="date"
                   size="small"
                   value={expiryDate}
-                  onChange={(e) =>
-                    setExpiryDate(e.target.value)
-                  }
+                  onChange={(e) => setExpiryDate(e.target.value)}
                   slotProps={{
                     inputLabel: {
                       shrink: true,
@@ -570,29 +528,19 @@ export const InventoryListPage: React.FC = () => {
                   }}
                 />
 
-                <FormHelperText>
-                  Ngày hết hạn của lô thuốc
-                </FormHelperText>
+                <FormHelperText>Ngày hết hạn của lô thuốc</FormHelperText>
               </FormControl>
 
               {/* Quantity */}
-              <FormControl
-                fullWidth
-                required
-                error={quantity <= 0}
-              >
-                <FormLabel htmlFor="quantity">
-                  Số lượng nhập
-                </FormLabel>
+              <FormControl fullWidth required error={quantity <= 0}>
+                <FormLabel htmlFor="quantity">Số lượng nhập</FormLabel>
 
                 <TextField
                   id="quantity"
                   type="number"
                   size="small"
                   value={quantity}
-                  onChange={(e) =>
-                    setQuantity(Number(e.target.value))
-                  }
+                  onChange={(e) => setQuantity(Number(e.target.value))}
                   slotProps={{
                     htmlInput: {
                       min: 1,
@@ -608,23 +556,15 @@ export const InventoryListPage: React.FC = () => {
               </FormControl>
 
               {/* Unit Price */}
-              <FormControl
-                fullWidth
-                required
-                error={unitPrice < 0}
-              >
-                <FormLabel htmlFor="unit-price">
-                  Đơn giá nhập (VNĐ)
-                </FormLabel>
+              <FormControl fullWidth required error={unitPrice < 0}>
+                <FormLabel htmlFor="unit-price">Đơn giá nhập (VNĐ)</FormLabel>
 
                 <TextField
                   id="unit-price"
                   type="number"
                   size="small"
                   value={unitPrice}
-                  onChange={(e) =>
-                    setUnitPrice(Number(e.target.value))
-                  }
+                  onChange={(e) => setUnitPrice(Number(e.target.value))}
                   slotProps={{
                     htmlInput: {
                       min: 0,
@@ -639,18 +579,14 @@ export const InventoryListPage: React.FC = () => {
 
               {/* Min Stock */}
               <FormControl fullWidth>
-                <FormLabel htmlFor="min-stock">
-                  Ngưỡng tồn tối thiểu
-                </FormLabel>
+                <FormLabel htmlFor="min-stock">Ngưỡng tồn tối thiểu</FormLabel>
 
                 <TextField
                   id="min-stock"
                   type="number"
                   size="small"
                   value={minStockLevel}
-                  onChange={(e) =>
-                    setMinStockLevel(Number(e.target.value))
-                  }
+                  onChange={(e) => setMinStockLevel(Number(e.target.value))}
                   slotProps={{
                     htmlInput: {
                       min: 0,
@@ -658,25 +594,19 @@ export const InventoryListPage: React.FC = () => {
                   }}
                 />
 
-                <FormHelperText>
-                  Dùng để cảnh báo sắp hết hàng
-                </FormHelperText>
+                <FormHelperText>Dùng để cảnh báo sắp hết hàng</FormHelperText>
               </FormControl>
 
               {/* Max Stock */}
               <FormControl fullWidth>
-                <FormLabel htmlFor="max-stock">
-                  Ngưỡng tồn tối đa
-                </FormLabel>
+                <FormLabel htmlFor="max-stock">Ngưỡng tồn tối đa</FormLabel>
 
                 <TextField
                   id="max-stock"
                   type="number"
                   size="small"
                   value={maxStockLevel}
-                  onChange={(e) =>
-                    setMaxStockLevel(Number(e.target.value))
-                  }
+                  onChange={(e) => setMaxStockLevel(Number(e.target.value))}
                   slotProps={{
                     htmlInput: {
                       min: 0,
@@ -684,30 +614,22 @@ export const InventoryListPage: React.FC = () => {
                   }}
                 />
 
-                <FormHelperText>
-                  Ngưỡng tồn kho tối đa
-                </FormHelperText>
+                <FormHelperText>Ngưỡng tồn kho tối đa</FormHelperText>
               </FormControl>
 
               {/* Warehouse Location */}
               <FormControl fullWidth>
-                <FormLabel htmlFor="warehouse-location">
-                  Vị trí kho
-                </FormLabel>
+                <FormLabel htmlFor="warehouse-location">Vị trí kho</FormLabel>
 
                 <TextField
                   id="warehouse-location"
                   size="small"
                   placeholder="VD: Kệ A1 - Tầng 2"
                   value={warehouseLocation}
-                  onChange={(e) =>
-                    setWarehouseLocation(e.target.value)
-                  }
+                  onChange={(e) => setWarehouseLocation(e.target.value)}
                 />
 
-                <FormHelperText>
-                  Vị trí lưu trữ thuốc trong kho
-                </FormHelperText>
+                <FormHelperText>Vị trí lưu trữ thuốc trong kho</FormHelperText>
               </FormControl>
             </Box>
           </DialogContent>
@@ -749,10 +671,7 @@ export const InventoryListPage: React.FC = () => {
         maxWidth="xs"
         fullWidth
       >
-        <Box
-          component="form"
-          onSubmit={handleExecuteTransaction}
-        >
+        <Box component="form" onSubmit={handleExecuteTransaction}>
           <DialogTitle className="font-bold text-slate-900">
             Giao dịch Xuất / Nhập / Điều chỉnh kho
           </DialogTitle>
@@ -761,10 +680,7 @@ export const InventoryListPage: React.FC = () => {
             {selectedItem && (
               <Box className="p-3 bg-slate-50 rounded-lg text-xs space-y-1">
                 <div>
-                  Thuốc:{" "}
-                  <strong>
-                    {selectedItem.medicine?.name}
-                  </strong>
+                  Thuốc: <strong>{selectedItem.medicine?.name}</strong>
                 </div>
 
                 <div>
@@ -777,8 +693,7 @@ export const InventoryListPage: React.FC = () => {
                 <div>
                   Tồn hiện tại:{" "}
                   <strong>
-                    {selectedItem.quantity}{" "}
-                    {selectedItem.medicine?.unit}
+                    {selectedItem.quantity} {selectedItem.medicine?.unit}
                   </strong>
                 </div>
               </Box>
@@ -786,16 +701,12 @@ export const InventoryListPage: React.FC = () => {
 
             {/* Transaction Type */}
             <FormControl fullWidth size="small" required>
-              <FormLabel className="mb-1">
-                Loại giao dịch
-              </FormLabel>
+              <FormLabel className="mb-1">Loại giao dịch</FormLabel>
 
               <Select
                 value={txType}
                 onChange={(e) =>
-                  setTxType(
-                    e.target.value as StockTransactionType,
-                  )
+                  setTxType(e.target.value as StockTransactionType)
                 }
               >
                 <MenuItem value={StockTransactionType.IN}>
@@ -806,9 +717,7 @@ export const InventoryListPage: React.FC = () => {
                   Xuất kho (-)
                 </MenuItem>
 
-                <MenuItem
-                  value={StockTransactionType.ADJUSTMENT}
-                >
+                <MenuItem value={StockTransactionType.ADJUSTMENT}>
                   Điều chỉnh kiểm kê (±)
                 </MenuItem>
 
@@ -817,29 +726,19 @@ export const InventoryListPage: React.FC = () => {
                 </MenuItem>
               </Select>
 
-              <FormHelperText>
-                Chọn loại biến động tồn kho
-              </FormHelperText>
+              <FormHelperText>Chọn loại biến động tồn kho</FormHelperText>
             </FormControl>
 
             {/* Quantity */}
-            <FormControl
-              fullWidth
-              required
-              error={txQuantity <= 0}
-            >
-              <FormLabel htmlFor="tx-quantity">
-                Số lượng
-              </FormLabel>
+            <FormControl fullWidth required error={txQuantity <= 0}>
+              <FormLabel htmlFor="tx-quantity">Số lượng</FormLabel>
 
               <TextField
                 id="tx-quantity"
                 type="number"
                 size="small"
                 value={txQuantity}
-                onChange={(e) =>
-                  setTxQuantity(Number(e.target.value))
-                }
+                onChange={(e) => setTxQuantity(Number(e.target.value))}
                 slotProps={{
                   htmlInput: {
                     min: 1,
@@ -856,9 +755,7 @@ export const InventoryListPage: React.FC = () => {
 
             {/* Reason */}
             <FormControl fullWidth>
-              <FormLabel htmlFor="tx-reason">
-                Lý do / Căn cứ chứng từ
-              </FormLabel>
+              <FormLabel htmlFor="tx-reason">Lý do / Căn cứ chứng từ</FormLabel>
 
               <TextField
                 id="tx-reason"
@@ -866,9 +763,7 @@ export const InventoryListPage: React.FC = () => {
                 multiline
                 rows={2}
                 value={txReason}
-                onChange={(e) =>
-                  setTxReason(e.target.value)
-                }
+                onChange={(e) => setTxReason(e.target.value)}
                 placeholder="VD: Phiếu xuất số 12, kiểm kê định kỳ..."
               />
 
@@ -891,9 +786,7 @@ export const InventoryListPage: React.FC = () => {
               type="submit"
               variant="contained"
               disabled={
-                !selectedItem ||
-                txQuantity <= 0 ||
-                txMutation.isPending
+                !selectedItem || txQuantity <= 0 || txMutation.isPending
               }
             >
               {txMutation.isPending
@@ -904,7 +797,6 @@ export const InventoryListPage: React.FC = () => {
         </Box>
       </Dialog>
 
-      {/* Confirm Delete */}
       <ConfirmDialog
         open={Boolean(deleteId)}
         title="Xóa lô thuốc khỏi kho?"
@@ -916,7 +808,10 @@ export const InventoryListPage: React.FC = () => {
         onClose={() => setDeleteId(null)}
       />
 
-      <ModalInventoryImport open={openExcelModal} handleClose={() => setOpenExcelModal(false)} />
+      <ModalInventoryImport
+        open={openExcelModal}
+        handleClose={() => setOpenExcelModal(false)}
+      />
     </div>
   );
 };

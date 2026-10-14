@@ -168,7 +168,8 @@ export const MedicineListPage: React.FC = () => {
 
     try {
       await medicinesApi.importFromExcel(file);
-      queryClient.invalidateQueries({ queryKey: queryKeys.medicines.all });
+      // Import returns a count only, so reload rows instead of trying to patch an incomplete response.
+      void queryClient.refetchQueries({ queryKey: queryKeys.medicines.lists(), type: 'all' });
       notifyApiFeedback('Import thuốc từ Excel thành công', 'info');
       setPage(1);
     } catch {

@@ -27,8 +27,15 @@ export function useCreateSpecialty() {
 
   return useMutation({
     mutationFn: (dto: CreateSpecialtyDto) => specialtiesApi.create(dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.specialties.all });
+    onSuccess: (response) => {
+      const created = response.data;
+      queryClient.setQueriesData({ queryKey: queryKeys.specialties.lists() }, (cached: any) => {
+        if (!cached || !Array.isArray(cached.data) || cached.data.some((item: Specialty) => item.id === created.id) || cached.pagination?.page !== 1) return cached;
+        return { ...cached, data: [created, ...cached.data].slice(0, cached.pagination?.limit ?? cached.data.length + 1), pagination: cached.pagination ? { ...cached.pagination, total: cached.pagination.total + 1 } : cached.pagination };
+      });
+      queryClient.setQueriesData({ queryKey: queryKeys.specialties.dropdown() }, (cached: any) => Array.isArray(cached) ? [created, ...cached.filter((item: Specialty) => item.id !== created.id)] : cached);
+      void queryClient.refetchQueries({ queryKey: queryKeys.specialties.lists(), type: 'all' });
+      void queryClient.refetchQueries({ queryKey: queryKeys.specialties.dropdown(), type: 'all' });
       notifyApiFeedback('Thêm chuyên khoa thành công', 'info');
     },
   });
@@ -40,8 +47,13 @@ export function useUpdateSpecialty() {
   return useMutation({
     mutationFn: ({ id, dto }: { id: number; dto: UpdateSpecialtyDto }) =>
       specialtiesApi.update(id, dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.specialties.all });
+    onSuccess: (response, variables) => {
+      const updated = response.data;
+      queryClient.setQueryData(queryKeys.specialties.detail(variables.id), response);
+      queryClient.setQueriesData({ queryKey: queryKeys.specialties.lists() }, (cached: any) => cached && Array.isArray(cached.data) ? { ...cached, data: cached.data.map((item: Specialty) => item.id === updated.id ? updated : item) } : cached);
+      queryClient.setQueriesData({ queryKey: queryKeys.specialties.dropdown() }, (cached: any) => Array.isArray(cached) ? cached.map((item: Specialty) => item.id === updated.id ? updated : item) : cached);
+      void queryClient.refetchQueries({ queryKey: queryKeys.specialties.lists(), type: 'all' });
+      void queryClient.refetchQueries({ queryKey: queryKeys.specialties.dropdown(), type: 'all' });
       notifyApiFeedback('Cập nhật chuyên khoa thành công', 'info');
     },
   });
@@ -52,8 +64,12 @@ export function useDeleteSpecialty() {
 
   return useMutation({
     mutationFn: (id: number) => specialtiesApi.remove(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.specialties.all });
+    onSuccess: (_data, id) => {
+      queryClient.removeQueries({ queryKey: queryKeys.specialties.detail(id) });
+      queryClient.setQueriesData({ queryKey: queryKeys.specialties.lists() }, (cached: any) => cached && Array.isArray(cached.data) ? { ...cached, data: cached.data.filter((item: Specialty) => item.id !== id), pagination: cached.pagination ? { ...cached.pagination, total: Math.max(0, cached.pagination.total - 1) } : cached.pagination } : cached);
+      queryClient.setQueriesData({ queryKey: queryKeys.specialties.dropdown() }, (cached: any) => Array.isArray(cached) ? cached.filter((item: Specialty) => item.id !== id) : cached);
+      void queryClient.refetchQueries({ queryKey: queryKeys.specialties.lists(), type: 'all' });
+      void queryClient.refetchQueries({ queryKey: queryKeys.specialties.dropdown(), type: 'all' });
       notifyApiFeedback('Đã xóa chuyên khoa', 'info');
     },
   });

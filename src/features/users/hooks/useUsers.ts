@@ -31,8 +31,13 @@ export function useCreateUser() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (dto: CreateUserDto) => usersApi.create(dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
+    onSuccess: (created) => {
+      queryClient.setQueryData(queryKeys.users.detail(created.id), created);
+      queryClient.setQueriesData({ queryKey: queryKeys.users.lists() }, (cached: any) => {
+        if (!cached || !Array.isArray(cached.data) || cached.data.some((item: any) => item.id === created.id) || cached.pagination?.page !== 1) return cached;
+        return { ...cached, data: [created, ...cached.data].slice(0, cached.pagination?.limit ?? cached.data.length + 1), pagination: cached.pagination ? { ...cached.pagination, total: cached.pagination.total + 1 } : cached.pagination };
+      });
+      void queryClient.refetchQueries({ queryKey: queryKeys.users.lists(), type: 'all' });
       notifyApiFeedback('Tạo tài khoản người dùng thành công', 'info');
     },
   });
@@ -43,8 +48,10 @@ export function useUpdateUser() {
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdateUserDto }) =>
       usersApi.update(id, dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
+    onSuccess: (updated, variables) => {
+      queryClient.setQueryData(queryKeys.users.detail(variables.id), updated);
+      queryClient.setQueriesData({ queryKey: queryKeys.users.lists() }, (cached: any) => cached && Array.isArray(cached.data) ? { ...cached, data: cached.data.map((item: any) => item.id === updated.id ? updated : item) } : cached);
+      void queryClient.refetchQueries({ queryKey: queryKeys.users.lists(), type: 'all' });
       notifyApiFeedback('Cập nhật tài khoản thành công', 'info');
     },
   });

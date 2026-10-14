@@ -17,8 +17,9 @@ export function useCreatePermission() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (dto: CreatePermissionDto) => permissionsApi.create(dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.permissions.all });
+    onSuccess: (created) => {
+      queryClient.setQueriesData({ queryKey: queryKeys.permissions.all }, (cached: any) => Array.isArray(cached) ? [created, ...cached.filter((item: any) => item.id !== created.id)] : cached);
+      void queryClient.refetchQueries({ queryKey: queryKeys.permissions.all, type: 'all' });
       notifyApiFeedback('Thêm quyền truy cập thành công', 'info');
     },
   });
@@ -29,8 +30,9 @@ export function useUpdatePermission() {
   return useMutation({
     mutationFn: ({ id, dto }: { id: number; dto: CreatePermissionDto }) =>
       permissionsApi.update(id, dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.permissions.all });
+    onSuccess: (updated) => {
+      queryClient.setQueriesData({ queryKey: queryKeys.permissions.all }, (cached: any) => Array.isArray(cached) ? cached.map((item: any) => item.id === updated.id ? updated : item) : cached);
+      void queryClient.refetchQueries({ queryKey: queryKeys.permissions.all, type: 'all' });
       notifyApiFeedback('Cập nhật quyền thành công', 'info');
     },
   });
@@ -40,8 +42,9 @@ export function useDeletePermission() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => permissionsApi.remove(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.permissions.all });
+    onSuccess: (_data, id) => {
+      queryClient.setQueriesData({ queryKey: queryKeys.permissions.all }, (cached: any) => Array.isArray(cached) ? cached.filter((item: any) => item.id !== id) : cached);
+      void queryClient.refetchQueries({ queryKey: queryKeys.permissions.all, type: 'all' });
       notifyApiFeedback('Đã xóa quyền truy cập', 'info');
     },
   });

@@ -29,7 +29,8 @@ export function ModalInventoryImport({ open, handleClose }: { open: boolean; han
   const importMutation = useMutation({
     mutationFn: (selectedFile: File) => inventoryApi.importExcel(selectedFile),
     onSuccess: async (response) => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
+      // The import response contains counts, so reload the paginated rows from the API.
+      void queryClient.refetchQueries({ queryKey: queryKeys.inventory.lists(), type: 'all' });
       const count = getImportedCount(response);
       const message = getResponseMessage(response) ?? 'Nhập dữ liệu kho thành công';
       const notification = count === undefined ? message : `${message} (${count} mặt hàng)`;

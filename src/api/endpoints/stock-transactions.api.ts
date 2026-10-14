@@ -19,7 +19,7 @@ export const stockTransactionsApi = {
   findById: (id: number): Promise<ApiResponse<StockTransaction>> =>
     api.get(`/stock-transactions/${id}`).then((r) => r.data),
 
-  create: (dto: CreateStockTransactionDto): Promise<ApiResponse<StockTransaction>> =>
+  create: (dto: CreateStockTransactionDto): Promise<StockTransaction> =>
     api.post('/stock-transactions', dto).then((r) => r.data),
 
   remove: (id: number): Promise<void> =>

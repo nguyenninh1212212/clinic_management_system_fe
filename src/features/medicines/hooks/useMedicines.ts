@@ -19,8 +19,14 @@ export function useCreateMedicine() {
 
   return useMutation({
     mutationFn: (dto: CreateMedicineDto) => medicinesApi.create(dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.medicines.all });
+    onSuccess: (response) => {
+      const created = response.data;
+      queryClient.setQueriesData({ queryKey: queryKeys.medicines.lists() }, (cached: any) => {
+        if (!cached || !Array.isArray(cached.data)) return cached;
+        if (cached.data.some((item: Medicine) => item.id === created.id) || cached.pagination?.page !== 1) return cached;
+        return { ...cached, data: [created, ...cached.data].slice(0, cached.pagination?.limit ?? cached.data.length + 1), pagination: cached.pagination ? { ...cached.pagination, total: cached.pagination.total + 1 } : cached.pagination };
+      });
+      void queryClient.refetchQueries({ queryKey: queryKeys.medicines.lists(), type: 'all' });
       notifyApiFeedback('Thêm thuốc mới thành công', 'info');
     },
   });
@@ -32,8 +38,13 @@ export function useUpdateMedicine() {
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdateMedicineDto }) =>
       medicinesApi.update(id, dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.medicines.all });
+    onSuccess: (response, variables) => {
+      const updated = response.data;
+      queryClient.setQueryData(queryKeys.medicines.detail(variables.id), updated);
+      queryClient.setQueriesData({ queryKey: queryKeys.medicines.lists() }, (cached: any) =>
+        cached && Array.isArray(cached.data) ? { ...cached, data: cached.data.map((item: Medicine) => item.id === updated.id ? updated : item) } : cached,
+      );
+      void queryClient.refetchQueries({ queryKey: queryKeys.medicines.lists(), type: 'all' });
       notifyApiFeedback('Cập nhật thông tin thuốc thành công', 'info');
     },
   });
@@ -44,8 +55,14 @@ export function useDeleteMedicine() {
 
   return useMutation({
     mutationFn: (id: string) => medicinesApi.remove(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.medicines.all });
+    onSuccess: (_data, id) => {
+      queryClient.removeQueries({ queryKey: queryKeys.medicines.detail(id) });
+      queryClient.setQueriesData({ queryKey: queryKeys.medicines.lists() }, (cached: any) => {
+        if (!cached || !Array.isArray(cached.data)) return cached;
+        const data = cached.data.filter((item: Medicine) => item.id !== id);
+        return data.length === cached.data.length ? cached : { ...cached, data, pagination: cached.pagination ? { ...cached.pagination, total: Math.max(0, cached.pagination.total - 1) } : cached.pagination };
+      });
+      void queryClient.refetchQueries({ queryKey: queryKeys.medicines.lists(), type: 'all' });
       notifyApiFeedback('Đã xóa thuốc khỏi danh mục', 'info');
     },
   });

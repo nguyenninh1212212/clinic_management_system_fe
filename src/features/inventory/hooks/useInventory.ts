@@ -25,8 +25,22 @@ export function useCreateInventory() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (dto: CreateInventoryDto) => inventoryApi.create(dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
+    onSuccess: (response) => {
+      const created = response.data;
+      queryClient.setQueryData(queryKeys.inventory.detail(created.id), created);
+      queryClient.setQueriesData({ queryKey: queryKeys.inventory.lists() }, (cached: any) => {
+        if (!cached || !Array.isArray(cached.data)) return cached;
+        const alreadyPresent = cached.data.some((item: any) => item.id === created.id);
+        if (alreadyPresent || cached.pagination?.page !== 1) return cached;
+        return {
+          ...cached,
+          data: [created, ...cached.data].slice(0, cached.pagination?.limit ?? cached.data.length + 1),
+          pagination: cached.pagination
+            ? { ...cached.pagination, total: cached.pagination.total + 1 }
+            : cached.pagination,
+        };
+      });
+      void queryClient.refetchQueries({ queryKey: queryKeys.inventory.lists(), type: 'all' });
       notifyApiFeedback('Thêm lô thuốc mới vào kho thành công', 'info');
     },
   });
@@ -36,8 +50,38 @@ export function useStockTransaction() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (dto: CreateStockTransactionDto) => stockTransactionsApi.create(dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
+    onSuccess: (response) => {
+      const transaction = response;
+      queryClient.setQueriesData({ queryKey: queryKeys.stockTransactions.lists() }, (cached: any) => {
+        if (!cached || !Array.isArray(cached.data)) return cached;
+        if (cached.data.some((item: any) => item.id === transaction.id)) return cached;
+        if (cached.pagination?.page !== 1) return cached;
+        return {
+          ...cached,
+          data: [transaction, ...cached.data].slice(0, cached.pagination?.limit ?? cached.data.length + 1),
+          pagination: cached.pagination
+            ? { ...cached.pagination, total: cached.pagination.total + 1 }
+            : cached.pagination,
+        };
+      });
+      queryClient.setQueryData(queryKeys.inventory.detail(transaction.inventoryId), (cached: any) =>
+        cached ? {
+          ...cached,
+          quantity: transaction.balanceAfter ?? cached.quantity,
+          transactions: cached.transactions
+            ? [transaction, ...cached.transactions.filter((item: any) => item.id !== transaction.id)]
+            : cached.transactions,
+        } : cached,
+      );
+      void queryClient.refetchQueries({ queryKey: queryKeys.inventory.lists(), type: 'all' });
+      void queryClient.refetchQueries({ queryKey: queryKeys.stockTransactions.lists(), type: 'all' });
+      const defaultListParams: StockTransactionQueryParams = { page: 1, limit: 15 };
+      const defaultListKey = queryKeys.stockTransactions.list(defaultListParams);
+      if (!queryClient.getQueryState(defaultListKey)) {
+        void stockTransactionsApi.findAll(defaultListParams).then((freshData) => {
+          queryClient.setQueryData(defaultListKey, freshData);
+        }).catch(() => undefined);
+      }
       notifyApiFeedback('Ghi nhận giao dịch kho thành công', 'info');
     },
   });
@@ -47,8 +91,21 @@ export function useDeleteInventory() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => inventoryApi.remove(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
+    onSuccess: (_data, id) => {
+      queryClient.removeQueries({ queryKey: queryKeys.inventory.detail(id) });
+      queryClient.setQueriesData({ queryKey: queryKeys.inventory.lists() }, (cached: any) => {
+        if (!cached || !Array.isArray(cached.data)) return cached;
+        const data = cached.data.filter((item: any) => item.id !== id);
+        if (data.length === cached.data.length) return cached;
+        return {
+          ...cached,
+          data,
+          pagination: cached.pagination
+            ? { ...cached.pagination, total: Math.max(0, cached.pagination.total - 1) }
+            : cached.pagination,
+        };
+      });
+      void queryClient.refetchQueries({ queryKey: queryKeys.inventory.lists(), type: 'all' });
       notifyApiFeedback('Đã xóa lô thuốc khỏi kho', 'info');
     },
   });

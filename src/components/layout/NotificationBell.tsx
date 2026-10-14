@@ -67,8 +67,8 @@ export const NotificationBell: React.FC = () => {
         );
       }
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
+    onSuccess: (_data, id) => {
+      queryClient.setQueriesData({ queryKey: queryKeys.notifications.all }, (cached: any) => cached && Array.isArray(cached.data) ? { ...cached, data: cached.data.map((item: any) => item.id === id ? { ...item, isRead: true } : item) } : cached);
     },
   });
 
