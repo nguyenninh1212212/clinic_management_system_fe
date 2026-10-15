@@ -1,3 +1,6 @@
+import { Alert } from '@mui/material';
+import { ProfileTabs } from '@/features/profiles/components/ProfileTabs';
+import { DoctorShiftsTab, PatientInvoicesTab } from '@/features/profiles/components/ProfileRecords';
 // src/features/patients/pages/PatientDetailPage.tsx
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -31,17 +34,14 @@ export const PatientDetailPage: React.FC = () => {
   const { canCreateOrEditPatient, canDeletePatient } = usePermission();
 
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [page, setPage] = useState(1);
 
-  if (!id) {
-    return
-  }
-
-  const { data: patient, isLoading, isError } = usePatient(id);
+  const { data: patient, isLoading, isError } = usePatient(id || '');
   const deleteMutation = useDeletePatient();
 
-  const { data: appointmentsData, isLoading: loadingAppointments } = useAppointments({
+  const { data: appointmentsData, isLoading: loadingAppointments, isError: appointmentsError, refetch: refetchAppointments } = useAppointments({
     patientId: id,
-    page: 1,
+    page,
     limit: 20,
   });
 
@@ -78,6 +78,13 @@ export const PatientDetailPage: React.FC = () => {
   };
 
   const appointmentColumns: Column<Appointment>[] = [
+    {
+      id: 'examination',
+      label: 'Phiếu khám',
+      render: (row) => row.examination
+        ? <Button size="small" onClick={() => navigate(`/examinations/${row.examination!.id}`)}>Xem phiếu khám</Button>
+        : <span className="text-slate-400">Chưa có phiếu khám</span>,
+    },
     {
       id: 'appointmentDate',
       label: 'Thời gian khám',
@@ -171,7 +178,8 @@ export const PatientDetailPage: React.FC = () => {
       />
 
       {/* Main Info Card */}
-      <Card>
+      <ProfileTabs tabs={[
+        { id: 'overview', label: 'Thông tin hồ sơ', content: (<Card>
         <CardContent className="p-6">
           <Typography variant="subtitle2" className="text-sky-800 uppercase tracking-wider text-xs font-bold mb-4">
             Thông tin nhân khẩu & hành chính
@@ -223,9 +231,8 @@ export const PatientDetailPage: React.FC = () => {
             </div>
           </div>
         </CardContent>
-      </Card>
-
-      {/* Appointment History */}
+      </Card>) },
+        { id: 'appointments', label: 'Lịch hẹn & khám bệnh', content: (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <Typography variant="h6" className="text-slate-800 font-bold text-base">
@@ -236,7 +243,10 @@ export const PatientDetailPage: React.FC = () => {
           </span>
         </div>
 
+        {appointmentsError && <Alert severity="error" action={<Button onClick={() => refetchAppointments()}>Thử lại</Button>}>Không tải được lịch hẹn.</Alert>}
         <DataTable
+          pagination={appointmentsData?.pagination}
+          onPageChange={setPage}
           columns={appointmentColumns}
           rows={appointmentsData?.data || []}
           loading={loadingAppointments}
@@ -245,7 +255,9 @@ export const PatientDetailPage: React.FC = () => {
           emptyActionText="Đặt lịch khám ngay"
           onEmptyAction={() => navigate(`/appointments/new?patientId=${patientData.id}`)}
         />
-      </div>
+      </div>) },
+        { id: 'invoices', label: 'Hóa đơn', content: <PatientInvoicesTab patientId={patientData.id} /> },
+      ]} />
 
       <ConfirmDialog
         open={deleteOpen}

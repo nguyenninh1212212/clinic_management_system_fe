@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 // src/features/users/pages/UserListPage.tsx
 import React, { useState } from "react";
 import {
@@ -46,6 +47,7 @@ import {
 import dayjs from "dayjs";
 
 export const UserListPage: React.FC = () => {
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const { filters, replaceFilters } =
@@ -250,6 +252,7 @@ export const UserListPage: React.FC = () => {
       minWidth: 140,
       render: (row) => (
         <div className="flex items-center justify-end gap-1">
+          <Button size="small" onClick={() => navigate(`/users/${row.id}`)}>Chi tiết</Button>
           <Tooltip title="Chỉnh sửa tài khoản & vai trò">
             <IconButton
               size="small"

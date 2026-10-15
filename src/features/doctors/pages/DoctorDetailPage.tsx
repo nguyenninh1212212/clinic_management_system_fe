@@ -1,3 +1,6 @@
+import { Alert } from '@mui/material';
+import { ProfileTabs } from '@/features/profiles/components/ProfileTabs';
+import { DoctorShiftsTab, PatientInvoicesTab } from '@/features/profiles/components/ProfileRecords';
 // src/features/doctors/pages/DoctorDetailPage.tsx
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -31,13 +34,14 @@ export const DoctorDetailPage: React.FC = () => {
   const { canManageDoctors, canDeleteDoctor } = usePermission();
 
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [page, setPage] = useState(1);
 
   const { data: doctorData, isLoading, isError } = useDoctor(id || '');
   const deleteMutation = useDeleteDoctor();
   const doctor = doctorData?.data
-  const { data: appointmentsData, isLoading: loadingAppointments } = useAppointments({
+  const { data: appointmentsData, isLoading: loadingAppointments, isError: appointmentsError, refetch: refetchAppointments } = useAppointments({
     doctorId: id,
-    page: 1,
+    page,
     limit: 20,
   });
 
@@ -89,6 +93,13 @@ export const DoctorDetailPage: React.FC = () => {
   };
 
   const appointmentColumns: Column<Appointment>[] = [
+    {
+      id: 'examination',
+      label: 'Phiếu khám',
+      render: (row) => row.examination
+        ? <Button size="small" onClick={() => navigate(`/examinations/${row.examination!.id}`)}>Xem phiếu khám</Button>
+        : <span className="text-slate-400">Chưa có phiếu khám</span>,
+    },
     {
       id: 'appointmentDate',
       label: 'Thời gian khám',
@@ -177,7 +188,8 @@ export const DoctorDetailPage: React.FC = () => {
         }
       />
 
-      <Card>
+      <ProfileTabs tabs={[
+        { id: 'overview', label: 'Thông tin hồ sơ', content: (<Card>
         <CardContent className="p-6">
           <div className="flex flex-col sm:flex-row items-start gap-6">
             <Avatar
@@ -233,9 +245,8 @@ export const DoctorDetailPage: React.FC = () => {
             </div>
           </div>
         </CardContent>
-      </Card>
-
-      {/* Doctor's appointments */}
+      </Card>) },
+        { id: 'appointments', label: 'Lịch hẹn & khám bệnh', content: (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <Typography variant="h6" className="text-slate-800 font-bold text-base">
@@ -246,14 +257,19 @@ export const DoctorDetailPage: React.FC = () => {
           </span>
         </div>
 
+        {appointmentsError && <Alert severity="error" action={<Button onClick={() => refetchAppointments()}>Thử lại</Button>}>Không tải được lịch hẹn.</Alert>}
         <DataTable
+          pagination={appointmentsData?.pagination}
+          onPageChange={setPage}
           columns={appointmentColumns}
           rows={appointmentsData?.data || []}
           loading={loadingAppointments}
           emptyTitle="Chưa có lịch khám nào"
           emptyDescription="Bác sĩ này hiện chưa được xếp lịch khám bệnh nào."
         />
-      </div>
+      </div>) },
+        { id: 'shifts', label: 'Ca làm việc', content: <DoctorShiftsTab doctorId={doctor.id} /> },
+      ]} />
 
       <ConfirmDialog
         open={deleteOpen}

@@ -1,3 +1,4 @@
+import { UserDetailPage } from '@/features/users/pages/UserDetailPage';
 // src/App.tsx
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -172,6 +173,7 @@ export const routeElements = (
           </RoleRoute>
         }
       />
+      <Route path="users/:id" element={<RoleRoute roles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}><UserDetailPage /></RoleRoute>} />
       <Route
         path="permissions"
         element={

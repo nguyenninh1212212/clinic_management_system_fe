@@ -102,7 +102,7 @@ export const AppointmentStatusDialog: React.FC<AppointmentStatusDialogProps> = (
             chuyển tiếp trạng thái nữa.
           </Alert>
         ) : (
-          <>
+          <div className='flex flex-col gap-2'>
             <FormControl fullWidth size="small">
               <InputLabel id="next-status-label">Trạng thái kế tiếp theo quy trình *</InputLabel>
               <Select
@@ -129,7 +129,7 @@ export const AppointmentStatusDialog: React.FC<AppointmentStatusDialogProps> = (
               onChange={(e) => setNotes(e.target.value)}
               placeholder="VD: Bệnh nhân đã tới quầy tiếp đón, chuyển vào phòng phân loại sinh hiệu..."
             />
-          </>
+          </div>
         )}
       </DialogContent>
       <DialogActions className="px-6 pb-4">
