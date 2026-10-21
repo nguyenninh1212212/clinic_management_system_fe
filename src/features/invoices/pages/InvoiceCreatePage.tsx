@@ -89,14 +89,14 @@ export const InvoiceCreatePage: React.FC = () => {
     if (invalid) return;
     try {
       const result = await createMutation.mutateAsync({ buyerName: buyerName.trim(), buyerPhone: buyerPhone || undefined, buyerEmail: buyerEmail || undefined, buyerAddress: buyerAddress || undefined, buyerTaxCode: buyerTaxCode || undefined, patientId: patientId || undefined, notes: notes || undefined, items });
-      navigate(`/invoices/${result.data?.id || (result as any).id}`);
+      navigate(`/legacy/invoices/${result.id}`);
     } catch {
       // API interceptor displays the backend error.
     }
   };
 
   return <div className="space-y-4">
-    <PageHeader title="Tạo hóa đơn" subtitle="Nhập thông tin người mua và các dòng thanh toán" breadcrumbs={[{ label: 'Trang chủ', href: '/dashboard' }, { label: 'Hóa đơn', href: '/invoices' }, { label: 'Tạo mới' }]} action={<Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={() => navigate('/invoices')}>Quay lại</Button>} />
+    <PageHeader title="Tạo hóa đơn" subtitle="Nhập thông tin người mua và các dòng thanh toán" breadcrumbs={[{ label: 'Trang chủ', href: '/dashboard' }, { label: 'Hóa đơn', href: '/legacy/invoices' }, { label: 'Tạo mới' }]} action={<Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={() => navigate('/legacy/invoices')}>Quay lại</Button>} />
     <form onSubmit={handleSubmit} className="space-y-4">
       <Card>
         <CardContent className="space-y-4">

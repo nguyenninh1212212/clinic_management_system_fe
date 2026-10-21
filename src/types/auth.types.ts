@@ -1,7 +1,9 @@
 // src/types/auth.types.ts
 import { UserRole, AuthProvider } from './enums';
+import type { CreateDoctorDto } from './doctor.types';
 
 export interface CurrentUser {
+  accountType?: 'STAFF';
   id: string;
   email: string;
   role: UserRole;
@@ -20,10 +22,21 @@ export interface RegisterDto {
   email: string;
   password: string;
   fullName: string;
+  phone?: string;
+  departmentId?: number;
+  positionId?: number;
+  doctor?: Omit<CreateDoctorDto, 'userId'>;
+}
+
+export interface MedicalRegisterResponse {
+  id: string;
+  email: string;
+  fullName: string;
+  role: UserRole;
 }
 
 export interface LoginDto {
-  email: string;
+  identifier: string;
   password: string;
 }
 

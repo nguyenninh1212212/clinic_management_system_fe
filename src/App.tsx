@@ -1,3 +1,7 @@
+import { PatientAccountListPage } from '@/features/patient-accounts/pages/PatientAccountListPage';
+import { PatientAccountDetailPage } from '@/features/patient-accounts/pages/PatientAccountDetailPage';
+import { CommerceInvoicesPage,InvoicePaymentPage } from '@/features/commerce/CommercePages';
+import { CounterPurchasePage } from '@/features/commerce/CounterPurchasePage';
 import { UserDetailPage } from '@/features/users/pages/UserDetailPage';
 // src/App.tsx
 import React from "react";
@@ -139,12 +143,15 @@ export const routeElements = (
       <Route path="prescriptions/:id" element={<PrescriptionDetailPage />} />
 
       {/* Invoices */}
-      <Route path="invoices" element={<InvoiceListPage />} />
-      <Route path="invoices/new" element={<InvoiceCreatePage />} />
-      <Route path="invoices/:id" element={<InvoiceDetailPage />} />
+      <Route path="invoices" element={<CommerceInvoicesPage />} />
+      <Route path="invoices/new" element={<CounterPurchasePage />} />
+      <Route path="invoices/:id" element={<InvoicePaymentPage/>}/>
+      <Route path="legacy/invoices" element={<InvoiceListPage />} />
+      <Route path="legacy/invoices/new" element={<InvoiceCreatePage />} />
+      <Route path="legacy/invoices/:id" element={<InvoiceDetailPage />} />
 
       {/* Pharmacy */}
-      <Route path="pharmacy" element={<PharmacyDashboard />} />
+      <Route path="pharmacy" element={<PharmacyDashboard/>} />
 
       {/* Medicines & Inventory */}
       <Route path="medicines" element={<MedicineListPage />} />
@@ -164,6 +171,8 @@ export const routeElements = (
       {/* Audit Logs */}
       <Route path="audit-logs" element={<AuditLogListPage />} />
 
+      <Route path="patient-accounts" element={<RoleRoute roles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}><PatientAccountListPage /></RoleRoute>} />
+      <Route path="patient-accounts/:id" element={<RoleRoute roles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}><PatientAccountDetailPage /></RoleRoute>} />
       {/* Admin & Security Management (Super Admin & Admin) */}
       <Route
         path="users"

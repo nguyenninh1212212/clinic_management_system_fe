@@ -1,6 +1,7 @@
 // src/stores/auth.store.ts
 import { create } from 'zustand';
-import { CurrentUser, UserRole } from '@/types';
+import { CurrentUser } from '@/types';
+import { isMedicalUser, requireMedicalUser } from '@/features/auth/utils/medical-session';
 
 interface AuthState {
   accessToken: string | null;
@@ -18,19 +19,26 @@ const INITIAL_TOKEN = sessionStorage.getItem('access_token');
 const INITIAL_USER = (() => {
   try {
     const raw = sessionStorage.getItem('current_user');
-    return raw ? JSON.parse(raw) : null;
+    const user = raw ? JSON.parse(raw) : null;
+    if (!isMedicalUser(user)) {
+      sessionStorage.removeItem('access_token');
+      sessionStorage.removeItem('current_user');
+      return null;
+    }
+    return user;
   } catch {
     return null;
   }
 })();
 
 export const useAuthStore = create<AuthState>((set) => ({
-  accessToken: INITIAL_TOKEN,
+  accessToken: INITIAL_USER ? INITIAL_TOKEN : null,
   user: INITIAL_USER,
   isAuthenticated: !!INITIAL_TOKEN && !!INITIAL_USER,
   isLoading: false,
 
   setAuth: (token: string, user: CurrentUser) => {
+    requireMedicalUser(user);
     sessionStorage.setItem('access_token', token);
     sessionStorage.setItem('current_user', JSON.stringify(user));
     set({
@@ -54,6 +62,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   setUser: (user: CurrentUser | null) => {
+    if (user) requireMedicalUser(user);
     if (user) {
       sessionStorage.setItem('current_user', JSON.stringify(user));
     } else {

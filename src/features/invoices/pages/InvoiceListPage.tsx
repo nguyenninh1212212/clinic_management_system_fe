@@ -119,7 +119,7 @@ export const InvoiceListPage: React.FC = () => {
           <Tooltip title="Xem chi tiết">
             <IconButton
               size="small"
-              onClick={() => navigate(`/invoices/${row.id}`)}
+              onClick={() => navigate(`/legacy/invoices/${row.id}`)}
               className="text-slate-500 hover:text-sky-600"
             >
               <VisibilityOutlinedIcon fontSize="small" />
@@ -167,7 +167,7 @@ export const InvoiceListPage: React.FC = () => {
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={() => navigate("/invoices/new")}
+              onClick={() => navigate("/legacy/invoices/new")}
             >
               Tạo hóa đơn
             </Button>
@@ -207,7 +207,7 @@ export const InvoiceListPage: React.FC = () => {
         emptyTitle="Chưa có hóa đơn nào"
         emptyDescription="Tạo hóa đơn đầu tiên hoặc import dữ liệu từ Excel."
         emptyActionText="Tạo hóa đơn"
-        onEmptyAction={() => navigate("/invoices/new")}
+        onEmptyAction={() => navigate("/legacy/invoices/new")}
       />
       <ImportInvoiceModal
         open={importOpen}

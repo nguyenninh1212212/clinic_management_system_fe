@@ -189,10 +189,10 @@ export const PrescriptionListPage: React.FC = () => {
       id: "patient",
       label: "Bệnh nhân",
       filterFields: [{
-        key: "pharmacyStatus",
-        label: "Trạng thái cấp phát",
+        key: "status",
+        label: "Trạng thái đơn thuốc",
         type: "select",
-        filters: Object.values(PharmacyPrescriptionStatus).map((value) => ({ text: value, value })),
+        filters: ["DRAFT","ISSUED","CANCELLED"].map((value) => ({ text: value, value })),
       }],
       minWidth: 180,
       render: (row) => (

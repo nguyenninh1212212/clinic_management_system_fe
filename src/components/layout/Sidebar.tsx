@@ -42,7 +42,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onToggleCollapse,
   onCloseMobile,
 }) => {
-  const { isSuperAdmin, isManager, canViewPatients, canViewAuditLogs } =
+  const { isSuperAdmin, isManager, canManagePatientAccounts, canViewPatients, canViewAuditLogs } =
     usePermission();
 
   const navigationGroups: NavGroup[] = [
@@ -162,6 +162,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           path: "/users",
           icon: <ManageAccountsOutlinedIcon fontSize="small" />,
           visible: isSuperAdmin,
+        },
+        {
+          label: "Tài khoản bệnh nhân",
+          path: "/patient-accounts",
+          icon: <ManageAccountsOutlinedIcon fontSize="small" />,
+          visible: canManagePatientAccounts,
         },
         {
           label: "Phân quyền hệ thống",

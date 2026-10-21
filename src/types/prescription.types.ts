@@ -42,6 +42,7 @@ export interface PrescriptionItem {
 }
 
 export interface Prescription {
+  status?:'DRAFT'|'ISSUED'|'CANCELLED';
   id: string;
   examinationId: string;
   notes?: string;
@@ -81,6 +82,7 @@ export interface Prescription {
 }
 
 export interface PrescriptionQueryParams extends BaseQueryParams {
+  status?:'DRAFT'|'ISSUED'|'CANCELLED';
   pharmacyStatus?: PharmacyPrescriptionStatus;
   issuedAt?: string;
   examinationId?: string;

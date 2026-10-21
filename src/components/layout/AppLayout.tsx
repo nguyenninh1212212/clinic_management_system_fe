@@ -1,3 +1,4 @@
+import { CommerceRealtime } from '@/features/commerce/CommerceRealtime';
 import React, { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { Drawer, useMediaQuery, useTheme } from "@mui/material";
@@ -69,6 +70,7 @@ export const AppLayout: React.FC = () => {
         </main>
       </div>
 
+      <CommerceRealtime/>
       <FeedbackSnackbar />
     </div>
   );

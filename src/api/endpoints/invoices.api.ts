@@ -12,18 +12,18 @@ import {
 
 export const invoicesApi = {
   getCharts: (params?: ChartDateQuery): Promise<ApiResponse<InvoiceCharts>> =>
-    api.get('/invoices/charts', { params }).then((r) => r.data),
+    api.get('/legacy/invoices/charts', { params }).then((r) => r.data),
   findAll: (params?: InvoiceQueryParams): Promise<PaginatedResponse<Invoice>> =>
-    api.get('/invoices', { params }).then((response) => response.data),
+    api.get('/legacy/invoices', { params }).then((response) => response.data),
 
   findById: (id: string): Promise<Invoice> =>
-    api.get(`/invoices/${id}`).then((response) => response.data),
+    api.get(`/legacy/invoices/${id}`).then((response) => response.data),
 
-  create: (dto: CreateInvoiceDto): Promise<ApiResponse<Invoice>> =>
-    api.post('/invoices', dto).then((response) => response.data),
+  create: (dto: CreateInvoiceDto): Promise<Invoice> =>
+    api.post('/legacy/invoices', dto).then((response) => response.data),
 
   export: (id?: string) =>
-    api.get('/invoices/export', {
+    api.get('/legacy/invoices/export', {
       params: id ? { id } : undefined,
       responseType: 'blob',
     }),
@@ -32,13 +32,13 @@ export const invoicesApi = {
     const formData = new FormData();
     formData.append('file', file);
     return api
-      .post('/invoices/import', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+      .post('/legacy/invoices/import', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
       .then((response) => response.data);
   },
 
   /** GET /invoices?patientId=xxx — lọc hóa đơn theo bệnh nhân */
   findByPatientId: (patientId: string): Promise<Invoice[]> =>
-    api.get('/invoices').then((r) => {
+    api.get('/legacy/invoices', { params: {patientId} }).then((r) => {
       const invoices: Invoice[] = Array.isArray(r.data) ? r.data : (r.data?.data ?? []);
       return invoices.filter((inv) => inv.patientId === patientId);
     }),

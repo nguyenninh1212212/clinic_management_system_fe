@@ -1,12 +1,7 @@
-
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  useNavigate,
-  Link as RouterLink,
-  useLocation,
-} from 'react-router-dom';
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useNavigate, Link as RouterLink, useLocation } from "react-router-dom";
 
 import {
   Alert,
@@ -20,14 +15,15 @@ import {
   Stack,
   TextField,
   Typography,
-} from '@mui/material';
+} from "@mui/material";
 
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
-import { authApi } from '@/api/endpoints/auth.api';
-import { useAuthStore } from '@/stores/auth.store';
-import { loginSchema, LoginFormValues } from '../schemas/auth.schema';
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
+import { authApi } from "@/api/endpoints/auth.api";
+import { useAuthStore } from "@/stores/auth.store";
+import { loginSchema, LoginFormValues } from "../schemas/auth.schema";
+import { AxiosError } from "axios";
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -41,7 +37,7 @@ export const LoginPage: React.FC = () => {
 
   const from =
     (location.state as { from?: { pathname?: string } } | null)?.from
-      ?.pathname || '/dashboard';
+      ?.pathname || "/dashboard";
 
   const {
     register,
@@ -51,8 +47,8 @@ export const LoginPage: React.FC = () => {
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
     },
   });
 
@@ -61,33 +57,44 @@ export const LoginPage: React.FC = () => {
     setErrorMessage(null);
 
     try {
-      const response = await authApi.login(values);
+      const response = await authApi.login({
+        identifier: values.email.trim(),
+        password: values.password,
+      });
       setAuth(response.accessToken, response.user);
       navigate(from, { replace: true });
     } catch (err: any) {
-      const msg =
-        err.response?.data?.message ||
-        'Đăng nhập không thành công. Vui lòng kiểm tra lại email và mật khẩu.';
+      const axiosError = err as AxiosError<{
+        message?: string;
+        error?: string;
+        statusCode?: number;
+      }>;
 
-      setErrorMessage(Array.isArray(msg) ? msg.join(', ') : msg);
+      const msg = axiosError.response?.data?.message;
+
+      setErrorMessage(
+        msg ||
+          "Đăng nhập không thành công. Vui lòng kiểm tra lại email và mật khẩu.",
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
   const setDemoCredentials = (email: string) => {
-    setValue('email', email);
-    setValue('password', 'Admin@123');
+    setValue("email", email);
+    setValue("password", "Admin@123");
   };
 
+  console.log("🚀 ~ LoginPage ~ errorMessage:", errorMessage);
   return (
     <Box
       sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        bgcolor: 'grey.100',
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        bgcolor: "grey.100",
         px: 2,
         py: 4,
       }}
@@ -95,29 +102,29 @@ export const LoginPage: React.FC = () => {
       <Paper
         elevation={0}
         sx={{
-          width: '100%',
+          width: "100%",
           maxWidth: 448,
           p: { xs: 3, sm: 5 },
           borderRadius: 4,
-          border: '1px solid',
-          borderColor: 'grey.200',
-          boxShadow: '0 10px 30px rgba(15, 23, 42, 0.08)',
+          border: "1px solid",
+          borderColor: "grey.200",
+          boxShadow: "0 10px 30px rgba(15, 23, 42, 0.08)",
         }}
       >
         {/* Header */}
-        <Stack spacing={1} sx={{ alignItems: 'center', mb: 4 }}>
+        <Stack spacing={1} sx={{ alignItems: "center", mb: 4 }}>
           <Box
             sx={{
               width: 48,
               height: 48,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               borderRadius: 3,
-              bgcolor: 'primary.main',
-              color: 'white',
+              bgcolor: "primary.main",
+              color: "white",
               mb: 0.5,
-              boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+              boxShadow: "0 4px 12px rgba(25, 118, 210, 0.3)",
             }}
           >
             <LocalHospitalIcon />
@@ -126,7 +133,7 @@ export const LoginPage: React.FC = () => {
           <Typography
             variant="h5"
             color="text.primary"
-            sx={{ fontWeight: 700, textAlign: 'center' }}
+            sx={{ fontWeight: 700, textAlign: "center" }}
           >
             Hệ thống Quản lý Phòng khám
           </Typography>
@@ -134,13 +141,12 @@ export const LoginPage: React.FC = () => {
           <Typography
             variant="body2"
             color="text.secondary"
-            sx={{ fontSize: 12, textAlign: 'center' }}
+            sx={{ fontSize: 12, textAlign: "center" }}
           >
             Đăng nhập để truy cập hồ sơ bệnh nhân, lịch hẹn và kho dược
           </Typography>
         </Stack>
 
-        {/* Error */}
         {errorMessage && (
           <Alert
             severity="error"
@@ -151,15 +157,10 @@ export const LoginPage: React.FC = () => {
           </Alert>
         )}
 
-        {/* Login form */}
-        <Box
-          component="form"
-          onSubmit={handleSubmit(onSubmit)}
-          noValidate
-        >
+        <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
           <Stack spacing={2}>
             <TextField
-              {...register('email')}
+              {...register("email")}
               label="Email"
               type="email"
               fullWidth
@@ -170,9 +171,9 @@ export const LoginPage: React.FC = () => {
             />
 
             <TextField
-              {...register('password')}
+              {...register("password")}
               label="Mật khẩu"
-              type={showPassword ? 'text' : 'password'}
+              type={showPassword ? "text" : "password"}
               fullWidth
               size="small"
               placeholder="••••••••"
@@ -187,9 +188,7 @@ export const LoginPage: React.FC = () => {
                         edge="end"
                         onClick={() => setShowPassword((prev) => !prev)}
                         aria-label={
-                          showPassword
-                            ? 'Ẩn mật khẩu'
-                            : 'Hiển thị mật khẩu'
+                          showPassword ? "Ẩn mật khẩu" : "Hiển thị mật khẩu"
                         }
                       >
                         {showPassword ? (
@@ -214,13 +213,13 @@ export const LoginPage: React.FC = () => {
                 mt: 1,
                 py: 1.25,
                 fontWeight: 600,
-                textTransform: 'none',
+                textTransform: "none",
               }}
             >
               {isLoading ? (
                 <CircularProgress size={22} color="inherit" />
               ) : (
-                'Đăng nhập'
+                "Đăng nhập"
               )}
             </Button>
           </Stack>
@@ -229,18 +228,18 @@ export const LoginPage: React.FC = () => {
         <Typography
           variant="body2"
           color="text.secondary"
-          sx={{ textAlign: 'center', fontSize: 12, mt: 3 }}
+          sx={{ textAlign: "center", fontSize: 12, mt: 3 }}
         >
-          Chưa có tài khoản?{' '}
+          Chưa có tài khoản?{" "}
           <Box
             component={RouterLink}
             to="/register"
             sx={{
-              color: 'primary.main',
+              color: "primary.main",
               fontWeight: 600,
-              textDecoration: 'none',
-              '&:hover': {
-                textDecoration: 'underline',
+              textDecoration: "none",
+              "&:hover": {
+                textDecoration: "underline",
               },
             }}
           >
@@ -249,20 +248,17 @@ export const LoginPage: React.FC = () => {
         </Typography>
 
         <Divider sx={{ my: 3 }}>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-          >
+          <Typography variant="caption" color="text.secondary">
             Tài khoản mẫu thử nghiệm
           </Typography>
         </Divider>
 
         <Box
           sx={{
-            display: 'grid',
+            display: "grid",
             gridTemplateColumns: {
-              xs: '1fr',
-              sm: 'repeat(2, 1fr)',
+              xs: "1fr",
+              sm: "repeat(2, 1fr)",
             },
             gap: 1,
           }}
@@ -270,33 +266,25 @@ export const LoginPage: React.FC = () => {
           <DemoAccountButton
             title="Super Admin"
             email="superadmin@clinic.vn"
-            onClick={() =>
-              setDemoCredentials('superadmin@clinic.vn')
-            }
+            onClick={() => setDemoCredentials("superadmin@clinic.vn")}
           />
 
           <DemoAccountButton
             title="Quản trị viên"
             email="admin@clinic.vn"
-            onClick={() =>
-              setDemoCredentials('admin@clinic.vn')
-            }
+            onClick={() => setDemoCredentials("admin@clinic.vn")}
           />
 
           <DemoAccountButton
             title="Nhân viên y tế"
             email="staff@clinic.vn"
-            onClick={() =>
-              setDemoCredentials('staff@clinic.vn')
-            }
+            onClick={() => setDemoCredentials("staff@clinic.vn")}
           />
 
           <DemoAccountButton
             title="Bác sĩ / User"
             email="doctor@clinic.vn"
-            onClick={() =>
-              setDemoCredentials('doctor@clinic.vn')
-            }
+            onClick={() => setDemoCredentials("doctor@clinic.vn")}
           />
         </Box>
       </Paper>
@@ -323,24 +311,21 @@ const DemoAccountButton: React.FC<DemoAccountButtonProps> = ({
       sx={{
         minHeight: 58,
         p: 1.25,
-        borderColor: 'grey.300',
+        borderColor: "grey.300",
         borderRadius: 2,
-        justifyContent: 'flex-start',
-        alignItems: 'flex-start',
-        textAlign: 'left',
-        textTransform: 'none',
-        color: 'text.primary',
-        '&:hover': {
-          borderColor: 'grey.400',
-          bgcolor: 'grey.50',
+        justifyContent: "flex-start",
+        alignItems: "flex-start",
+        textAlign: "left",
+        textTransform: "none",
+        color: "text.primary",
+        "&:hover": {
+          borderColor: "grey.400",
+          bgcolor: "grey.50",
         },
       }}
     >
-      <Stack sx={{ alignItems: 'flex-start', width: '100%' }}>
-        <Typography
-          variant="body2"
-          sx={{ fontWeight: 600, lineHeight: 1.4 }}
-        >
+      <Stack sx={{ alignItems: "flex-start", width: "100%" }}>
+        <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.4 }}>
           {title}
         </Typography>
 
@@ -349,7 +334,7 @@ const DemoAccountButton: React.FC<DemoAccountButtonProps> = ({
           color="text.secondary"
           noWrap
           sx={{
-            maxWidth: '100%',
+            maxWidth: "100%",
           }}
         >
           {email}

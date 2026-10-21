@@ -25,7 +25,7 @@ export function useCreateInvoice() {
   return useMutation({
     mutationFn: (dto: CreateInvoiceDto) => invoicesApi.create(dto),
     onSuccess: (response) => {
-      const created = response.data;
+      const created = response;
       queryClient.setQueryData(queryKeys.invoices.detail(created.id), created);
       queryClient.setQueriesData({ queryKey: queryKeys.invoices.lists() }, (cached: any) => {
         if (!cached || !Array.isArray(cached.data) || cached.data.some((item: any) => item.id === created.id) || cached.pagination?.page !== 1) return cached;

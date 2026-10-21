@@ -13,6 +13,7 @@ export function usePermission() {
   const isUser = role === UserRole.USER || isStaff;
 
   const canManageUsers = isSuperAdmin;
+  const canManagePatientAccounts = isAdmin;
   const canManagePermissions = isSuperAdmin;
 
   const canViewPatients = [
@@ -61,6 +62,7 @@ export function usePermission() {
     isStaff,
     isUser,
     canManageUsers,
+    canManagePatientAccounts,
     canManagePermissions,
     canViewPatients,
     canCreateOrEditPatient,

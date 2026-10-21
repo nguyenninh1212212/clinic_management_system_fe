@@ -46,7 +46,7 @@ export const InvoiceDetailPage: React.FC = () => {
     return (
       <div className="py-12 text-center space-y-4">
         <Typography variant="h6">Không tìm thấy hóa đơn</Typography>
-        <Button variant="outlined" onClick={() => navigate("/invoices")}>
+        <Button variant="outlined" onClick={() => navigate("/legacy/invoices")}>
           Quay lại danh sách
         </Button>
       </div>
@@ -60,7 +60,7 @@ export const InvoiceDetailPage: React.FC = () => {
         subtitle={`Tạo ngày ${dayjs(invoice.createdAt).format("HH:mm DD/MM/YYYY")}`}
         breadcrumbs={[
           { label: "Trang chủ", href: "/dashboard" },
-          { label: "Hóa đơn", href: "/invoices" },
+          { label: "Hóa đơn", href: "/legacy/invoices" },
           { label: "Chi tiết" },
         ]}
         action={
@@ -68,7 +68,7 @@ export const InvoiceDetailPage: React.FC = () => {
             <Button
               variant="outlined"
               startIcon={<ArrowBackIcon />}
-              onClick={() => navigate("/invoices")}
+              onClick={() => navigate("/legacy/invoices")}
             >
               Danh sách
             </Button>

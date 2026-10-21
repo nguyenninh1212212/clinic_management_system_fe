@@ -9,6 +9,7 @@ export interface SocketConnectionOptions {
 
 let sharedSocket: Socket | null = null;
 let currentNamespace = '';
+let currentToken='';
 
 export const connectSocket = ({
   namespace = '',
@@ -23,7 +24,7 @@ export const connectSocket = ({
   // Tái sử dụng kết nối nếu cùng namespace.
   if (
     sharedSocket &&
-    currentNamespace === normalizedNamespace
+    currentNamespace === normalizedNamespace && currentToken===token
   ) {
     sharedSocket.auth = { token };
 
@@ -38,8 +39,9 @@ export const connectSocket = ({
   sharedSocket?.disconnect();
 
   currentNamespace = normalizedNamespace;
+  currentToken=token;
 
-  const url = `${API_BASE_URL}${normalizedNamespace}`;
+  const url = `${new URL(API_BASE_URL || '/api/v1', window.location.origin).origin}${normalizedNamespace}`;
 
   sharedSocket = io(url, {
     autoConnect: false,
@@ -65,4 +67,5 @@ export const disconnectSocket = (): void => {
   sharedSocket?.disconnect();
   sharedSocket = null;
   currentNamespace = '';
+  currentToken='';
 };

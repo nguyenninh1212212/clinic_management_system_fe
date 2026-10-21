@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 // src/features/users/pages/UserListPage.tsx
 import React, { useState } from "react";
 import {
@@ -252,7 +252,9 @@ export const UserListPage: React.FC = () => {
       minWidth: 140,
       render: (row) => (
         <div className="flex items-center justify-end gap-1">
-          <Button size="small" onClick={() => navigate(`/users/${row.id}`)}>Chi tiết</Button>
+          <Button size="small" onClick={() => navigate(`/users/${row.id}`)}>
+            Chi tiết
+          </Button>
           <Tooltip title="Chỉnh sửa tài khoản & vai trò">
             <IconButton
               size="small"
@@ -405,20 +407,16 @@ export const UserListPage: React.FC = () => {
                 label="Phân quyền vai trò *"
                 onChange={(e) => setCreateRole(e.target.value as UserRole)}
               >
-                <MenuItem value={UserRole.USER}>
-                  Bác sĩ / Khám chữa (USER)
-                </MenuItem>
+                <MenuItem value={UserRole.DOCTOR}>Bác sĩ </MenuItem>
                 <MenuItem value={UserRole.STAFF}>
-                  Nhân viên tiếp đón / Dược (STAFF)
+                  Nhân viên tiếp đón / Dược
                 </MenuItem>
                 <MenuItem value={UserRole.MANAGER}>
-                  Trưởng phòng / Quản lý (MANAGER)
+                  Trưởng phòng / Quản lý
                 </MenuItem>
-                <MenuItem value={UserRole.ADMIN}>
-                  Quản trị viên cơ sở (ADMIN)
-                </MenuItem>
+                <MenuItem value={UserRole.ADMIN}>Quản trị viên cơ sở</MenuItem>
                 <MenuItem value={UserRole.SUPER_ADMIN}>
-                  Tổng quản trị viên (SUPER_ADMIN)
+                  Tổng quản trị viên
                 </MenuItem>
               </Select>
             </FormControl>

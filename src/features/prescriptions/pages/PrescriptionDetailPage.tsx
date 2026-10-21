@@ -1,3 +1,5 @@
+import { useMutation,useQueryClient } from '@tanstack/react-query';
+import { prescriptionsApi } from '@/api/endpoints/prescriptions.api';
 // src/features/prescriptions/pages/PrescriptionDetailPage.tsx
 import React, { useRef } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
@@ -8,6 +10,8 @@ import {
   Button,
   CircularProgress,
   Divider,
+  Alert,
+  Chip,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import PrintIcon from "@mui/icons-material/Print";
@@ -19,6 +23,8 @@ import dayjs from "dayjs";
 export const PrescriptionDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const client=useQueryClient();
+  const issue=useMutation({mutationFn:()=>prescriptionsApi.issue(id!),onSuccess:()=>client.invalidateQueries({queryKey:['prescriptions']})});
   const printRef = useRef<HTMLDivElement>(null);
   const { data: prescription, isLoading, isError } = usePrescription(id ?? "");
 
@@ -88,6 +94,10 @@ export const PrescriptionDetailPage: React.FC = () => {
         />
       </div>
 
+      <div className="print:hidden"><Chip label={prescription.status==='DRAFT'?'Bản nháp':prescription.status==='ISSUED'?'Đã phát hành':'Đã hủy'}/>
+        {prescription.status==='DRAFT'&&<Button disabled={issue.isPending||!prescription.items?.length} onClick={()=>issue.mutate()}>Phát hành và gửi đơn cho bệnh nhân</Button>}
+        {issue.isError&&<Alert severity="error">Không thể phát hành. Kiểm tra thuốc và quyền bác sĩ phụ trách.</Alert>}
+      </div>
       <Card className="print:shadow-none print:border-none" ref={printRef}>
         <CardContent className="p-8 sm:p-12 space-y-6 font-serif">
           {/* Clinic Header */}
@@ -204,13 +214,11 @@ export const PrescriptionDetailPage: React.FC = () => {
                     <td className="py-3">
                       <div className="font-semibold text-slate-800">
                         {item.dosage} · {item.frequency}
-                        {item.durationDays
-                          ? ` · Dùng ${item.durationDays} ngày`
-                          : ""}
+                        {item.duration ? ` · ${item.duration}` : item.durationDays ? ` · ${item.durationDays} ngày` : ""}
                       </div>
-                      {item.instructions && (
+                      {(item.note || item.instructions) && (
                         <div className="text-slate-600 text-[11px] mt-0.5 italic">
-                          Lời dặn: {item.instructions}
+                          Lời dặn: {item.note || item.instructions}
                         </div>
                       )}
                     </td>

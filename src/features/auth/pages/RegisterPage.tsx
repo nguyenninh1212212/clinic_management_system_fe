@@ -17,11 +17,12 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import { authApi } from '@/api/endpoints/auth.api';
 import { useAuthStore } from '@/stores/auth.store';
+import { canRegisterMedicalAccount } from '@/features/auth/utils/medical-session';
+import { notifyApiFeedback } from '@/api/axios';
 import { registerSchema, RegisterFormValues } from '../schemas/auth.schema';
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
-  const setAuth = useAuthStore((state) => state.setAuth);
 
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -44,21 +45,20 @@ export const RegisterPage: React.FC = () => {
     setIsLoading(true);
     setErrorMessage(null);
     try {
-      const res = await authApi.register(values);
-      if (res.accessToken && res.user) {
-        setAuth(res.accessToken, res.user);
-        navigate('/dashboard');
-      } else {
-        // Auto-login if registration doesn't return full token
-        const loginRes = await authApi.login({
-          email: values.email,
-          password: values.password,
-        });
-        setAuth(loginRes.accessToken, loginRes.user);
-        navigate('/dashboard');
+      const { isAuthenticated, user } = useAuthStore.getState();
+      if (!isAuthenticated) {
+        navigate('/login', { state: { from: { pathname: '/register' } } });
+        return;
       }
+      if (!canRegisterMedicalAccount(user)) {
+        setErrorMessage('Chỉ quản trị viên được tạo tài khoản bác sĩ hoặc nhân viên y tế.');
+        return;
+      }
+      await authApi.register(values);
+      notifyApiFeedback('Tạo tài khoản nhân viên y tế thành công.', 'info');
+      navigate('/dashboard');
     } catch (err: any) {
-      const msg = err.response?.data?.message || 'Đăng ký không thành công. Email có thể đã được sử dụng.';
+      const msg = err.response?.data?.message || err.message || 'Đăng ký không thành công. Email có thể đã được sử dụng.';
       setErrorMessage(Array.isArray(msg) ? msg.join(', ') : msg);
     } finally {
       setIsLoading(false);
