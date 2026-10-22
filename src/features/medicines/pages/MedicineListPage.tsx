@@ -1,5 +1,5 @@
 // src/features/medicines/pages/MedicineListPage.tsx
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState } from "react";
 import {
   Button,
   FormControl,
@@ -13,29 +13,51 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
-import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined';
-import UploadFileOutlinedIcon from '@mui/icons-material/UploadFileOutlined';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import { useQueryClient } from '@tanstack/react-query';
-import { PageHeader } from '@/components/common/PageHeader';
-import { DataTable, Column } from '@/components/common/DataTable';
-import { ConfirmDialog } from '@/components/common/ConfirmDialog';
-import { useListFilters } from '@/hooks/useListFilters';
-import { notifyApiFeedback } from '@/api/axios';
-import { medicinesApi } from '@/api/endpoints/medicines.api';
-import { queryKeys } from '@/api/queryKeys';
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
+import UploadFileOutlinedIcon from "@mui/icons-material/UploadFileOutlined";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import { useQueryClient } from "@tanstack/react-query";
+import { PageHeader } from "@/components/common/PageHeader";
+import { DataTable, Column } from "@/components/common/DataTable";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { useListFilters } from "@/hooks/useListFilters";
+import { notifyApiFeedback } from "@/api/axios";
+import { medicinesApi } from "@/api/endpoints/medicines.api";
+import { queryKeys } from "@/api/queryKeys";
 import {
   useMedicines,
   useCreateMedicine,
   useUpdateMedicine,
   useDeleteMedicine,
-} from '../hooks/useMedicines';
-import { Medicine, MedicineCategory, CreateMedicineDto, MedicineQueryParams } from '@/types';
-import * as XLSX from 'xlsx';
+} from "../hooks/useMedicines";
+import {
+  Medicine,
+  MedicineCategory,
+  CreateMedicineDto,
+  MedicineQueryParams,
+} from "@/types";
+import * as XLSX from "xlsx";
+import { AxiosError } from "axios";
+
+const createInitialMedicine = (): Medicine => ({
+  id: "",
+  name: "",
+  genericName: "",
+  unit: "",
+  category: MedicineCategory.OTHER, // Thay bằng enum thực tế
+  description: "",
+  minStockLevel: 0,
+  manufacturer: "",
+  registrationNumber: "",
+  sellingPrice: 0,
+  createdAt: "",
+  updatedAt: "",
+});
+
 export const MedicineListPage: React.FC = () => {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -43,21 +65,27 @@ export const MedicineListPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const { filters, replaceFilters } =
-    useListFilters<Omit<MedicineQueryParams, 'page' | 'limit'>>();
+    useListFilters<Omit<MedicineQueryParams, "page" | "limit">>();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMedicine, setEditingMedicine] = useState<Medicine | null>(null);
-  const [name, setName] = useState('');
-  const [genericName, setGenericName] = useState('');
-  const [unit, setUnit] = useState('Viên');
-  const [medCategory, setMedCategory] = useState<MedicineCategory>(MedicineCategory.ANTIBIOTIC);
-  const [description, setDescription] = useState('');
-  const [minStockLevel, setMinStockLevel] = useState(100);
-  const [manufacturer, setManufacturer] = useState('');
-  const [registrationNumber, setRegistrationNumber] = useState('');
 
-  // Delete state
+  const [medCategory, setMedCategory] = useState<MedicineCategory>(
+    MedicineCategory.ANTIBIOTIC,
+  );
+
+  const [payload, setPayload] = useState<Medicine>(createInitialMedicine);
+  const {
+    name,
+    unit,
+    description,
+    genericName,
+    manufacturer,
+    minStockLevel,
+    registrationNumber,
+    sellingPrice,
+  } = payload;
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [deleteName, setDeleteName] = useState('');
+  const [deleteName, setDeleteName] = useState("");
 
   const { data, isLoading } = useMedicines({
     page,
@@ -71,53 +99,52 @@ export const MedicineListPage: React.FC = () => {
 
   const handleOpenCreate = () => {
     setEditingMedicine(null);
-    setName('');
-    setGenericName('');
-    setUnit('Viên');
-    setMedCategory(MedicineCategory.ANTIBIOTIC);
-    setDescription('');
-    setMinStockLevel(100);
-    setManufacturer('');
-    setRegistrationNumber('');
+    setPayload(createInitialMedicine());
+    setMedCategory(MedicineCategory.OTHER);
     setDialogOpen(true);
   };
 
   const handleOpenEdit = (m: Medicine) => {
+    setPayload(m);
     setEditingMedicine(m);
-    setName(m.name);
-    setGenericName(m.genericName || '');
-    setUnit(m.unit);
     setMedCategory(m.category);
-    setDescription(m.description || '');
-    setMinStockLevel(m.minstocklevel || 100);
-    setManufacturer(m.manufacturer || '');
-    setRegistrationNumber(m.registrationNumber || '');
     setDialogOpen(true);
   };
 
   const handleSubmit = async () => {
-    if (!name.trim() || !unit.trim()) return;
-
-    const payload: CreateMedicineDto = {
-      name: name.trim(),
-      genericName: genericName.trim() || undefined,
-      unit: unit.trim(),
-      category: medCategory,
-      description: description.trim() || undefined,
-      minStockLevel: Number(minStockLevel) || 0,
-      manufacturer: manufacturer.trim() || undefined,
-      registrationNumber: registrationNumber.trim() || undefined,
-    };
-
     try {
-      if (editingMedicine) {
-        await updateMutation.mutateAsync({ id: editingMedicine.id, dto: payload });
-      } else {
-        await createMutation.mutateAsync(payload);
+      if (payload) {
+        const dto: CreateMedicineDto = {
+          name: payload.name,
+          genericName: payload.genericName,
+          unit: payload.unit,
+          category: payload.category,
+          description: payload.description,
+          minStockLevel: payload.minStockLevel,
+          manufacturer: payload.manufacturer,
+          registrationNumber: payload.registrationNumber,
+          sellingPrice: payload.sellingPrice ?? 0,
+        };
+        if (editingMedicine) {
+          await updateMutation.mutateAsync({
+            id: editingMedicine.id,
+            dto,
+          });
+        } else {
+          await createMutation.mutateAsync(dto);
+        }
+        setDialogOpen(false);
       }
-      setDialogOpen(false);
-    } catch {
-      // Handled by interceptor
+    } catch (err: any) {
+      const axiosError = err as AxiosError<{
+        message?: string;
+        error?: string;
+        statusCode?: number;
+      }>;
+      notifyApiFeedback(
+        axiosError?.response?.data.message || "Cập nhật kho thất bại",
+        "error",
+      );
     }
   };
 
@@ -133,60 +160,73 @@ export const MedicineListPage: React.FC = () => {
   const handleDownloadTemplate = () => {
     const rows = [
       [
-        'name',
-        'genericName',
-        'unit',
-        'category',
-        'description',
-        'minStockLevel',
-        'manufacturer',
-        'registrationNumber',
+        "name",
+        "genericName",
+        "unit",
+        "category",
+        "description",
+        "minStockLevel",
+        "manufacturer",
+        "registrationNumber",
       ],
       [
-        'Paracetamol 500mg',
-        'Paracetamol',
-        'Viên',
-        'ANTIBIOTIC',
-        'Bảo quản nơi khô ráo',
+        "Paracetamol 500mg",
+        "Paracetamol",
+        "Viên",
+        "ANTIBIOTIC",
+        "Bảo quản nơi khô ráo",
         100,
-        'DHG Pharma',
-        'VD-12345',
+        "DHG Pharma",
+        "VD-12345",
       ],
     ];
 
     const worksheet = XLSX.utils.aoa_to_sheet(rows);
     const workbook = XLSX.utils.book_new();
 
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Medicines');
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Medicines");
 
-    XLSX.writeFile(workbook, 'medicine_import_template.xlsx');
+    XLSX.writeFile(workbook, "medicine_import_template.xlsx");
   };
 
-  const handleImportExcel = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportExcel = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     try {
       await medicinesApi.importFromExcel(file);
       // Import returns a count only, so reload rows instead of trying to patch an incomplete response.
-      void queryClient.refetchQueries({ queryKey: queryKeys.medicines.lists(), type: 'all' });
-      notifyApiFeedback('Import thuốc từ Excel thành công', 'info');
+      void queryClient.refetchQueries({
+        queryKey: queryKeys.medicines.lists(),
+        type: "all",
+      });
+      notifyApiFeedback("Import thuốc từ Excel thành công", "info");
       setPage(1);
     } catch {
       // Handled by interceptor
     } finally {
-      event.target.value = '';
+      event.target.value = "";
     }
   };
-
+  const updateField = <K extends keyof Medicine>(
+    field: K,
+    value: Medicine[K],
+  ) => {
+    setPayload((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
   const columns: Column<Medicine>[] = [
     {
-      id: 'name',
-      label: 'Tên biệt dược / Hoạt chất',
+      id: "name",
+      label: "Tên biệt dược / Hoạt chất",
       filterFields: [
-        { key: 'search', label: 'Tìm thuốc', type: 'input' },
-        { key: 'genericName', label: 'Tên hoạt chất', type: 'input' },
-        { key: 'isActive', label: 'Đang kinh doanh', type: 'boolean' },
+        { key: "search", label: "Tìm thuốc", type: "input" },
+        { key: "genericName", label: "Tên hoạt chất", type: "input" },
+        { key: "isActive", label: "Đang kinh doanh", type: "boolean" },
       ],
       minWidth: 220,
       render: (row) => (
@@ -208,14 +248,19 @@ export const MedicineListPage: React.FC = () => {
       ),
     },
     {
-      id: 'category',
-      label: 'Nhóm thuốc',
-      filterFields: [{
-        key: 'category',
-        label: 'Nhóm thuốc',
-        type: 'select',
-        filters: Object.values(MedicineCategory).map((value) => ({ text: value, value })),
-      }],
+      id: "category",
+      label: "Nhóm thuốc",
+      filterFields: [
+        {
+          key: "category",
+          label: "Nhóm thuốc",
+          type: "select",
+          filters: Object.values(MedicineCategory).map((value) => ({
+            text: value,
+            value,
+          })),
+        },
+      ],
       minWidth: 150,
       render: (row) => (
         <span className="text-xs font-semibold bg-slate-100 text-slate-700 px-2 py-0.5 rounded">
@@ -224,54 +269,45 @@ export const MedicineListPage: React.FC = () => {
       ),
     },
     {
-      id: 'unit',
-      label: 'Đơn vị tính',
-      filterFields: [{ key: 'unit', label: 'Đơn vị tính', type: 'input' }],
+      id: "unit",
+      label: "Đơn vị tính",
+      filterFields: [{ key: "unit", label: "Đơn vị tính", type: "input" }],
       minWidth: 100,
-      render: (row) => <span className="text-xs text-slate-700">{row.unit}</span>,
-    },
-    {
-      id: 'totalStock',
-      label: 'Tổng tồn kho',
-      filterFields: [{ key: 'lowStock', label: 'Sắp hết hàng', type: 'boolean' }],
-      minWidth: 130,
       render: (row) => (
-        <div>
-          <span
-            className={`text-sm font-bold tabular-nums ${(row.totalStock || 0) <= (row.minstocklevel || 0)
-              ? 'text-rose-600'
-              : 'text-emerald-700'
-              }`}
-          >
-            {row.totalStock ?? 0} {row.unit}
-          </span>
-          <div className="text-[11px] text-slate-400 tabular-nums">
-            Mức sàn: {row.minstocklevel || 0}
-          </div>
-        </div>
+        <span className="text-xs text-slate-700">{row.unit}</span>
       ),
     },
     {
-      id: 'manufacturer',
-      label: 'Hãng sản xuất / SĐK',
+      id: "sellingPrice",
+      label: "Giá bán",
+      minWidth: 100,
+      render: (row) => (
+        <span className="text-xs text-slate-700">{row.sellingPrice}</span>
+      ),
+    },
+    {
+      id: "manufacturer",
+      label: "Hãng sản xuất / SĐK",
       filterFields: [
-        { key: 'manufacturer', label: 'Hãng sản xuất', type: 'input' },
-        { key: 'registrationNumber', label: 'Số đăng ký', type: 'input' },
+        { key: "manufacturer", label: "Hãng sản xuất", type: "input" },
+        { key: "registrationNumber", label: "Số đăng ký", type: "input" },
       ],
       minWidth: 180,
       render: (row) => (
         <div className="text-xs">
-          <div className="text-slate-800">{row.manufacturer || '—'}</div>
+          <div className="text-slate-800">{row.manufacturer || "—"}</div>
           {row.registrationNumber && (
-            <div className="text-slate-400 font-mono">SĐK: {row.registrationNumber}</div>
+            <div className="text-slate-400 font-mono">
+              SĐK: {row.registrationNumber}
+            </div>
           )}
         </div>
       ),
     },
     {
-      id: 'actions',
-      label: 'Thao tác',
-      align: 'right',
+      id: "actions",
+      label: "Thao tác",
+      align: "right",
       minWidth: 110,
       render: (row) => (
         <div className="flex items-center justify-end gap-1">
@@ -307,10 +343,17 @@ export const MedicineListPage: React.FC = () => {
       <PageHeader
         title="Danh mục Thuốc & Dược phẩm"
         subtitle="Quản lý danh bạ biệt dược, hoạt chất, mức dự trữ an toàn và đơn vị tính"
-        breadcrumbs={[{ label: 'Trang chủ', href: '/dashboard' }, { label: 'Danh mục Thuốc' }]}
+        breadcrumbs={[
+          { label: "Trang chủ", href: "/dashboard" },
+          { label: "Danh mục Thuốc" },
+        ]}
         action={
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outlined" startIcon={<DownloadOutlinedIcon />} onClick={handleDownloadTemplate}>
+            <Button
+              variant="outlined"
+              startIcon={<DownloadOutlinedIcon />}
+              onClick={handleDownloadTemplate}
+            >
               Mẫu Excel
             </Button>
             <Button
@@ -321,7 +364,11 @@ export const MedicineListPage: React.FC = () => {
             >
               Import Excel
             </Button>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreate}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleOpenCreate}
+            >
               Thêm thuốc mới
             </Button>
             <input
@@ -337,7 +384,11 @@ export const MedicineListPage: React.FC = () => {
 
       <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="text-xs text-slate-500 tabular-nums">
-          Tổng cộng: <strong className="text-slate-800">{data?.pagination?.total || 0}</strong> loại thuốc
+          Tổng cộng:{" "}
+          <strong className="text-slate-800">
+            {data?.pagination?.total || 0}
+          </strong>{" "}
+          loại thuốc
         </div>
       </div>
 
@@ -370,7 +421,9 @@ export const MedicineListPage: React.FC = () => {
         fullWidth
       >
         <DialogTitle className="font-bold text-slate-900">
-          {editingMedicine ? 'Chỉnh sửa thông tin thuốc' : 'Thêm mới thuốc vào danh mục'}
+          {editingMedicine
+            ? "Chỉnh sửa thông tin thuốc"
+            : "Thêm mới thuốc vào danh mục"}
         </DialogTitle>
         <DialogContent className="space-y-4 pt-2">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -379,7 +432,7 @@ export const MedicineListPage: React.FC = () => {
               fullWidth
               size="small"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => updateField("name", e.target.value)}
               placeholder="VD: Paracetamol 500mg, Augmentin 1g..."
             />
 
@@ -388,7 +441,7 @@ export const MedicineListPage: React.FC = () => {
               fullWidth
               size="small"
               value={genericName}
-              onChange={(e) => setGenericName(e.target.value)}
+              onChange={(e) => updateField("genericName", e.target.value)}
               placeholder="VD: Amoxicillin + Clavulanic acid"
             />
 
@@ -398,7 +451,7 @@ export const MedicineListPage: React.FC = () => {
                 labelId="dialog-cat-label"
                 value={medCategory}
                 label="Nhóm thuốc *"
-                onChange={(e) => setMedCategory(e.target.value as MedicineCategory)}
+                onChange={(e) => updateField("category", e.target.value)}
               >
                 {Object.values(MedicineCategory).map((c) => (
                   <MenuItem key={c} value={c}>
@@ -412,8 +465,8 @@ export const MedicineListPage: React.FC = () => {
               label="Đơn vị tính *"
               fullWidth
               size="small"
-              value={unit}
-              onChange={(e) => setUnit(e.target.value)}
+              value={payload.unit}
+              onChange={(e) => updateField("unit", e.target.value)}
               placeholder="Viên, Vỉ, Hộp, Chai, Ống..."
             />
 
@@ -423,7 +476,20 @@ export const MedicineListPage: React.FC = () => {
               fullWidth
               size="small"
               value={minStockLevel}
-              onChange={(e) => setMinStockLevel(Number(e.target.value))}
+              onChange={(e) =>
+                updateField("minStockLevel", parseInt(e.target.value))
+              }
+            />
+
+            <TextField
+              label="Giá bán"
+              type="number"
+              fullWidth
+              size="small"
+              value={sellingPrice}
+              onChange={(e) =>
+                updateField("sellingPrice", parseInt(e.target.value))
+              }
             />
 
             <TextField
@@ -431,7 +497,9 @@ export const MedicineListPage: React.FC = () => {
               fullWidth
               size="small"
               value={registrationNumber}
-              onChange={(e) => setRegistrationNumber(e.target.value)}
+              onChange={(e) =>
+                updateField("registrationNumber", e.target.value)
+              }
               placeholder="VD: VD-21543-14"
             />
 
@@ -441,7 +509,7 @@ export const MedicineListPage: React.FC = () => {
                 fullWidth
                 size="small"
                 value={manufacturer}
-                onChange={(e) => setManufacturer(e.target.value)}
+                onChange={(e) => updateField("manufacturer", e.target.value)}
                 placeholder="VD: Dược Hậu Giang (DHG Pharma) - Việt Nam"
               />
             </div>
@@ -454,7 +522,7 @@ export const MedicineListPage: React.FC = () => {
                 rows={3}
                 size="small"
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => updateField("description", e.target.value)}
                 placeholder="Bảo quản nơi khô ráo dưới 30°C, tránh ánh sáng trực tiếp..."
               />
             </div>
@@ -467,9 +535,16 @@ export const MedicineListPage: React.FC = () => {
           <Button
             onClick={handleSubmit}
             variant="contained"
-            disabled={!name.trim() || !unit.trim() || createMutation.isPending || updateMutation.isPending}
+            disabled={
+              !name.trim() ||
+              !unit.trim() ||
+              createMutation.isPending ||
+              updateMutation.isPending
+            }
           >
-            {createMutation.isPending || updateMutation.isPending ? 'Đang lưu...' : 'Lưu thông tin'}
+            {createMutation.isPending || updateMutation.isPending
+              ? "Đang lưu..."
+              : "Lưu thông tin"}
           </Button>
         </DialogActions>
       </Dialog>

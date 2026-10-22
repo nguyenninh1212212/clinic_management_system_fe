@@ -1,6 +1,6 @@
 // src/types/medicine.types.ts
-import { MedicineCategory } from './enums';
-import { BaseQueryParams } from './common.types';
+import { MedicineCategory } from "./enums";
+import { BaseQueryParams } from "./common.types";
 
 export interface Medicine {
   id: string;
@@ -9,12 +9,12 @@ export interface Medicine {
   unit: string;
   category: MedicineCategory;
   description?: string;
-  minstocklevel?: number;
+  minStockLevel?: number;
   manufacturer?: string;
   registrationNumber?: string;
   totalStock?: number;
   isLowStock?: boolean;
-  sellingPrice?:number
+  sellingPrice?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -39,6 +39,7 @@ export interface CreateMedicineDto {
   minStockLevel?: number;
   manufacturer?: string;
   registrationNumber?: string;
+  sellingPrice: number;
 }
 
 export interface UpdateMedicineDto {
