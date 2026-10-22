@@ -247,46 +247,6 @@ export const LoginPage: React.FC = () => {
           </Box>
         </Typography>
 
-        <Divider sx={{ my: 3 }}>
-          <Typography variant="caption" color="text.secondary">
-            Tài khoản mẫu thử nghiệm
-          </Typography>
-        </Divider>
-
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: {
-              xs: "1fr",
-              sm: "repeat(2, 1fr)",
-            },
-            gap: 1,
-          }}
-        >
-          <DemoAccountButton
-            title="Super Admin"
-            email="superadmin@clinic.vn"
-            onClick={() => setDemoCredentials("superadmin@clinic.vn")}
-          />
-
-          <DemoAccountButton
-            title="Quản trị viên"
-            email="admin@clinic.vn"
-            onClick={() => setDemoCredentials("admin@clinic.vn")}
-          />
-
-          <DemoAccountButton
-            title="Nhân viên y tế"
-            email="staff@clinic.vn"
-            onClick={() => setDemoCredentials("staff@clinic.vn")}
-          />
-
-          <DemoAccountButton
-            title="Bác sĩ / User"
-            email="doctor@clinic.vn"
-            onClick={() => setDemoCredentials("doctor@clinic.vn")}
-          />
-        </Box>
       </Paper>
     </Box>
   );

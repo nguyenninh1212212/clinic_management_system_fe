@@ -324,7 +324,18 @@ export const InventoryListPage: React.FC = () => {
         </span>
       ),
     },
-
+    {
+      id: "medicineSellingPrice",
+      label: "Đơn giá bán",
+      minWidth: 200,
+      render: (row) => (
+        <div>
+          <div className="tabular-nums font-mono text-xs text-slate-700 font-semibold">
+            {`${Number(row.medicine?.sellingPrice).toLocaleString("vi-VN")} đ`}
+          </div>
+        </div>
+      ),
+    },
     {
       id: "expiryDate",
       label: "Hạn dùng (EXP)",
@@ -439,11 +450,7 @@ export const InventoryListPage: React.FC = () => {
         emptyActionText="Nhập lô thuốc đầu tiên"
         onEmptyAction={() => setNewBatchOpen(true)}
       />
-
-      {/* =====================================================
-          NEW BATCH FORM
-          ===================================================== */}
-
+      
       <Dialog
         open={newBatchOpen}
         onClose={() => setNewBatchOpen(false)}
@@ -456,7 +463,6 @@ export const InventoryListPage: React.FC = () => {
           </DialogTitle>
 
           <DialogContent className="space-y-4 pt-2">
-            {/* Medicine */}
             <FormControl fullWidth size="small" required error={!medicineId}>
               <FormLabel htmlFor="batch-medicine" className="mb-1">
                 Thuốc

@@ -18,7 +18,6 @@ import { UserRole } from "@/types";
 
 // Auth Pages
 import { LoginPage } from "@/features/auth/pages/LoginPage";
-import { RegisterPage } from "@/features/auth/pages/RegisterPage";
 
 // Dashboard
 import { DashboardPage } from "@/features/dashboard/pages/DashboardPage";
@@ -92,7 +91,6 @@ const queryClient = new QueryClient({
 export const routeElements = (
   <>
     <Route path="/login" element={<LoginPage />} />
-    <Route path="/register" element={<RegisterPage />} />
 
     {/* Protected Routes */}
     <Route

@@ -14,6 +14,7 @@ export interface Medicine {
   registrationNumber?: string;
   totalStock?: number;
   isLowStock?: boolean;
+  sellingPrice?:number
   createdAt: string;
   updatedAt: string;
 }
