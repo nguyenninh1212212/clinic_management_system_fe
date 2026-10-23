@@ -28,18 +28,39 @@ import { AxiosError } from "axios";
 const inputSx = {
   "& .MuiInput-root": {
     fontSize: 14,
-    "&::before": {
-      borderBottomColor: "#d1d5db",
+
+    "&::before, &::after": {
+      borderBottom: "1px solid #d1d5db",
     },
+
     "&:hover:not(.Mui-disabled, .Mui-error)::before": {
-      borderBottomColor: "#64748b",
+      borderBottom: "1px solid #d1d5db",
+    },
+
+    "&.Mui-focused::after": {
+      borderBottom: "1px solid #d1d5db",
+    },
+
+    "&.Mui-error::before, &.Mui-error::after": {
+      borderBottomColor: "error.main",
     },
   },
+
   "& .MuiInputBase-input": {
     padding: "10px 0",
   },
+
   "& .MuiInputLabel-root": {
     fontSize: 14,
+    color: "text.secondary",
+
+    "&.Mui-focused": {
+      color: "text.secondary",
+    },
+
+    "&.Mui-error": {
+      color: "error.main",
+    },
   },
 };
 
