@@ -25,6 +25,24 @@ import { useAuthStore } from "@/stores/auth.store";
 import { loginSchema, LoginFormValues } from "../schemas/auth.schema";
 import { AxiosError } from "axios";
 
+const inputSx = {
+  "& .MuiInput-root": {
+    fontSize: 14,
+    "&::before": {
+      borderBottomColor: "#d1d5db",
+    },
+    "&:hover:not(.Mui-disabled, .Mui-error)::before": {
+      borderBottomColor: "#64748b",
+    },
+  },
+  "& .MuiInputBase-input": {
+    padding: "10px 0",
+  },
+  "& .MuiInputLabel-root": {
+    fontSize: 14,
+  },
+};
+
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -86,7 +104,6 @@ export const LoginPage: React.FC = () => {
     setValue("password", "Admin@123");
   };
 
-  console.log("🚀 ~ LoginPage ~ errorMessage:", errorMessage);
   return (
     <Box
       sx={{
@@ -94,7 +111,6 @@ export const LoginPage: React.FC = () => {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        bgcolor: "grey.100",
         px: 2,
         py: 4,
       }}
@@ -111,7 +127,6 @@ export const LoginPage: React.FC = () => {
           boxShadow: "0 10px 30px rgba(15, 23, 42, 0.08)",
         }}
       >
-        {/* Header */}
         <Stack spacing={1} sx={{ alignItems: "center", mb: 4 }}>
           <Box
             sx={{
@@ -161,6 +176,7 @@ export const LoginPage: React.FC = () => {
           <Stack spacing={2}>
             <TextField
               {...register("email")}
+              variant="standard"
               label="Email"
               type="email"
               fullWidth
@@ -168,10 +184,12 @@ export const LoginPage: React.FC = () => {
               placeholder="bacsi@phongkham.vn"
               error={!!errors.email}
               helperText={errors.email?.message}
+              sx={inputSx}
             />
 
             <TextField
               {...register("password")}
+              variant="standard"
               label="Mật khẩu"
               type={showPassword ? "text" : "password"}
               fullWidth
@@ -179,17 +197,21 @@ export const LoginPage: React.FC = () => {
               placeholder="••••••••"
               error={!!errors.password}
               helperText={errors.password?.message}
+              sx={inputSx}
               slotProps={{
                 input: {
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
+                        type="button"
                         size="small"
                         edge="end"
                         onClick={() => setShowPassword((prev) => !prev)}
+                        onMouseDown={(event) => event.preventDefault()}
                         aria-label={
                           showPassword ? "Ẩn mật khẩu" : "Hiển thị mật khẩu"
                         }
+                        sx={{ color: "text.secondary" }}
                       >
                         {showPassword ? (
                           <VisibilityOff fontSize="small" />
@@ -246,7 +268,6 @@ export const LoginPage: React.FC = () => {
             Đăng ký ngay
           </Box>
         </Typography>
-
       </Paper>
     </Box>
   );
