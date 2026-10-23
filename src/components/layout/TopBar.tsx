@@ -11,8 +11,11 @@ import {
   MenuItem,
   ListItemIcon,
   Divider,
+  Tooltip,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
+import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutlined";
 import { NotificationBell } from "./NotificationBell";
@@ -20,6 +23,7 @@ import { useAuthStore } from "@/stores/auth.store";
 import { StatusChip } from "@/components/common/StatusChip";
 import { authApi } from "@/api/endpoints/auth.api";
 import { useNavigate } from "react-router-dom";
+import { useThemeMode } from "@/theme/ThemeModeProvider";
 
 interface TopBarProps {
   onToggleSidebar: () => void;
@@ -34,6 +38,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   const user = useAuthStore((state) => state.user);
   const clearAuth = useAuthStore((state) => state.clearAuth);
   const navigate = useNavigate();
+  const { mode, toggleTheme } = useThemeMode();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -62,9 +67,10 @@ export const TopBar: React.FC<TopBarProps> = ({
       position="sticky"
       color="inherit"
       elevation={0}
-      className="bg-white/95 backdrop-blur border-b border-slate-200 z-10"
+      className="backdrop-blur z-10 min-h-[72px]"
+      sx={{ bgcolor: 'background.paper', borderBottom: 1, borderColor: 'divider' }}
     >
-      <Toolbar className="px-4 sm:px-6 min-h-[60px] flex items-center justify-between">
+      <Toolbar className="px-4 sm:px-6  flex items-center justify-between">
         <div className="flex items-center gap-3">
           {!isDesktop && (
             <IconButton
@@ -79,6 +85,16 @@ export const TopBar: React.FC<TopBarProps> = ({
           )}
         </div>
         <div className="flex items-center gap-3">
+          <Tooltip title={mode === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'}>
+            <IconButton
+              onClick={toggleTheme}
+              size="small"
+              color="inherit"
+              aria-label="Chuyển đổi màu giao diện"
+            >
+              {mode === 'dark' ? <LightModeOutlinedIcon /> : <DarkModeOutlinedIcon />}
+            </IconButton>
+          </Tooltip>
           <NotificationBell />
 
           <Divider
@@ -94,7 +110,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             <Avatar
               src={user?.avatar}
               alt={user?.fullName || user?.email}
-              sx={{ width: 34, height: 34, bgcolor: "#0284c7" }}
+              sx={{ width: 34, height: 34, bgcolor: "primary.main" }}
               className="text-xs font-semibold text-white"
             >
               {user?.fullName?.charAt(0) ||
@@ -129,13 +145,14 @@ export const TopBar: React.FC<TopBarProps> = ({
             <Box className="px-4 py-2 border-b border-slate-100">
               <Typography
                 variant="subtitle2"
-                className="font-semibold text-slate-900 text-xs"
+                className="font-semibold  text-xs"
               >
                 {user?.fullName || "Tài khoản"}
               </Typography>
               <Typography
                 variant="caption"
-                className="text-slate-500 truncate block"
+                className="truncate block"
+                sx={{color:"text.secondary"}}
               >
                 {user?.email}
               </Typography>

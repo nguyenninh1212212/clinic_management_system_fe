@@ -7,8 +7,7 @@ import { UserDetailPage } from '@/features/users/pages/UserDetailPage';
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ThemeProvider, CssBaseline } from "@mui/material";
-import { theme } from "@/theme/theme";
+import { ThemeModeProvider } from "@/theme/ThemeModeProvider";
 
 // Layout & Route Guards
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -198,14 +197,13 @@ export const routeElements = (
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
+      <ThemeModeProvider>
         <BrowserRouter>
           <Routes>
             {routeElements}
           </Routes>
         </BrowserRouter>
-      </ThemeProvider>
+      </ThemeModeProvider>
     </QueryClientProvider>
   );
 }

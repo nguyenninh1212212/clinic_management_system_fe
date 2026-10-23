@@ -1,4 +1,30 @@
 @import "tailwindcss";
+
+/* Tailwind utilities are used alongside MUI in older screens. Keep their neutral
+   surfaces readable when the global theme is switched to dark mode. */
+.app-shell--dark .bg-white,
+.app-shell--dark .bg-slate-50,
+.app-shell--dark .bg-slate-100 {
+  background-color: #172033 !important;
+}
+
+.app-shell--dark .border-slate-100,
+.app-shell--dark .border-slate-200,
+.app-shell--dark .border-slate-300 {
+  border-color: #334155 !important;
+}
+
+.app-shell--dark .text-slate-900,
+.app-shell--dark .text-slate-800,
+.app-shell--dark .text-slate-700 {
+  color: #e2e8f0 !important;
+}
+
+.app-shell--dark .text-slate-600,
+.app-shell--dark .text-slate-500,
+.app-shell--dark .text-slate-400 {
+  color: #94a3b8 !important;
+}
 @media print {
   @page {
     size: A4;

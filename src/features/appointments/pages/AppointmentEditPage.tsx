@@ -17,11 +17,13 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { useAppointment, useUpdateAppointment } from "../hooks/useAppointments";
 import { useDoctor } from "@/features/doctors/hooks/useDoctors";
 import { DoctorSelect } from "@/features/doctors/components/DoctorSelect";
-import { AppointmentStatus } from "@/types";
+import { ApiError, ApiErrorResponse, AppointmentStatus } from "@/types";
 import { useAppointments } from "../hooks/useAppointments";
 import { hasDoctorConflict, isThirtyMinuteSlot, isWithinDoctorShift } from "../utils/appointmentAvailability";
 import dayjs from "dayjs";
 import { z } from "zod";
+import { AxiosError } from "axios";
+import { notifyApiFeedback } from "@/api/axios";
 
 const editAppointmentSchema = z.object({
   doctorId: z.string().min(1, "Vui lòng chọn bác sĩ có ca làm được phân công"),
@@ -128,8 +130,9 @@ export const AppointmentEditPage: React.FC = () => {
         },
       });
       navigate(`/appointments/${id}`);
-    } catch {
-      // Handled by interceptor
+    } catch(error : unknown) {
+      const msg = error as ApiErrorResponse
+      notifyApiFeedback(msg?.response?.data.message || "Lỗi cập nhật","error")
     }
   };
 
@@ -158,12 +161,6 @@ export const AppointmentEditPage: React.FC = () => {
 
       <Card>
         <CardContent className="p-6 sm:p-8">
-          {updateMutation.isError && (
-            <Alert severity="error" className="mb-6">
-              {(updateMutation.error as any)?.response?.data?.message ||
-                "Có lỗi xảy ra khi cập nhật cuộc hẹn."}
-            </Alert>
-          )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-4">

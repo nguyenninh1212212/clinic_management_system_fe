@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
+  alpha,
   Box,
   Button,
   CircularProgress,
@@ -10,13 +11,15 @@ import {
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/common/PageHeader";
-import { useDoctors, useInfiniteDoctors } from "@/features/doctors/hooks/useDoctors";
+import {
+  useDoctors,
+  useInfiniteDoctors,
+} from "@/features/doctors/hooks/useDoctors";
 import { useSpecialtiesDropdown } from "@/features/specialties/hooks/useSpecialties";
 import { useAppointments } from "../hooks/useAppointments";
 import { useDoctorShifts } from "@/features/doctors/hooks/useDoctorShifts";
 import { Appointment, AppointmentStatus, Doctor, DoctorShift } from "@/types";
 import { ScheduleFilters } from "../components/ScheduleFilters";
-import { AppointmentDetailDrawer } from "../components/AppointmentDetailDrawer";
 
 const START_MINUTE = 7 * 60;
 const END_MINUTE = 19 * 60;
@@ -36,7 +39,7 @@ const appointmentAt = (minute: number, appointments: Appointment[]) =>
   appointments.find(
     (appointment) =>
       dayjs(appointment.appointmentDate).hour() * 60 +
-      dayjs(appointment.appointmentDate).minute() ===
+        dayjs(appointment.appointmentDate).minute() ===
       minute,
   );
 
@@ -70,57 +73,64 @@ const DoctorScheduleColumn: React.FC<{
 
   return (
     <Box className="border-l border-slate-200">
-      {Array.from(
-        { length: (END_MINUTE - START_MINUTE) / 30 },
-        (_, index) => {
-          const minute = START_MINUTE + index * 30;
-          const appointment = appointmentAt(minute, appointments);
-          const working = inShift(minute, shifts);
+      {Array.from({ length: (END_MINUTE - START_MINUTE) / 30 }, (_, index) => {
+        const minute = START_MINUTE + index * 30;
+        const appointment = appointmentAt(minute, appointments);
+        const working = inShift(minute, shifts);
 
-          return (
-            <Button
-              key={minute}
-              fullWidth
-              disableElevation
-              onClick={() =>
-                appointment
-                  ? onAppointment(appointment)
-                  : working
-                    ? onEmpty(doctor.id, timeLabel(minute))
-                    : undefined
+        return (
+          <Button
+            key={minute}
+            fullWidth
+            disableElevation
+            onClick={() => {
+              if (appointment) {
+                onAppointment(appointment);
+              } else if (working) {
+                onEmpty(doctor.id, timeLabel(minute));
               }
-              className="!h-12 !justify-start !rounded-none !border-b !border-slate-100 !px-2 !py-1 !text-left !text-[11px]"
-              sx={{
-                color: appointment
-                  ? appointment.status === AppointmentStatus.CANCELLED
-                    ? "error.dark"
-                    : "text.primary"
-                  : working
-                    ? "success.dark"
-                    : "text.disabled",
-                bgcolor: appointment
-                  ? appointment.status === AppointmentStatus.CANCELLED
-                    ? "error.50"
-                    : appointment.status === AppointmentStatus.COMPLETED
-                      ? "grey.100"
-                      : "warning.50"
-                  : working
-                    ? "success.50"
-                    : "grey.50",
-                "&:hover": {
-                  bgcolor: working && !appointment ? "success.100" : undefined,
-                },
-              }}
-            >
-              {appointment
-                ? `${appointment.patient?.fullName || "Đã đặt"} · ${appointment.status}`
+            }}
+            className="h-12! justify-start! rounded-none! border-b! px-2! py-1! text-lef! text-[11px]!"
+            sx={(theme) => {
+              const isDark = theme.palette.mode === "dark";
+
+              const statusColor = appointment
+                ? appointment.status === AppointmentStatus.CANCELLED
+                  ? theme.palette.error
+                  : appointment.status === AppointmentStatus.COMPLETED
+                    ? theme.palette.secondary
+                    : theme.palette.warning
                 : working
-                  ? "Trống · Đặt lịch"
-                  : "Ngoài ca"}
-            </Button>
-          );
-        },
-      )}
+                  ? theme.palette.success
+                  : null;
+
+              return {
+                borderColor: `${theme.palette.divider} !important`,
+                color: statusColor
+                  ? isDark
+                    ? statusColor.light
+                    : statusColor.dark
+                  : theme.palette.text.disabled,
+                bgcolor: statusColor
+                  ? alpha(statusColor.main, isDark ? 0.18 : 0.08)
+                  : theme.palette.background.paper,
+                cursor: appointment || working ? "pointer" : "default",
+                "&:hover": {
+                  bgcolor: statusColor
+                    ? alpha(statusColor.main, isDark ? 0.28 : 0.16)
+                    : theme.palette.background.paper,
+                },
+              };
+            }}
+          >
+            {appointment
+              ? `${appointment.patient?.fullName || "Đã đặt"} · ${appointment.status} - Bác sĩ: ${appointment.doctor?.user?.fullName} `
+              : working
+                ? "Trống · Đặt lịch"
+                : "Ngoài ca"}
+          </Button>
+        );
+      })}
     </Box>
   );
 };
@@ -212,21 +222,20 @@ export const DoctorScheduleCalendar: React.FC = () => {
           <CircularProgress />
         </Box>
       ) : !doctors.length ? (
-        <Box className="rounded-xl border border-dashed border-slate-300 bg-white py-16 text-center">
+        <Box className="rounded-xl border border-dashed border-slate-300 py-16 text-center">
           <Typography variant="body2" color="text.secondary">
             Không có bác sĩ phù hợp.
           </Typography>
         </Box>
       ) : (
-        <Box className="doctor-calendar-scroll overflow-x-auto rounded-xl border border-slate-200 bg-white">
+        <Box className="doctor-calendar-scroll overflow-x-auto rounded-xl border border-slate-200 ">
           <Box
             className="grid min-w-225"
             sx={{
               gridTemplateColumns: `72px repeat(${doctors.length}, minmax(180px, 1fr))`,
             }}
           >
-
-            <div className="sticky left-0 z-10 border-b border-slate-200 bg-slate-50 p-3 text-xs font-bold text-slate-500">
+            <div className="sticky left-0 z-10 border-b border-slate-200  p-3 text-xs font-bold ">
               Giờ
             </div>
             {doctors.map((doctor) => (
@@ -243,7 +252,7 @@ export const DoctorScheduleCalendar: React.FC = () => {
                 onAppointment={setSelectedAppointment}
               />
             ))}
-            <div className="bg-slate-50">
+            <div className="">
               {minutes.map((minute) => (
                 <div
                   key={minute}
@@ -267,33 +276,28 @@ export const DoctorScheduleCalendar: React.FC = () => {
                 onAppointment={setSelectedAppointment}
               />
             ))}
-            {/* Nội dung các cột lịch hiện tại */}
           </Box>
         </Box>
       )}
       <div className="flex flex-wrap gap-3 text-xs text-slate-600">
         <span>
-          <i className="mr-1 inline-block h-3 w-3 rounded bg-emerald-100" />
+          <i className="mr-1 inline-block h-3 w-3 rounded " />
           Slot trống
         </span>
         <span>
-          <i className="mr-1 inline-block h-3 w-3 rounded bg-amber-100" />
+          <i className="mr-1 inline-block h-3 w-3 rounded " />
           Đã đặt
         </span>
         <span>
-          <i className="mr-1 inline-block h-3 w-3 rounded bg-slate-100" />
+          <i className="mr-1 inline-block h-3 w-3 rounded " />
           Ngoài ca
         </span>
         <span>
-          <i className="mr-1 inline-block h-3 w-3 rounded bg-rose-100" />
+          <i className="mr-1 inline-block h-3 w-3 rounded " />
           Đã hủy
         </span>
       </div>
-      <AppointmentDetailDrawer
-        appointment={selectedAppointment}
-        onClose={() => setSelectedAppointment(null)}
-      />
+    
     </Stack>
-
   );
 };

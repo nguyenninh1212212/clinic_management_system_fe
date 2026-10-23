@@ -1,8 +1,11 @@
 // src/theme/theme.ts
 import { createTheme } from '@mui/material/styles';
 
-export const theme = createTheme({
+export type ThemeMode = 'light' | 'dark';
+
+export const createAppTheme = (mode: ThemeMode = 'light') => createTheme({
   palette: {
+    mode,
     primary: {
       main: '#0284c7', // Medical sky/blue
       light: '#38bdf8',
@@ -30,15 +33,13 @@ export const theme = createTheme({
       light: '#4ade80',
       dark: '#15803d',
     },
-    background: {
-      default: '#f8fafc',
-      paper: '#ffffff',
-    },
-    text: {
-      primary: '#0f172a',
-      secondary: '#64748b',
-    },
-    divider: '#e2e8f0',
+    background: mode === 'dark'
+      ? { default: '#0f172a', paper: '#172033' }
+      : { default: '#f8fafc', paper: '#ffffff' },
+    text: mode === 'dark'
+      ? { primary: '#f8fafc', secondary: '#94a3b8' }
+      : { primary: '#0f172a', secondary: '#64748b' },
+    divider: mode === 'dark' ? '#334155' : '#e2e8f0',
   },
   typography: {
     fontFamily: "'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
@@ -80,7 +81,7 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 12,
-          border: '1px solid #e2e8f0',
+          border: `1px solid ${mode === 'dark' ? '#334155' : '#e2e8f0'}`,
           boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.04)',
         },
       },
@@ -95,14 +96,14 @@ export const theme = createTheme({
     MuiTableCell: {
       styleOverrides: {
         root: {
-          borderColor: '#f1f5f9',
+          borderColor: mode === 'dark' ? '#334155' : '#f1f5f9',
           padding: '12px 16px',
           fontSize: '0.875rem',
         },
         head: {
           fontWeight: 600,
-          backgroundColor: '#f8fafc',
-          color: '#475569',
+          backgroundColor: mode === 'dark' ? '#1e293b' : '#f8fafc',
+          color: mode === 'dark' ? '#cbd5e1' : '#475569',
         },
       },
     },
@@ -116,3 +117,6 @@ export const theme = createTheme({
     },
   },
 });
+
+// Kept for compatibility with code that imports the default application theme.
+export const theme = createAppTheme();

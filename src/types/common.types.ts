@@ -1,5 +1,7 @@
 // src/types/common.types.ts
 
+import { AxiosError } from "axios";
+
 export interface PaginationMeta {
   page: number;
   limit: number;
@@ -20,7 +22,7 @@ export interface ApiResponse<T> {
 
 export interface ApiError {
   statusCode: number;
-  message: string | string[];
+  message: string;
   error?: string;
 }
 
@@ -28,3 +30,5 @@ export interface BaseQueryParams {
   page?: number;
   limit?: number;
 }
+
+export interface ApiErrorResponse extends AxiosError<ApiError>{}

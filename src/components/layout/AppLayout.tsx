@@ -1,7 +1,8 @@
 import { CommerceRealtime } from '@/features/commerce/CommerceRealtime';
 import React, { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
-import { Drawer, useMediaQuery, useTheme } from "@mui/material";
+import { Box, Drawer, useMediaQuery, useTheme } from "@mui/material";
+import { useThemeMode } from "@/theme/ThemeModeProvider";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
 import { FeedbackSnackbar } from "@/components/common/FeedbackSnackbar";
@@ -18,6 +19,7 @@ export const AppLayout: React.FC = () => {
     setSidebarCollapsed((prev) => !prev);
   };
   const theme = useTheme();
+  const { mode } = useThemeMode();
 
   const isDesktop = useMediaQuery(theme.breakpoints.up("lg"));
   useEffect(() => {
@@ -27,7 +29,10 @@ export const AppLayout: React.FC = () => {
   }, [isDesktop]);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-slate-50 font-sans text-slate-800">
+    <Box
+      className={`app-shell app-shell--${mode} flex h-screen w-screen overflow-hidden font-sans`}
+      sx={{ bgcolor: 'background.default', color: 'text.primary' }}
+    >
       <div
         className={`hidden md:flex shrink-0 h-full transition-all duration-300 ${
           sidebarCollapsed ? "w-[72px]" : "w-64"
@@ -72,6 +77,6 @@ export const AppLayout: React.FC = () => {
 
       <CommerceRealtime/>
       <FeedbackSnackbar />
-    </div>
+    </Box>
   );
 };

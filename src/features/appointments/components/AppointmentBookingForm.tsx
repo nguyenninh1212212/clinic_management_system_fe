@@ -378,7 +378,7 @@ export const AppointmentBookingForm: React.FC = () => {
                       sx={{ alignItems: "center" }}
                     >
                       <Avatar
-                        sx={{ bgcolor: "primary.50", color: "primary.main" }}
+                        sx={{ bgcolor: "primary.main", color: "white" }}
                       >
                         <PersonSearchIcon />
                       </Avatar>
@@ -427,8 +427,8 @@ export const AppointmentBookingForm: React.FC = () => {
                     >
                       <Avatar
                         sx={{
-                          bgcolor: "secondary.50",
-                          color: "secondary.main",
+                          bgcolor: "secondary.main",
+                          color: "white",
                         }}
                       >
                         <MedicalServicesOutlinedIcon />
