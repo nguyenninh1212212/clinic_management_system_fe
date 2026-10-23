@@ -9,8 +9,18 @@ import {
 export const notificationsApi = {
   findAll: (
     params?: NotificationQueryParams,
-  ): Promise<PaginatedResponse<Notification>> =>
-    api.get("/notifications", { params }).then((r) => r.data),
+  ): Promise<PaginatedResponse<Notification> & { unRead: number }> =>
+    api
+      .get<{
+        notifications: Notification[];
+        unRead: number;
+        pagination: PaginatedResponse<Notification>["pagination"];
+      }>("/notifications", { params })
+      .then(({ data }) => ({
+        data: data.notifications,
+        pagination: data.pagination,
+        unRead: data.unRead,
+      })),
 
   markRead: (id: number): Promise<void> =>
     api.put(`/notifications/${id}/read`).then((r) => r.data),

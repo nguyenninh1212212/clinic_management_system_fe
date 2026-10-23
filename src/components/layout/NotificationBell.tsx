@@ -38,7 +38,7 @@ export const NotificationBell: React.FC = () => {
   });
 
   const notifications = data?.data || [];
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const unreadCount = data?.unRead ?? notifications.filter((n) => !n.isRead).length;
 
   const markReadMutation = useMutation({
     mutationFn: (id: number) => notificationsApi.markRead(id),
@@ -68,6 +68,7 @@ export const NotificationBell: React.FC = () => {
       }
     },
     onSuccess: (_data, id) => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
       queryClient.setQueriesData({ queryKey: queryKeys.notifications.all }, (cached: any) => cached && Array.isArray(cached.data) ? { ...cached, data: cached.data.map((item: any) => item.id === id ? { ...item, isRead: true } : item) } : cached);
     },
   });
