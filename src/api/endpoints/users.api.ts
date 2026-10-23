@@ -11,6 +11,10 @@ import {
   Permission,
 } from '@/types';
 
+interface AvatarUploadResponse {
+  url: string;
+}
+
 export const usersApi = {
   findAll: (params?: UserQueryParams): Promise<PaginatedResponse<User>> =>
     api.get('/users', { params }).then((r) => r.data),
@@ -26,6 +30,16 @@ export const usersApi = {
 
   update: (id: string, dto: UpdateUserDto): Promise<User> =>
     api.put(`/users/${id}`, dto).then((r) => r.data),
+
+  uploadAvatar: (file: File,id?:string): Promise<AvatarUploadResponse> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api
+      .post<AvatarUploadResponse>(`/users/upload-avatar/${id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      .then((r) => r.data);
+  },
 
   getPermissions: (id: string): Promise<Permission[] | number[]> =>
     api.get(`/users/${id}/permission`).then((r) => r.data),

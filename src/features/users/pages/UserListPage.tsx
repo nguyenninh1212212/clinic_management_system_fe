@@ -34,6 +34,7 @@ import {
   useActivePositions,
   useCreateUser,
   useUpdateUser,
+  useUploadUserAvatar,
   useChangeUserPassword,
 } from "../hooks/useUsers";
 import {
@@ -45,6 +46,7 @@ import {
   UserQueryParams,
 } from "@/types";
 import dayjs from "dayjs";
+import { AvatarUploadField } from "../components/AvatarUploadField";
 
 export const UserListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -59,6 +61,8 @@ export const UserListPage: React.FC = () => {
   const [createFullName, setCreateFullName] = useState("");
   const [createRole, setCreateRole] = useState<UserRole>(UserRole.USER);
   const [createPositionId, setCreatePositionId] = useState<number>();
+  const [createAvatarPreview, setCreateAvatarPreview] = useState("");
+  const [createAvatarFile, setCreateAvatarFile] = useState<File | null>(null);
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -66,6 +70,8 @@ export const UserListPage: React.FC = () => {
   const [editPositionId, setEditPositionId] = useState<number | "">("");
   const [editFullName, setEditFullName] = useState("");
   const [editIsActive, setEditIsActive] = useState(true);
+  const [editAvatarPreview, setEditAvatarPreview] = useState("");
+  const [editAvatarFile, setEditAvatarFile] = useState<File | null>(null);
 
   // Change Password Dialog
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
@@ -81,9 +87,9 @@ export const UserListPage: React.FC = () => {
     ...filters,
   });
 
-  const { data: positionsList } = useActivePositions();
   const createMutation = useCreateUser();
   const updateMutation = useUpdateUser();
+  const uploadAvatarMutation = useUploadUserAvatar();
   const changePasswordMutation = useChangeUserPassword();
 
   const handleOpenEdit = (u: User) => {
@@ -92,11 +98,21 @@ export const UserListPage: React.FC = () => {
     setEditRole(u.role);
     setEditPositionId(u.positionId || "");
     setEditIsActive(u.isActive !== false);
+    setEditAvatarPreview(u.avatar || "");
+    setEditAvatarFile(null);
     setEditDialogOpen(true);
   };
 
   const handleSaveEdit = async () => {
     if (!editingUser) return;
+    const avatar = editAvatarFile
+      ? (
+          await uploadAvatarMutation.mutateAsync({
+            file: editAvatarFile,
+            id: editingUser.id,
+          })
+        ).url
+      : undefined;
     await updateMutation.mutateAsync({
       id: editingUser.id,
       dto: {
@@ -104,12 +120,16 @@ export const UserListPage: React.FC = () => {
         role: editRole,
         positionId: editPositionId !== "" ? Number(editPositionId) : undefined,
         isActive: editIsActive,
+        avatar,
       },
     });
   };
 
   const handleCreate = async () => {
     if (!createEmail || !createPassword || !createFullName) return;
+    const avatar = createAvatarFile
+      ? (await uploadAvatarMutation.mutateAsync({file:createAvatarFile})).url
+      : undefined;
     await createMutation.mutateAsync({
       email: createEmail,
       password: createPassword,
@@ -117,6 +137,7 @@ export const UserListPage: React.FC = () => {
       role: createRole,
       positionId: createPositionId || undefined,
       isActive: true,
+      avatar,
     });
   };
 
@@ -194,28 +215,28 @@ export const UserListPage: React.FC = () => {
       minWidth: 140,
       render: (row) => <StatusChip status={row.role} type="role" />,
     },
-    {
-      id: "position",
-      label: "Chức vụ",
-      filterFields: [
-        { key: "departmentId", label: "Mã phòng ban", type: "number" },
-        {
-          key: "positionId",
-          label: "Chức vụ",
-          type: "select",
-          filters: (positionsList || []).map((position) => ({
-            text: position.positionTitle,
-            value: position.id,
-          })),
-        },
-      ],
-      minWidth: 160,
-      render: (row) => (
-        <span className="text-xs text-slate-700 font-medium">
-          {row.position?.positionTitle || "—"}
-        </span>
-      ),
-    },
+    // {
+    //   id: "position",
+    //   label: "Chức vụ",
+    //   filterFields: [
+    //     { key: "departmentId", label: "Mã phòng ban", type: "number" },
+    //     {
+    //       key: "positionId",
+    //       label: "Chức vụ",
+    //       type: "select",
+    //       filters: (positionsList || []).map((position) => ({
+    //         text: position.positionTitle,
+    //         value: position.id,
+    //       })),
+    //     },
+    //   ],
+    //   minWidth: 160,
+    //   render: (row) => (
+    //     <span className="text-xs text-slate-700 font-medium">
+    //       {row.position?.positionTitle || "—"}
+    //     </span>
+    //   ),
+    // },
     {
       id: "isActive",
       label: "Trạng thái",
@@ -355,7 +376,7 @@ export const UserListPage: React.FC = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle className="font-bold text-slate-900">
+        <DialogTitle className="font-bold ">
           Tạo tài khoản người dùng mới
         </DialogTitle>
         <Divider />
@@ -452,7 +473,8 @@ export const UserListPage: React.FC = () => {
               !createEmail ||
               !createPassword ||
               !createFullName ||
-              createMutation.isPending
+              createMutation.isPending ||
+              uploadAvatarMutation.isPending
             }
           >
             {createMutation.isPending ? "Đang tạo..." : "Tạo tài khoản"}
@@ -467,10 +489,22 @@ export const UserListPage: React.FC = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle className="font-bold text-slate-900">
+        <DialogTitle className="font-bold ">
           Chỉnh sửa thông tin & Vai trò tài khoản
         </DialogTitle>
         <DialogContent className="space-y-4 pt-2">
+          <AvatarUploadField
+            value={editAvatarPreview}
+            name={editFullName}
+            onChange={(file, preview) => {
+              setEditAvatarFile(file);
+              setEditAvatarPreview(preview);
+            }}
+            disabled={
+              updateMutation.isPending || uploadAvatarMutation.isPending
+            }
+          />
+
           <TextField
             label="Họ và tên"
             fullWidth
@@ -479,7 +513,7 @@ export const UserListPage: React.FC = () => {
             onChange={(e) => setEditFullName(e.target.value)}
           />
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 mt-2">
             <FormControl fullWidth size="small">
               <InputLabel id="edit-role-label">Vai trò</InputLabel>
               <Select
@@ -488,18 +522,18 @@ export const UserListPage: React.FC = () => {
                 label="Vai trò"
                 onChange={(e) => setEditRole(e.target.value as UserRole)}
               >
-                <MenuItem value={UserRole.USER}>
-                  Bác sĩ / Người dùng (USER)
+                <MenuItem value={UserRole.DOCTOR}>
+                  Bác sĩ
                 </MenuItem>
                 <MenuItem value={UserRole.STAFF}>
-                  Nhân viên tiếp đón (STAFF)
+                  Nhân viên tiếp đón 
                 </MenuItem>
-                <MenuItem value={UserRole.MANAGER}>Quản lý (MANAGER)</MenuItem>
+                <MenuItem value={UserRole.MANAGER}>Quản lý </MenuItem>
                 <MenuItem value={UserRole.ADMIN}>
-                  Quản trị viên (ADMIN)
+                  Quản trị viên 
                 </MenuItem>
                 <MenuItem value={UserRole.SUPER_ADMIN}>
-                  Tổng quản trị viên (SUPER_ADMIN)
+                  Tổng quản trị viên 
                 </MenuItem>
               </Select>
             </FormControl>
@@ -542,7 +576,9 @@ export const UserListPage: React.FC = () => {
           <Button
             onClick={handleSaveEdit}
             variant="contained"
-            disabled={updateMutation.isPending}
+            disabled={
+              updateMutation.isPending || uploadAvatarMutation.isPending
+            }
           >
             {updateMutation.isPending ? "Đang lưu..." : "Lưu thay đổi"}
           </Button>
