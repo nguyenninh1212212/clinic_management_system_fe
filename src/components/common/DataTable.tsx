@@ -85,6 +85,7 @@ interface DataTableProps<T> {
   onFilterChange?: (filters: TableFiltersParam) => void;
   onPageChange?: (page: number) => void;
   onLimitChange?: (limit: number) => void;
+  rowsPerPageOptions?: number[];
   emptyTitle?: string;
   emptyDescription?: string;
   emptyActionText?: string;
@@ -103,6 +104,7 @@ export function DataTable<T extends Record<string, any>>({
   onFilterChange,
   onPageChange,
   onLimitChange,
+  rowsPerPageOptions = [10, 20, 50],
   emptyTitle,
   emptyDescription,
   emptyActionText,
@@ -690,7 +692,7 @@ export function DataTable<T extends Record<string, any>>({
             count={pagination.total}
             page={Math.max(0, pagination.page - 1)} // MUI is 0-indexed, backend is 1-indexed
             rowsPerPage={pagination.limit}
-            rowsPerPageOptions={[10, 20, 50]}
+            rowsPerPageOptions={rowsPerPageOptions}
             labelRowsPerPage="Dòng mỗi trang:"
             labelDisplayedRows={({ from, to, count }) =>
               `${from}–${to} trên ${count !== -1 ? count : `hơn ${to}`}`

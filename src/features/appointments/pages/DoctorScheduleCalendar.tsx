@@ -1,24 +1,25 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useState } from "react";
 import {
   Alert,
   alpha,
   Box,
   Button,
   CircularProgress,
+  Avatar,
+  Radio,
   Stack,
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/common/PageHeader";
-import {
-  useDoctors,
-  useInfiniteDoctors,
-} from "@/features/doctors/hooks/useDoctors";
+import { Column, DataTable } from "@/components/common/DataTable";
+import { useListFilters } from "@/hooks/useListFilters";
+import { useDoctor, useDoctors } from "@/features/doctors/hooks/useDoctors";
 import { useSpecialtiesDropdown } from "@/features/specialties/hooks/useSpecialties";
 import { useAppointments } from "../hooks/useAppointments";
 import { useDoctorShifts } from "@/features/doctors/hooks/useDoctorShifts";
-import { Appointment, AppointmentStatus, Doctor, DoctorShift } from "@/types";
+import { Appointment, AppointmentStatus, Doctor, DoctorDegree, DoctorQueryParams, DoctorShift } from "@/types";
 import { ScheduleFilters } from "../components/ScheduleFilters";
 
 const START_MINUTE = 7 * 60;
@@ -138,60 +139,109 @@ const DoctorScheduleColumn: React.FC<{
 export const DoctorScheduleCalendar: React.FC = () => {
   const navigate = useNavigate();
   const [date, setDate] = useState(dayjs().format("YYYY-MM-DD"));
-  const [search, setSearch] = useState("");
-  const [specialtyId, setSpecialtyId] = useState<number | "">("");
   const [status, setStatus] = useState<AppointmentStatus | "">("");
-  const [selectedAppointment, setSelectedAppointment] =
-    useState<Appointment | null>(null);
-  const [doctorPage, setDoctorPage] = useState(1);
-  const DOCTORS_PER_PAGE = 5;
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
-
-  const {
-    data: doctorsData,
-    isLoading,
-    isError,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useInfiniteDoctors(
-    search || undefined,
-    specialtyId ? Number(specialtyId) : undefined,
-  );
-
-  const doctors = useMemo(
-    () => doctorsData?.pages.flatMap((page) => page.data) ?? [],
-    [doctorsData],
-  );
-
-  useEffect(() => {
-    const target = loadMoreRef.current;
-
-    if (!target || !hasNextPage || isFetchingNextPage) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          fetchNextPage();
-        }
-      },
-      {
-        root: target.closest(".doctor-calendar-scroll"),
-        rootMargin: "0px 300px 0px 0px",
-        threshold: 0,
-      },
-    );
-
-    observer.observe(target);
-
-    return () => observer.disconnect();
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+  const [doctorId, setDoctorId] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(5);
+  const { filters, replaceFilters } = useListFilters<Omit<DoctorQueryParams, "page" | "limit">>();
+  const { data: doctorsData, isLoading, isError } = useDoctors({ page, limit, ...filters });
+  const { data: selectedDoctorData, isLoading: isLoadingSelectedDoctor } = useDoctor(doctorId);
   const { data: specialties = [] } = useSpecialtiesDropdown();
 
   const minutes = Array.from(
     { length: (END_MINUTE - START_MINUTE) / 30 },
     (_, index) => START_MINUTE + index * 30,
   );
+  const selectedDoctor = selectedDoctorData?.data;
+  const getDegreeLabel = (degree?: DoctorDegree) => {
+    const labels: Partial<Record<DoctorDegree, string>> = {
+      [DoctorDegree.MD]: "Bác sĩ Đa khoa (MD)",
+      [DoctorDegree.MASTER]: "Thạc sĩ Y khoa",
+      [DoctorDegree.PHD]: "Tiến sĩ Y khoa",
+      [DoctorDegree.ASSOCIATE_PROFESSOR]: "Phó Giáo sư",
+      [DoctorDegree.PROFESSOR]: "Giáo sư",
+    };
+    return degree ? labels[degree] || degree : "—";
+  };
+  const columns: Column<Doctor>[] = [
+    {
+      id: "avatar",
+      label: "Ảnh",
+      minWidth: 60,
+      render: (row) => (
+        <Avatar src={row.user?.avatar} sx={{ width: 34, height: 34, bgcolor: "#0284c7" }} className="text-xs font-semibold">
+          {row.user?.fullName?.charAt(0) || "D"}
+        </Avatar>
+      ),
+    },
+    {
+      id: "fullName",
+      label: "Bác sĩ",
+      minWidth: 180,
+      filterFields: [
+        { key: "search", label: "Tìm bác sĩ", type: "input" },
+        { key: "isActive", label: "Đang hoạt động", type: "boolean" },
+      ],
+      render: (row) => (
+        <div>
+          <button onClick={() => navigate(`/doctors/${row.id}`)} className="font-semibold text-sky-700 hover:underline text-left text-sm">
+            {row.user?.fullName || "Bác sĩ"}
+          </button>
+          <div className="text-xs text-slate-400">{row.user?.email}</div>
+        </div>
+      ),
+    },
+    {
+      id: "specialty",
+      label: "Chuyên khoa",
+      minWidth: 140,
+      filterFields: [{ key: "specialtyId", label: "Chuyên khoa", type: "select", filters: specialties.map((specialty) => ({ text: specialty.name, value: specialty.id })) }],
+      render: (row) => <span className="font-medium text-slate-700">{row.specialty?.name || "Chưa phân chuyên khoa"}</span>,
+    },
+    {
+      id: "degree",
+      label: "Học vị / Học hàm",
+      minWidth: 160,
+      filterFields: [{ key: "degree", label: "Học vị", type: "select", filters: Object.values(DoctorDegree).map((value) => ({ text: value, value })) }],
+      render: (row) => <span className="text-xs text-sky-800 font-medium bg-sky-50 px-2 py-0.5 rounded">{getDegreeLabel(row.degree)}</span>,
+    },
+    {
+      id: "licenseNumber",
+      label: "Số CCHN",
+      minWidth: 130,
+      filterFields: [{ key: "licenseNumber", label: "Số giấy phép", type: "input" }],
+      render: (row) => <span className="font-mono text-xs tabular-nums text-slate-600 font-medium">{row.licenseNumber}</span>,
+    },
+    {
+      id: "yearsOfExperience",
+      label: "Kinh nghiệm",
+      minWidth: 120,
+      filterFields: [{ key: "yearsOfExperience", label: "Số năm kinh nghiệm", type: "number" }],
+      render: (row) => <span className="tabular-nums text-xs text-slate-700 font-medium">{row.yearsOfExperience ? `${row.yearsOfExperience} năm` : "Chưa cập nhật"}</span>,
+    },
+    {
+      id: "actions",
+      label: "Thao tác",
+      align: "right",
+      minWidth: 120,
+      render: (row) => {
+        const isSelected = doctorId === row.id;
+        return (
+          <div className="flex items-center justify-center gap-1">
+            <Radio
+              checked={isSelected}
+              onClick={() => {
+                if (isSelected) setDoctorId("");
+              }}
+              onChange={() => setDoctorId(row.id)}
+              value={row.id}
+              slotProps={{ input: { "aria-label": `Chọn ${row.user?.fullName || "bác sĩ"}` } }}
+            />
+          </div>
+        );
+      },
+    },
+  ];
   return (
     <Stack spacing={2}>
       <PageHeader
@@ -205,53 +255,60 @@ export const DoctorScheduleCalendar: React.FC = () => {
 
       <ScheduleFilters
         date={date}
-        search={search}
-        specialtyId={specialtyId}
         status={status}
-        specialties={specialties}
         onDateChange={setDate}
-        onSearchChange={setSearch}
-        onSpecialtyChange={setSpecialtyId}
         onStatusChange={setStatus}
       />
       {isError && (
         <Alert severity="error">Không thể tải danh sách bác sĩ.</Alert>
       )}
-      {isLoading ? (
-        <Box className="flex justify-center py-16">
-          <CircularProgress />
-        </Box>
-      ) : !doctors.length ? (
+      <Box className="space-y-4">
+        <DataTable
+          columns={columns}
+          rows={doctorsData?.data || []}
+          loading={isLoading}
+          pagination={doctorsData?.pagination}
+          filters={filters}
+          onFilterChange={(nextFilters) => {
+            replaceFilters(nextFilters);
+            setPage(1);
+            setDoctorId("");
+          }}
+          onPageChange={setPage}
+          rowsPerPageOptions={[5]}
+          onLimitChange={(nextLimit) => {
+            setLimit(nextLimit);
+            setPage(1);
+          }}
+          emptyTitle="Chưa có bác sĩ nào phù hợp"
+          emptyDescription="Thử bỏ lọc hoặc thêm hồ sơ bác sĩ mới vào hệ thống."
+          onEmptyAction={() => navigate("/doctors/new")}
+        />
+        <Box>
+          {!doctorId ? (
         <Box className="rounded-xl border border-dashed border-slate-300 py-16 text-center">
           <Typography variant="body2" color="text.secondary">
-            Không có bác sĩ phù hợp.
+            Chọn bác sĩ để xem lịch làm việc.
           </Typography>
         </Box>
+      ) : isLoadingSelectedDoctor ? (
+        <Box className="flex justify-center rounded-xl border border-slate-200 py-16">
+          <CircularProgress />
+        </Box>
       ) : (
-        <Box className="doctor-calendar-scroll overflow-x-auto rounded-xl border border-slate-200 ">
+        <Box className="doctor-calendar-scroll overflow-x-auto rounded-xl border border-slate-200">
           <Box
             className="grid min-w-225"
             sx={{
-              gridTemplateColumns: `72px repeat(${doctors.length}, minmax(180px, 1fr))`,
+              gridTemplateColumns: "72px minmax(180px, 1fr)",
             }}
           >
             <div className="sticky left-0 z-10 border-b border-slate-200  p-3 text-xs font-bold ">
               Giờ
             </div>
-            {doctors.map((doctor) => (
-              <DoctorScheduleColumn
-                key={doctor.id}
-                doctor={doctor}
-                date={date}
-                status={status}
-                onEmpty={(doctorId, time) =>
-                  navigate(
-                    `/appointments/new?doctorId=${doctorId}&date=${date}&time=${time}`,
-                  )
-                }
-                onAppointment={setSelectedAppointment}
-              />
-            ))}
+            <div className="border-b border-l border-slate-200 p-3 text-xs font-bold">
+              {selectedDoctor?.user?.fullName || "Bác sĩ"}
+            </div>
             <div className="">
               {minutes.map((minute) => (
                 <div
@@ -262,10 +319,9 @@ export const DoctorScheduleCalendar: React.FC = () => {
                 </div>
               ))}
             </div>
-            {doctors.map((doctor) => (
+            {selectedDoctor && (
               <DoctorScheduleColumn
-                key={doctor.id}
-                doctor={doctor}
+                doctor={selectedDoctor}
                 date={date}
                 status={status}
                 onEmpty={(doctorId, time) =>
@@ -273,12 +329,14 @@ export const DoctorScheduleCalendar: React.FC = () => {
                     `/appointments/new?doctorId=${doctorId}&date=${date}&time=${time}`,
                   )
                 }
-                onAppointment={setSelectedAppointment}
+                onAppointment={(appointment) => navigate(`/appointments/${appointment.id}`)}
               />
-            ))}
+            )}
           </Box>
         </Box>
       )}
+        </Box>
+      </Box>
       <div className="flex flex-wrap gap-3 text-xs text-slate-600">
         <span>
           <i className="mr-1 inline-block h-3 w-3 rounded " />
