@@ -142,38 +142,30 @@ export const InvoiceListPage: React.FC = () => {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Quản lý Hóa đơn"
-        subtitle="Tạo, tra cứu và xuất hóa đơn thanh toán tại phòng khám"
-        breadcrumbs={[
-          { label: "Trang chủ", href: "/dashboard" },
-          { label: "Hóa đơn" },
-        ]}
-        action={
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outlined"
-              startIcon={<UploadFileOutlinedIcon />}
-              onClick={() => setImportOpen(true)}
-            >
-              Import Excel
-            </Button>
-            <Button
-              variant="outlined"
-              startIcon={<DownloadOutlinedIcon />}
-              onClick={() => download()}
-            >
-              Export Excel
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => navigate("/legacy/invoices/new")}
-            >
-              Tạo hóa đơn
-            </Button>
-          </div>
-        }
-      />
+        
+        action={<div className="flex flex-wrap gap-2">
+          <Button
+            variant="outlined"
+            startIcon={<UploadFileOutlinedIcon />}
+            onClick={() => setImportOpen(true)}
+          >
+            Import Excel
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<DownloadOutlinedIcon />}
+            onClick={() => download()}
+          >
+            Export Excel
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => navigate("/legacy/invoices/new")}
+          >
+            Tạo hóa đơn
+          </Button>
+        </div>} title={""}      />
       <div className="bg-white p-4 rounded-xl border border-slate-200 flex justify-end gap-3">
         <div className="text-xs text-slate-500 tabular-nums">
           Tổng số:{" "}

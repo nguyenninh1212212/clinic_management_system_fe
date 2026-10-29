@@ -51,8 +51,8 @@ export function UploadExcel({ file, onFileChange, disabled = false }: UploadExce
               <FileSpreadsheet size={21} aria-hidden="true" />
             </span>
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-slate-800">{file.name}</p>
-              <p className="mt-0.5 text-xs text-slate-500">{formatFileSize(file.size)} · Excel Workbook</p>
+              <p className="truncate text-sm font-semibold ">{file.name}</p>
+              <p className="mt-0.5 text-xs ">{formatFileSize(file.size)} · Excel Workbook</p>
             </div>
           </div>
           <button

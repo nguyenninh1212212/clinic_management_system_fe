@@ -74,7 +74,6 @@ export function PharmacyDashboard() {
     queryKey: ["commerce", actorId, "dispensings", page],
     queryFn: () => commerceApi.dispensings(page),
     enabled: !!caps.data?.pharmacyRead,
-    refetchInterval: 10000,
   });
   useEffect(() => {
     if (!token) return;

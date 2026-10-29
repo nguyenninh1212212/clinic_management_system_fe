@@ -74,7 +74,7 @@ export const TriageListPage: React.FC = () => {
       render: (row) => (
         <div className="flex flex-wrap gap-2 text-xs font-mono tabular-nums">
           {row.bloodPressure && (
-            <span className="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded">
+            <span className="bg-slate-100  px-1.5 py-0.5 rounded">
               HA: {row.bloodPressure}
             </span>
           )}

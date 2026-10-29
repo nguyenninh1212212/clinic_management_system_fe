@@ -73,17 +73,14 @@ import { DoctorScheduleCalendar } from "@/features/appointments/pages/DoctorSche
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      // Cache-first: a query is fetched once per queryKey during the session.
+      // Mutations/socket events can still explicitly update or invalidate it.
+      staleTime: Infinity,
+      gcTime: Infinity,
+      refetchOnMount: false,
       refetchOnWindowFocus: false,
-      retry: (failureCount, error: any) => {
-        if (
-          error?.response?.status === 401 ||
-          error?.response?.status === 403 ||
-          error?.response?.status === 404
-        ) {
-          return false;
-        }
-        return failureCount < 2;
-      },
+      refetchOnReconnect: false,
+      retry: false,
     },
   },
 });

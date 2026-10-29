@@ -94,18 +94,11 @@ function InvoiceDialog({
     queryKey: ["commerce", actorId, "invoice", id],
     queryFn: () => commerceApi.invoice(id!),
     enabled: !!id,
-    refetchInterval: (q) =>
-      q.state.data?.status === "PENDING_PAYMENT" ||
-      q.state.data?.status === "PAID" ||
-      q.state.data?.status === "REFUND_PENDING"
-        ? 5000
-        : false,
   });
   const history = useQuery({
     queryKey: ["commerce", actorId, "payments", id],
     queryFn: () => commerceApi.payments(id!),
     enabled: !!id,
-    refetchInterval: id ? 5000 : false,
   });
   const action = useMutation({
     mutationFn: (command: "cash" | "zalopay" | "cancel" | "refund") =>
@@ -347,8 +340,9 @@ export function CommerceInvoicesPage({
     queryKey: ["commerce", actorId, "invoices", patientId, page, search],
     queryFn: () =>
       commerceApi.invoices({ patientId, page, search: search || undefined }),
-    enabled: !isDemoMode && (staff || !!patientId),
-    refetchInterval: 10000,
+    // Keep inactive tabs from requesting data. Returning to this tab reuses
+    // the cache for the same queryKey.
+    enabled: tab === 0 && !isDemoMode && (staff || !!patientId),
   });
   const refunds = useQuery({
     queryKey: ["commerce", actorId, "refunds"],
@@ -436,7 +430,7 @@ export function CommerceInvoicesPage({
                   id: "buyer_name",
                   label: "Người mua",
                   render: (row) => (
-                    <span className="font-semibold text-slate-800">
+                    <span className="font-semibold ">
                       {row.buyer_name}
                     </span>
                   ),

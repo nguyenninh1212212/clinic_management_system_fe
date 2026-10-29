@@ -60,8 +60,6 @@ export const NotificationBell: React.FC = () => {
       lastPage.pagination.page < lastPage.pagination.totalPages
         ? lastPage.pagination.page + 1
         : undefined,
-    staleTime: 10_000,
-    refetchInterval: 30_000,
   });
 
   const notifications = data?.pages.flatMap((page) => page.data) || [];
