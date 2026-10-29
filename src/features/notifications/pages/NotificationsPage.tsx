@@ -126,7 +126,7 @@ export const NotificationsPage: React.FC = () => {
           <div
             className={`text-sm ${
               !row.isRead
-                ? "font-bold text-slate-900 group-hover:text-sky-600"
+                ? "font-bold  group-hover:text-sky-600"
                 : "font-medium text-slate-700"
             }`}
           >

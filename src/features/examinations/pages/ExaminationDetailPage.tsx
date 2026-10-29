@@ -86,7 +86,7 @@ export const ExaminationDetailPage: React.FC = () => {
       label: 'Số lượng',
       minWidth: 90,
       render: (row) => (
-        <span className="font-bold text-slate-900 tabular-nums">
+        <span className="font-bold  tabular-nums">
           {row.quantity} {row.medicine?.unit || 'viên'}
         </span>
       ),
@@ -203,7 +203,7 @@ export const ExaminationDetailPage: React.FC = () => {
             <div className="text-xs text-slate-400 uppercase tracking-wider font-semibold">
               Chẩn đoán xác định
             </div>
-            <div className="text-base font-bold text-slate-900 mt-1">
+            <div className="text-base font-bold  mt-1">
               {examination.diagnosis}
             </div>
           </div>

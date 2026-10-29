@@ -110,7 +110,7 @@ export const ExaminationCreatePage: React.FC = () => {
         <div className="bg-sky-50 border border-sky-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
           <div>
             <span className="text-slate-500">Bệnh nhân khám: </span>
-            <strong className="text-slate-900 text-sm">{selectedAppt.patient?.fullName}</strong>
+            <strong className=" text-sm">{selectedAppt.patient?.fullName}</strong>
             <span className="text-slate-500 ml-2">({selectedAppt.patient?.gender})</span>
           </div>
           {selectedAppt.triageResult && (

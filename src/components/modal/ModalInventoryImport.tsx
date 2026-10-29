@@ -75,7 +75,7 @@ export function ModalInventoryImport({ open, handleClose }: { open: boolean; han
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(280px,0.85fr)] p-3">
           <section className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
             <div className="border-b border-slate-200 px-5 py-4 sm:px-6">
-              <h2 className="text-base font-semibold text-slate-900">Tải tệp Excel lên</h2>
+              <h2 className="text-base font-semibold ">Tải tệp Excel lên</h2>
               <p className="mt-1 text-sm text-slate-500">Chọn tệp .xlsx đã chuẩn bị theo mẫu cột bên cạnh.</p>
             </div>
             <div className="space-y-5 p-5 sm:p-6">
@@ -117,7 +117,7 @@ export function ModalInventoryImport({ open, handleClose }: { open: boolean; han
 
           <section className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
             <div className="border-b border-slate-200 px-5 py-4">
-              <h2 className="text-base font-semibold text-slate-900">Cấu trúc tệp Excel</h2>
+              <h2 className="text-base font-semibold ">Cấu trúc tệp Excel</h2>
               <p className="mt-1 text-sm text-slate-500">Tên cột trong hàng đầu tiên của tệp.</p>
             </div>
             <div className="overflow-x-auto">

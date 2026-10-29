@@ -22,6 +22,12 @@ type ApiErrorListener = (
 ) => void;
 const listeners = new Set<ApiErrorListener>();
 
+type ApiErrorResponse = {
+  message?: string | string[];
+  error?: string;
+  statusCode?: number;
+};
+
 export const registerApiErrorListener = (fn: ApiErrorListener) => {
   listeners.add(fn);
   return () => {
@@ -34,6 +40,26 @@ export const notifyApiFeedback = (
   severity: "error" | "warning" | "info" = "error",
 ) => {
   listeners.forEach((listener) => listener(message, severity));
+};
+
+export const notifyApiError = (error: unknown) => {
+  if (!axios.isAxiosError<ApiErrorResponse>(error)) {
+    const message = "Đã xảy ra lỗi khi xử lý yêu cầu";
+    notifyApiFeedback(message, "error");
+    return message;
+  }
+
+  const responseMessage = error.response?.data?.message;
+  const formattedMsg = Array.isArray(responseMessage)
+    ? responseMessage.join(", ")
+    : responseMessage;
+  const status = error.response?.status;
+  const [message, severity] = status
+    ? statusMessages({ status, formattedMsg })
+    : [formattedMsg || "Không thể kết nối máy chủ. Vui lòng thử lại.", "error"] as const;
+
+  notifyApiFeedback(message, severity);
+  return message;
 };
 
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
@@ -73,18 +99,7 @@ api.interceptors.response.use(
       original.url?.includes("/auth/staff/login") ||
       original.url?.includes("/auth/staff/refresh")
     ) {
-      if (error.response) {
-        const status = error.response.status;
-        const msg = error.response.data?.message;
-        const formattedMsg = Array.isArray(msg) ? msg.join(", ") : msg;
-
-        notifyApiFeedback(
-          statusMessages({ status, formattedMsg })[0],
-          statusMessages({ status, formattedMsg })[1],
-        );
-      } else if (!error.response && error.message) {
-        console.warn("Network or server unreachable:", error.message);
-      }
+      notifyApiError(error);
       return Promise.reject(error);
     }
 

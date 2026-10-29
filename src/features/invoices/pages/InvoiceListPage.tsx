@@ -79,7 +79,7 @@ export const InvoiceListPage: React.FC = () => {
       align: "right",
       minWidth: 140,
       render: (row) => (
-        <span className="font-bold tabular-nums text-slate-900">
+        <span className="font-bold tabular-nums ">
           {money(row.totalAmount)}
         </span>
       ),

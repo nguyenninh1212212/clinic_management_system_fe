@@ -14,7 +14,7 @@
   border-color: #334155 !important;
 }
 
-.app-shell--dark .text-slate-900,
+.app-shell--dark .,
 .app-shell--dark .text-slate-800,
 .app-shell--dark .text-slate-700 {
   color: #e2e8f0 !important;

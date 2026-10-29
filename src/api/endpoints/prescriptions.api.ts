@@ -23,6 +23,9 @@ export const prescriptionsApi = {
   findById: (id: string): Promise<Prescription> =>
     api.get(`/prescriptions/${id}`).then((r) => r.data),
 
+  export: (id: string) =>
+    api.get(`/prescriptions/${id}/export`, { responseType: 'blob' }),
+
   issue:(id:string):Promise<Prescription>=>api.post(`/prescriptions/${id}/issue`).then(r=>r.data),
   create:(dto:CreatePrescriptionDto):Promise<Prescription>=>api.post('/prescriptions',{
     examinationId:dto.examinationId,notes:dto.notes,validUntil:dto.validUntil,

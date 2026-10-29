@@ -12,5 +12,5 @@ export const statusMessages = ({
     500: [formattedMsg || "Lỗi hệ thống", "error"],
   };
 
-  return messages[status];
+  return messages[status] || [formattedMsg || "Đã xảy ra lỗi khi xử lý yêu cầu", "error"];
 };

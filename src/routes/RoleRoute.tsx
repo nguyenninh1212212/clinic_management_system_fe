@@ -4,22 +4,24 @@ import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth.store';
 import { UserRole } from '@/types';
 import { Alert, Box, Button } from '@mui/material';
+import { hasAccess } from './access-control';
 
 interface RoleRouteProps {
-  roles: UserRole[];
+  roles?: UserRole[];
+  positionIds?: number[];
   children: React.ReactElement;
 }
 
-export const RoleRoute: React.FC<RoleRouteProps> = ({ roles, children }) => {
+export const RoleRoute: React.FC<RoleRouteProps> = ({ roles, positionIds, children }) => {
   const user = useAuthStore((state) => state.user);
 
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  const hasAccess = roles.includes(user.role);
+  const allowed = hasAccess(user, { roles, positionIds });
 
-  if (!hasAccess) {
+  if (!allowed) {
     return (
       <Box className="p-8 max-w-lg mx-auto text-center">
         <Alert severity="error" className="mb-4">

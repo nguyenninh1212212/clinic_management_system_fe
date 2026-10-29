@@ -187,7 +187,6 @@ export const routeElements = (
       />
     </Route>
 
-    {/* Fallback */}
     <Route path="*" element={<Navigate to="/dashboard" replace />} />
   </>
 );

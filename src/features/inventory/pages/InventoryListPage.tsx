@@ -287,7 +287,7 @@ export const InventoryListPage: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <span
                 className={`font-bold tabular-nums text-sm ${
-                  isLow ? "text-rose-600" : "text-slate-900"
+                  isLow ? "text-rose-600" : ""
                 }`}
               >
                 {row.quantity.toLocaleString("vi-VN")}{" "}
@@ -458,7 +458,7 @@ export const InventoryListPage: React.FC = () => {
         fullWidth
       >
         <Box component="form" onSubmit={handleCreateBatch}>
-          <DialogTitle className="font-bold text-slate-900">
+          <DialogTitle className="font-bold ">
             Nhập lô thuốc mới vào kho
           </DialogTitle>
 
@@ -678,7 +678,7 @@ export const InventoryListPage: React.FC = () => {
         fullWidth
       >
         <Box component="form" onSubmit={handleExecuteTransaction}>
-          <DialogTitle className="font-bold text-slate-900">
+          <DialogTitle className="font-bold ">
             Giao dịch Xuất / Nhập / Điều chỉnh kho
           </DialogTitle>
 

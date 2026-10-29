@@ -2,12 +2,42 @@
 import { api } from '@/api/axios';
 import { Permission, CreatePermissionDto, PermissionQueryParams } from '@/types';
 
+type PermissionTreeItem = {
+  key: string;
+  title: string;
+  description?: string;
+  action: Permission['action'];
+  resource: string;
+  permissionCode: string;
+};
+
+type PermissionTreeGroup = { children?: PermissionTreeItem[] };
+
+const normalizePermissions = (response: unknown): Permission[] => {
+  const data = Array.isArray(response)
+    ? response
+    : (response as { data?: unknown })?.data;
+  if (!Array.isArray(data)) return [];
+
+  return data.flatMap((item) => {
+    const children = (item as PermissionTreeGroup).children;
+    if (!Array.isArray(children)) return item as Permission;
+    return children.map((permission) => ({
+      id: Number(permission.key),
+      permissionCode: permission.permissionCode,
+      permissionName: permission.title,
+      description: permission.description,
+      action: permission.action,
+      resource: permission.resource,
+      createdAt: '',
+      updatedAt: '',
+    }));
+  });
+};
+
 export const permissionsApi = {
   findAll: (params?: PermissionQueryParams): Promise<Permission[]> =>
-    api.get('/permissions', { params }).then((r) => {
-      const res = r.data;
-      return Array.isArray(res) ? res : res?.data || [];
-    }),
+    api.get('/permissions', { params }).then((r) => normalizePermissions(r.data)),
 
   create: (dto: CreatePermissionDto): Promise<Permission> =>
     api.post('/permissions', dto).then((r) => r.data),

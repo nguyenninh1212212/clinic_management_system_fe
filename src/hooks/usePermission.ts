@@ -21,6 +21,7 @@ export function usePermission() {
     UserRole.ADMIN,
     UserRole.MANAGER,
     UserRole.STAFF,
+    UserRole.DOCTOR,
   ].includes(role as UserRole);
 
   const canCreateOrEditPatient = [
@@ -76,4 +77,11 @@ export function usePermission() {
     canViewAuditLogs,
     hasRole,
   };
+}
+
+export function useRolePermission (roles : string | string[]) {
+  const user = useAuthStore((state) => state.user);
+  const role = user?.role;
+  roles = Array.isArray(roles) ? roles : Array.from(roles)
+  return roles.includes(role as UserRole)
 }

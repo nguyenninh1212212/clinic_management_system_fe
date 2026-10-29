@@ -387,9 +387,7 @@ export const AppointmentDetailPage: React.FC = () => {
         </Card>
       </div>
 
-      {/* Clinical Workflow Section: Triage & Examination */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Triage Result Card */}
         <Card className="border-sky-100">
           <CardContent className="p-6 space-y-4">
             <div className="flex items-center justify-between">
@@ -397,7 +395,7 @@ export const AppointmentDetailPage: React.FC = () => {
                 <HealingIcon className="text-rose-500" fontSize="small" />
                 <Typography
                   variant="subtitle1"
-                  className="font-bold text-slate-900 text-sm"
+                  className="font-bold  text-sm"
                 >
                   Phân loại Cấp cứu & Sinh hiệu (Triage)
                 </Typography>
@@ -513,7 +511,7 @@ export const AppointmentDetailPage: React.FC = () => {
                 <AssignmentIcon className="text-sky-600" fontSize="small" />
                 <Typography
                   variant="subtitle1"
-                  className="font-bold text-slate-900 text-sm"
+                  className="font-bold  text-sm"
                 >
                   Phiếu Khám bệnh & Đơn thuốc
                 </Typography>
@@ -550,7 +548,7 @@ export const AppointmentDetailPage: React.FC = () => {
                   <div className="text-xs text-slate-400">
                     Chẩn đoán xác định
                   </div>
-                  <div className="font-bold text-slate-900 mt-0.5">
+                  <div className="font-bold  mt-0.5">
                     {appointment.examination.diagnosis || "Chưa có chẩn đoán"}
                   </div>
                 </div>
@@ -701,7 +699,7 @@ export const AppointmentDetailPage: React.FC = () => {
                               spacing={1}
                               className="items-start sm:items-center justify-between"
                             >
-                              <Typography variant="body2" >
+                              <Typography variant="body2">
                                 Thuốc {index + 1}
                               </Typography>
 
@@ -771,14 +769,13 @@ export const AppointmentDetailPage: React.FC = () => {
         </Card>
       </div>
 
-      {/* Triage Dialog (Upsert) */}
       <Dialog
         open={triageDialogOpen}
         onClose={() => setTriageDialogOpen(false)}
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle className="font-bold text-slate-900">
+        <DialogTitle className="font-bold ">
           Phân loại Cấp cứu & Ghi nhận Sinh hiệu
         </DialogTitle>
         <DialogContent className="space-y-4 pt-2">

@@ -258,7 +258,7 @@ export const SpecialtyListPage: React.FC = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle className="font-bold text-slate-900">
+        <DialogTitle className="font-bold ">
           {editingSpecialty ? 'Cập nhật chuyên khoa' : 'Thêm chuyên khoa mới'}
         </DialogTitle>
         <Divider />

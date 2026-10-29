@@ -233,7 +233,7 @@ export const PermissionListPage: React.FC = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle className="font-bold text-slate-900">
+        <DialogTitle className="font-bold ">
           {editingPerm ? 'Cập nhật quyền truy cập' : 'Thêm quyền truy cập mới'}
         </DialogTitle>
         <Divider />
@@ -257,14 +257,21 @@ export const PermissionListPage: React.FC = () => {
           />
 
           <div className="grid grid-cols-2 gap-3">
-            <TextField
-              label="Tài nguyên (Resource) *"
-              fullWidth
-              size="small"
-              value={resource}
-              onChange={(e) => setResource(e.target.value)}
-              placeholder="VD: patients, appointments..."
-            />
+            <FormControl fullWidth size="small">
+              <InputLabel id="resource-select-label">Tài nguyên (Resource) *</InputLabel>
+              <Select
+                labelId="resource-select-label"
+                value={resource}
+                label="Tài nguyên (Resource) *"
+                onChange={(event) => setResource(event.target.value)}
+              >
+                {Object.values(ResourceType).map((value) => (
+                  <MenuItem key={value} value={value}>
+                    {value}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
             <FormControl fullWidth size="small">
               <InputLabel id="action-select-label">Hành động *</InputLabel>

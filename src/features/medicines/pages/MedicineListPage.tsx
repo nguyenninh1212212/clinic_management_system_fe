@@ -61,7 +61,7 @@ const createInitialMedicine = (): Medicine => ({
 export const MedicineListPage: React.FC = () => {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
+  const [isImportLoading , setIsImportLoading] = useState<boolean>(false)
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const { filters, replaceFilters } =
@@ -154,7 +154,6 @@ export const MedicineListPage: React.FC = () => {
       await deleteMutation.mutateAsync(deleteId);
       setDeleteId(null);
     } catch {
-      // Handled by interceptor
     }
   };
   const handleDownloadTemplate = () => {
@@ -166,6 +165,7 @@ export const MedicineListPage: React.FC = () => {
         "category",
         "description",
         "minStockLevel",
+        "sellingPrice",
         "manufacturer",
         "registrationNumber",
       ],
@@ -176,6 +176,7 @@ export const MedicineListPage: React.FC = () => {
         "ANTIBIOTIC",
         "Bảo quản nơi khô ráo",
         100,
+        5000,
         "DHG Pharma",
         "VD-12345",
       ],
@@ -194,20 +195,19 @@ export const MedicineListPage: React.FC = () => {
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
+      setIsImportLoading(true)
 
     try {
       await medicinesApi.importFromExcel(file);
-      // Import returns a count only, so reload rows instead of trying to patch an incomplete response.
       void queryClient.refetchQueries({
         queryKey: queryKeys.medicines.lists(),
-        type: "all",
       });
       notifyApiFeedback("Import thuốc từ Excel thành công", "info");
       setPage(1);
     } catch {
-      // Handled by interceptor
     } finally {
       event.target.value = "";
+      setIsImportLoading(false)
     }
   };
   const updateField = <K extends keyof Medicine>(
@@ -360,6 +360,8 @@ export const MedicineListPage: React.FC = () => {
               variant="contained"
               color="secondary"
               startIcon={<UploadFileOutlinedIcon />}
+              loading ={isImportLoading}
+              disabled={isImportLoading}
               onClick={() => fileInputRef.current?.click()}
             >
               Import Excel
@@ -368,6 +370,8 @@ export const MedicineListPage: React.FC = () => {
               variant="contained"
               startIcon={<AddIcon />}
               onClick={handleOpenCreate}
+              loading={isImportLoading || createMutation.isPending}
+              disabled={isImportLoading || createMutation.isPending}
             >
               Thêm thuốc mới
             </Button>
@@ -420,7 +424,7 @@ export const MedicineListPage: React.FC = () => {
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle className="font-bold text-slate-900">
+        <DialogTitle className="font-bold">
           {editingMedicine
             ? "Chỉnh sửa thông tin thuốc"
             : "Thêm mới thuốc vào danh mục"}

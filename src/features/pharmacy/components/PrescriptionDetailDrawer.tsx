@@ -91,7 +91,7 @@ export const PrescriptionDetailDrawer: React.FC<
       <div className="w-screen max-w-xl p-5 sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <Typography variant="h6" className="font-bold text-slate-900">
+            <Typography variant="h6" className="font-bold ">
               Chi tiết đơn thuốc
             </Typography>
             <div className="mt-1 text-xs text-slate-500">
@@ -115,17 +115,17 @@ export const PrescriptionDetailDrawer: React.FC<
           </Alert>
         ) : (
           <div className="mt-6 space-y-5">
-            <div className="rounded-lg bg-slate-50 p-4">
+            <div className="rounded-lg  p-4">
               <div className="text-xs text-slate-500">Bệnh nhân</div>
-              <div className="mt-1 text-lg font-bold text-slate-900">
+              <div className="mt-1 text-lg font-bold ">
                 {patient?.fullName || "—"}
               </div>
-              <div className="text-sm text-slate-600">
+              <div className="text-sm ">
                 {patient?.phone || "Chưa có số điện thoại"}
               </div>
             </div>
             <div>
-              <div className="mb-2 text-sm font-bold text-slate-900">
+              <div className="mb-2 text-sm font-bold ">
                 Trạng thái xử lý
               </div>
               <Select
@@ -145,7 +145,7 @@ export const PrescriptionDetailDrawer: React.FC<
             </div>
             <Divider />
             <div>
-              <div className="mb-3 text-sm font-bold text-slate-900">
+              <div className="mb-3 text-sm font-bold ">
                 Danh sách thuốc
               </div>
               <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-2">

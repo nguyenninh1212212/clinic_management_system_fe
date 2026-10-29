@@ -38,7 +38,7 @@ export const InvoiceItemsTable: React.FC<InvoiceItemsTableProps> = ({
   <div className="space-y-3">
     <div className="flex items-center justify-between gap-3">
       <div>
-        <h2 className="text-sm font-bold text-slate-900">Dòng hàng hóa đơn</h2>
+        <h2 className="text-sm font-bold ">Dòng hàng hóa đơn</h2>
         <p className="text-xs text-slate-500">Chọn thuốc hoặc nhập chi phí dịch vụ.</p>
       </div>
       <Button size="small" variant="outlined" startIcon={<AddIcon />} onClick={onAdd}>

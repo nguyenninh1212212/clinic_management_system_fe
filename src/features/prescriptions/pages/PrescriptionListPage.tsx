@@ -42,7 +42,13 @@ import {
 import { useExaminations } from "@/features/examinations/hooks/useExaminations";
 import { useMedicinesDropdown } from "@/features/medicines/hooks/useMedicines";
 
-import { Prescription, PrescriptionQueryParams, CreatePrescriptionItemDto, Medicine, PharmacyPrescriptionStatus } from "@/types";
+import {
+  Prescription,
+  PrescriptionQueryParams,
+  CreatePrescriptionItemDto,
+  Medicine,
+  PharmacyPrescriptionStatus,
+} from "@/types";
 
 import dayjs from "dayjs";
 
@@ -91,7 +97,7 @@ export const PrescriptionListPage: React.FC = () => {
 
   const { data: examsData } = useExaminations({
     limit: 50,
-    isExist: "false"
+    isExist: "false",
   });
 
   const { data: medicinesData } = useMedicinesDropdown(100);
@@ -188,12 +194,17 @@ export const PrescriptionListPage: React.FC = () => {
     {
       id: "patient",
       label: "Bệnh nhân",
-      filterFields: [{
-        key: "status",
-        label: "Trạng thái đơn thuốc",
-        type: "select",
-        filters: ["DRAFT","ISSUED","CANCELLED"].map((value) => ({ text: value, value })),
-      }],
+      filterFields: [
+        {
+          key: "status",
+          label: "Trạng thái đơn thuốc",
+          type: "select",
+          filters: ["DRAFT", "ISSUED", "CANCELLED"].map((value) => ({
+            text: value,
+            value,
+          })),
+        },
+      ],
       minWidth: 180,
       render: (row) => (
         <Stack spacing={0.25}>
@@ -233,7 +244,9 @@ export const PrescriptionListPage: React.FC = () => {
     {
       id: "doctor",
       label: "Bác sĩ kê đơn",
-      filterFields: [{ key: "examinationId", label: "Mã phiếu khám", type: "input" }],
+      filterFields: [
+        { key: "examinationId", label: "Mã phiếu khám", type: "input" },
+      ],
       minWidth: 160,
       render: (row) => (
         <Typography
@@ -532,17 +545,16 @@ export const PrescriptionListPage: React.FC = () => {
               <Stack spacing={1.5}>
                 {items.map((item, idx) => (
                   <Box
+                    color="black"
                     key={idx}
                     sx={{
                       p: 2,
-                      backgroundColor: "grey.50",
                       borderRadius: 3,
-                      border: "1px solid",
-                      borderColor: "divider",
+                      border: "2px solid",
+                      borderColor: "primary.dark",
                     }}
                   >
                     <Stack spacing={1.5}>
-                      {/* Medicine header */}
                       <Stack
                         direction="row"
                         className="flex justify-between items-center"
@@ -551,7 +563,6 @@ export const PrescriptionListPage: React.FC = () => {
                           variant="caption"
                           sx={{
                             fontWeight: 600,
-                            color: "primary.dark",
                           }}
                         >
                           Thuốc #{idx + 1}

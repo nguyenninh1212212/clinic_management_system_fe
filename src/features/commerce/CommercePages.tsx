@@ -446,7 +446,7 @@ export function CommerceInvoicesPage({
                   label: "Tổng tiền",
                   align: "right",
                   render: (row) => (
-                    <span className="font-bold tabular-nums text-slate-900">
+                    <span className="font-bold tabular-nums ">
                       {money(row.total_amount)}
                     </span>
                   ),

@@ -158,32 +158,21 @@ export function PharmacyDashboard() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Nhà thuốc"
-        subtitle="Hàng đợi đơn thuốc realtime dành cho quầy phát thuốc"
-        breadcrumbs={[
-          { label: "Trang chủ", href: "/dashboard" },
-          { label: "Nhà thuốc" },
-        ]}
-        action={
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <ConnectionStatus status={socketStatus} />
-            <Button
-              size="small"
-              variant={soundEnabled ? "contained" : "outlined"}
-              startIcon={
-                soundEnabled ? (
-                  <VolumeUpOutlinedIcon />
-                ) : (
-                  <VolumeOffOutlinedIcon />
-                )
-              }
-              onClick={() => setSoundEnabled(!soundEnabled)}
-            >
-              {soundEnabled ? "Tắt âm thanh" : "Bật âm thanh"}
-            </Button>
-          </div>
-        }
-      />
+        action={<div className="flex flex-wrap items-center justify-end gap-2">
+          <ConnectionStatus status={socketStatus} />
+          <Button
+            size="small"
+            variant={soundEnabled ? "contained" : "outlined"}
+            startIcon={soundEnabled ? (
+              <VolumeUpOutlinedIcon />
+            ) : (
+              <VolumeOffOutlinedIcon />
+            )}
+            onClick={() => setSoundEnabled(!soundEnabled)}
+          >
+            {soundEnabled ? "Tắt âm thanh" : "Bật âm thanh"}
+          </Button>
+        </div>} title={""}      />
       {socketStatus === "disconnected" && (
         <Alert severity="warning">
           Mất kết nối realtime. Hệ thống sẽ tự đồng bộ khi kết nối lại.
@@ -197,7 +186,7 @@ export function PharmacyDashboard() {
           (status, i) => (
             <div
               key={status}
-              className={`rounded-xl border p-4 ${["border-sky-200 bg-sky-50 text-sky-900", "border-amber-200 bg-amber-50 text-amber-900", "border-emerald-200 bg-emerald-50 text-emerald-900", "border-slate-200 bg-white text-slate-900"][i]}`}
+              className={`rounded-xl border p-4 ${["border-sky-200 bg-sky-50 text-sky-900", "border-amber-200 bg-amber-50 text-amber-900", "border-emerald-200 bg-emerald-50 text-emerald-900", "border-slate-200 bg-white "][i]}`}
             >
               <div className="text-xs">
                 {status === "open" ? "Tổng hàng đợi" : statusText[status]}
@@ -250,7 +239,7 @@ export function PharmacyDashboard() {
       </div>
       <div className="flex items-center gap-2">
         <LocalPharmacyOutlinedIcon className="text-sky-600" />
-        <h2 className="text-lg font-bold text-slate-900">Hàng đợi đơn thuốc</h2>
+        <h2 className="text-lg font-bold ">Hàng đợi đơn thuốc</h2>
         <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-bold text-sky-800">
           Realtime
         </span>
@@ -270,7 +259,7 @@ export function PharmacyDashboard() {
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="font-bold text-slate-900">
+                  <h3 className="font-bold ">
                     {d.buyer_name || "Bệnh nhân"}
                   </h3>
                   <div className="mt-1 text-xs text-slate-500">
@@ -290,7 +279,7 @@ export function PharmacyDashboard() {
                     key={i}
                     className="flex justify-between px-3 py-2.5 text-sm"
                   >
-                    <span className="font-semibold text-slate-800">
+                    <span className="font-semibold ">
                       {item.name}
                     </span>
                     <span className="font-bold tabular-nums">
@@ -330,7 +319,7 @@ export function PharmacyDashboard() {
         <div className="w-screen max-w-xl space-y-5 p-5 sm:p-6">
           <div className="flex items-start justify-between">
             <div>
-              <h2 className="text-lg font-bold text-slate-900">
+              <h2 className="text-lg font-bold ">
                 Chi tiết đơn thuốc
               </h2>
               <div className="text-xs text-slate-500">
@@ -345,7 +334,7 @@ export function PharmacyDashboard() {
             <>
               <div className="rounded-lg bg-slate-50 p-4">
                 <div className="text-xs text-slate-500">Bệnh nhân</div>
-                <div className="mt-1 text-lg font-bold">
+                <div className="mt-1 text-lg font-bold text-slate-800">
                   {selected.buyer_name}
                 </div>
               </div>

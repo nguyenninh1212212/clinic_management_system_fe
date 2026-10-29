@@ -138,7 +138,7 @@ export const DoctorSelect: React.FC<DoctorSelectProps> = ({
             {doctor.user?.fullName?.charAt(0) || 'B'}
           </Avatar>
           <div className="min-w-0">
-            <div className="truncate text-sm font-medium text-slate-900">
+            <div className="truncate text-sm font-medium ">
               {doctor.user?.fullName || 'Bác sĩ'}
             </div>
             <div className="truncate text-xs text-slate-500">

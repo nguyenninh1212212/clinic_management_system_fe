@@ -34,7 +34,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             ))}
           </nav>
         )}
-        <Typography variant="h5" component="h1" className="font-bold text-slate-900 tracking-tight">
+        <Typography variant="h5" component="h1" className="font-bold  tracking-tight">
           {title}
         </Typography>
         {subtitle && (

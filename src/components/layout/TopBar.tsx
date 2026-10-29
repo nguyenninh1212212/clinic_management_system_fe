@@ -120,7 +120,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             <div className="hidden md:flex flex-col text-left">
               <Typography
                 variant="body2"
-                className="font-semibold text-slate-900 leading-tight text-xs"
+                className="font-semibold  leading-tight text-xs"
               >
                 {user?.fullName || user?.email?.split("@")[0]}
               </Typography>

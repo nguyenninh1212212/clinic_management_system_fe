@@ -244,7 +244,7 @@ export const DashboardPage: React.FC = () => {
               >
                 TỔNG SỐ BỆNH NHÂN
               </Typography>
-              <div className="text-2xl font-bold text-slate-900 mt-1 tabular-nums">
+              <div className="text-2xl font-bold  mt-1 tabular-nums">
                 {loadingPatients ? (
                   <Skeleton width={60} />
                 ) : (

@@ -275,7 +275,7 @@ export const DoctorShiftManagement: React.FC = () => {
       ) : (
         <>
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-slate-900">
+            <h2 className="text-base font-bold ">
               Ca làm của {selectedDoctor?.user?.fullName || "bác sĩ"}
             </h2>
             <span className="text-xs text-slate-500">{date}</span>

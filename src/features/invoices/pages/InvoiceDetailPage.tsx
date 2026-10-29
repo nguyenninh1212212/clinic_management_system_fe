@@ -87,7 +87,7 @@ export const InvoiceDetailPage: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <div className="text-xs text-slate-500">Người mua</div>
-              <div className="font-bold text-slate-900">
+              <div className="font-bold ">
                 {invoice.buyerName}
               </div>
             </div>

@@ -101,7 +101,7 @@ export const InvoiceCreatePage: React.FC = () => {
       <Card>
         <CardContent className="space-y-4">
           <div>
-            <h2 className="text-sm font-bold text-slate-900">Thông tin người mua</h2>
+            <h2 className="text-sm font-bold ">Thông tin người mua</h2>
             <p className="text-xs text-slate-500">Các trường có dấu * là bắt buộc.</p>
           </div>
           {submitted && !buyerName.trim() && <Alert severity="error">Vui lòng nhập tên người mua.</Alert>}

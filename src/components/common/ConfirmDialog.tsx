@@ -34,9 +34,9 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 }) => {
   return (
     <Dialog open={open} onClose={isLoading ? undefined : onClose} maxWidth="xs" fullWidth>
-      <DialogTitle className="font-semibold text-slate-900">{title}</DialogTitle>
+      <DialogTitle className="font-semibold ">{title}</DialogTitle>
       <DialogContent>
-        <DialogContentText className="text-slate-600 text-sm">{content}</DialogContentText>
+        <DialogContentText className="text-sm">{content}</DialogContentText>
       </DialogContent>
       <DialogActions className="px-6 pb-4">
         <Button onClick={onClose} disabled={isLoading} color="inherit">

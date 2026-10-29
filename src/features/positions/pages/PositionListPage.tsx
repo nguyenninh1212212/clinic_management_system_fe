@@ -266,7 +266,7 @@ export const PositionListPage: React.FC = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle className="font-bold text-slate-900">
+        <DialogTitle className="font-bold ">
           {editingPosition ? 'Cập nhật vị trí công việc' : 'Thêm vị trí công việc mới'}
         </DialogTitle>
         <Divider />

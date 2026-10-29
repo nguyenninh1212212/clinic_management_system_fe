@@ -103,6 +103,7 @@ export const LoginPage: React.FC = () => {
       setAuth(response.accessToken, response.user);
       navigate(from, { replace: true });
     } catch (err: any) {
+      console.log("🚀 ~ onSubmit ~ err:", err)
       const axiosError = err as AxiosError<{
         message?: string;
         error?: string;

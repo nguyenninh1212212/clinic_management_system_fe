@@ -2,6 +2,13 @@
 import { UserRole, AuthProvider } from './enums';
 import type { CreateDoctorDto } from './doctor.types';
 
+export interface CurrentUserPermission {
+  id: number;
+  permissionCode: string;
+  action: string;
+  resource: string;
+}
+
 export interface CurrentUser {
   accountType?: 'STAFF';
   id: string;
@@ -11,6 +18,7 @@ export interface CurrentUser {
   avatar?: string;
   departmentId?: number;
   positionId?: number;
+  permissions?: CurrentUserPermission[];
 }
 
 export interface LoginResponse {

@@ -82,7 +82,7 @@ export const AppointmentStatusDialog: React.FC<AppointmentStatusDialogProps> = (
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle className="font-bold text-slate-900">
+      <DialogTitle className="font-bold ">
         Chuyển trạng thái lịch hẹn
       </DialogTitle>
       <DialogContent className="space-y-4 pt-2">

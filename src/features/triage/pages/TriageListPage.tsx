@@ -178,7 +178,7 @@ export const TriageListPage: React.FC = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle className="font-bold text-slate-900 flex items-center justify-between">
+        <DialogTitle className="font-bold  flex items-center justify-between">
           <span>Chi tiết Kết quả Phân loại</span>
           {selectedTriage && (
             <StatusChip status={selectedTriage.triageLevel} type="triage" />

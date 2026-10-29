@@ -36,7 +36,8 @@ export function useUpsertTriage(appointmentId: string) {
         ? triageResultsApi.update(id, dto as UpdateTriageResultDto)
         : triageResultsApi.create(dto as CreateTriageResultDto),
     onSuccess: (response) => {
-      const triage = response.data;
+      const triage = response;
+      console.log("🚀 ~ useUpsertTriage ~ triage:", triage)
       queryClient.setQueryData(
         queryKeys.appointments.detail(appointmentId),
         (cached: any) =>

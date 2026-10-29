@@ -44,7 +44,7 @@ export const ImportInvoiceModal: React.FC<ImportInvoiceModalProps> = ({ open, on
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle className="font-bold text-slate-900">Import hóa đơn từ Excel</DialogTitle>
+      <DialogTitle className="font-bold ">Import hóa đơn từ Excel</DialogTitle>
       <DialogContent className="space-y-4 pt-2">
         {error && <Alert severity="error">{error}</Alert>}
         <input

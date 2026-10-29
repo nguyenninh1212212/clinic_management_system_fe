@@ -2,7 +2,7 @@ import { useMutation,useQueryClient } from '@tanstack/react-query';
 import { prescriptionsApi } from '@/api/endpoints/prescriptions.api';
 import { queryKeys } from '@/api/queryKeys';
 // src/features/prescriptions/pages/PrescriptionDetailPage.tsx
-import React, { useRef } from "react";
+import React from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
 import {
   Card,
@@ -36,7 +36,6 @@ export const PrescriptionDetailPage: React.FC = () => {
       );
     },
   });
-  const printRef = useRef<HTMLDivElement>(null);
   const { data: prescription, isLoading, isError } = usePrescription(id ?? "");
 
   if (!id) {
@@ -67,8 +66,14 @@ export const PrescriptionDetailPage: React.FC = () => {
   const doctor = prescription.examination?.doctor;
   const exam = prescription.examination;
 
-  const handlePrint = () => {
-    window.print();
+  const handlePrint = async () => {
+    const result = await prescriptionsApi.export(id);
+    const url = URL.createObjectURL(result.data);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `prescription-${id}.xlsx`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -109,7 +114,7 @@ export const PrescriptionDetailPage: React.FC = () => {
         {prescription.status==='DRAFT'&&<Button disabled={issue.isPending||!prescription.items?.length} onClick={()=>issue.mutate()}>Phát hành và gửi đơn cho bệnh nhân</Button>}
         {issue.isError&&<Alert severity="error">Không thể phát hành. Kiểm tra thuốc và quyền bác sĩ phụ trách.</Alert>}
       </div>
-      <Card className="print:shadow-none print:border-none" ref={printRef}>
+      <Card className="print:shadow-none print:border-none">
         <CardContent className="p-8 sm:p-12 space-y-6 font-serif">
           {/* Clinic Header */}
           <div className="flex items-start justify-between border-b pb-4 border-slate-300">
@@ -118,7 +123,7 @@ export const PrescriptionDetailPage: React.FC = () => {
                 <LocalHospitalIcon fontSize="large" />
               </div>
               <div>
-                <h1 className="text-base font-bold tracking-tight text-slate-900 uppercase">
+                <h1 className="text-base font-bold tracking-tight  uppercase">
                   Phòng khám Đa khoa Quốc tế Medi Clinic
                 </h1>
                 <p className="text-xs text-slate-500 font-sans">
@@ -132,7 +137,7 @@ export const PrescriptionDetailPage: React.FC = () => {
             <div className="text-right text-xs font-sans text-slate-500">
               <div>
                 Mã đơn:{" "}
-                <strong className="font-mono text-slate-900">
+                <strong className="font-mono ">
                   #{prescription.id}
                 </strong>
               </div>
@@ -143,7 +148,7 @@ export const PrescriptionDetailPage: React.FC = () => {
           </div>
 
           <div className="text-center py-2">
-            <h2 className="text-xl font-bold uppercase tracking-wider text-slate-900">
+            <h2 className="text-xl font-bold uppercase tracking-wider ">
               ĐƠN THUỐC
             </h2>
             <p className="text-xs text-slate-500 font-sans">
@@ -154,7 +159,7 @@ export const PrescriptionDetailPage: React.FC = () => {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-sans p-4 bg-slate-50 rounded-lg">
             <div>
               <span className="text-slate-500">Họ và tên:</span>
-              <div className="font-bold text-slate-900 text-sm mt-0.5">
+              <div className="font-bold  text-sm mt-0.5">
                 {patient?.fullName}
               </div>
             </div>
@@ -187,7 +192,7 @@ export const PrescriptionDetailPage: React.FC = () => {
             </div>
             <div className="col-span-2 sm:col-span-4 pt-1 border-t border-slate-200">
               <span className="text-slate-500 font-semibold">Chẩn đoán:</span>
-              <span className="text-slate-900 font-bold ml-2">
+              <span className=" font-bold ml-2">
                 {exam?.diagnosis}{" "}
                 {exam?.icd10Code && `(Mã ICD-10: ${exam.icd10Code})`}
               </span>
@@ -211,7 +216,7 @@ export const PrescriptionDetailPage: React.FC = () => {
                       {idx + 1}
                     </td>
                     <td className="py-3 pr-2">
-                      <div className="font-bold text-slate-900 text-sm">
+                      <div className="font-bold  text-sm">
                         {item.medicine?.name}
                       </div>
                       <div className="text-[11px] text-slate-500">
@@ -219,7 +224,7 @@ export const PrescriptionDetailPage: React.FC = () => {
                           `Hoạt chất: ${item.medicine.genericName}`}
                       </div>
                     </td>
-                    <td className="py-3 text-center font-bold text-slate-900 tabular-nums">
+                    <td className="py-3 text-center font-bold  tabular-nums">
                       {item.quantity} {item.medicine?.unit || "viên"}
                     </td>
                     <td className="py-3">
@@ -272,14 +277,14 @@ export const PrescriptionDetailPage: React.FC = () => {
                 {dayjs(prescription.createdAt).format("MM")} năm{" "}
                 {dayjs(prescription.createdAt).format("YYYY")}
               </p>
-              <p className="font-bold text-slate-900 mt-0.5">
+              <p className="font-bold  mt-0.5">
                 Bác sĩ khám bệnh
               </p>
               <p className="italic text-[10px] text-slate-400">
                 (Ký và ghi rõ họ tên)
               </p>
               <div className="h-20" />
-              <p className="font-bold text-slate-900">
+              <p className="font-bold ">
                 {doctor?.user?.fullName || "BS. Chuyên khoa"}
               </p>
               <p className="text-[10px] text-slate-500 font-mono">

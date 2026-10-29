@@ -19,6 +19,8 @@ import {
   FormControlLabel,
   Alert,
   Divider,
+  Checkbox,
+  ListItemText,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
@@ -47,6 +49,8 @@ import {
 } from "@/types";
 import dayjs from "dayjs";
 import { AvatarUploadField } from "../components/AvatarUploadField";
+import { usePermissionList } from "@/features/permissions/hooks/usePermissions";
+import { usersApi } from "@/api/endpoints/users.api";
 
 export const UserListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -63,6 +67,9 @@ export const UserListPage: React.FC = () => {
   const [createPositionId, setCreatePositionId] = useState<number>();
   const [createAvatarPreview, setCreateAvatarPreview] = useState("");
   const [createAvatarFile, setCreateAvatarFile] = useState<File | null>(null);
+  const [createPermissionIds, setCreatePermissionIds] = useState<number[]>([]);
+
+  const uniquePermissionIds = (ids: number[]) => [...new Set(ids.map(Number))];
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -72,6 +79,7 @@ export const UserListPage: React.FC = () => {
   const [editIsActive, setEditIsActive] = useState(true);
   const [editAvatarPreview, setEditAvatarPreview] = useState("");
   const [editAvatarFile, setEditAvatarFile] = useState<File | null>(null);
+  const [editPermissionIds, setEditPermissionIds] = useState<number[]>([]);
 
   // Change Password Dialog
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
@@ -88,11 +96,12 @@ export const UserListPage: React.FC = () => {
   });
 
   const createMutation = useCreateUser();
+  const { data: permissions = [] } = usePermissionList();
   const updateMutation = useUpdateUser();
   const uploadAvatarMutation = useUploadUserAvatar();
   const changePasswordMutation = useChangeUserPassword();
 
-  const handleOpenEdit = (u: User) => {
+  const handleOpenEdit = async (u: User) => {
     setEditingUser(u);
     setEditFullName(u.fullName || "");
     setEditRole(u.role);
@@ -100,7 +109,21 @@ export const UserListPage: React.FC = () => {
     setEditIsActive(u.isActive !== false);
     setEditAvatarPreview(u.avatar || "");
     setEditAvatarFile(null);
+    setEditPermissionIds([]);
     setEditDialogOpen(true);
+    try {
+      const assignedPermissions = await usersApi.getPermissions(u.id);
+      setEditPermissionIds(
+        uniquePermissionIds(
+          assignedPermissions.map((permission) =>
+            typeof permission === "number" ? permission : permission.id,
+          ),
+        ),
+      );
+    } catch {
+      // Keep the edit form usable even if the assigned permissions cannot load.
+      setEditPermissionIds([]);
+    }
   };
 
   const handleSaveEdit = async () => {
@@ -123,6 +146,10 @@ export const UserListPage: React.FC = () => {
         avatar,
       },
     });
+    await usersApi.assignPermissions(editingUser.id, {
+      permissions: uniquePermissionIds(editPermissionIds),
+    });
+    setEditDialogOpen(false);
   };
 
   const handleCreate = async () => {
@@ -130,7 +157,7 @@ export const UserListPage: React.FC = () => {
     const avatar = createAvatarFile
       ? (await uploadAvatarMutation.mutateAsync({file:createAvatarFile})).url
       : undefined;
-    await createMutation.mutateAsync({
+    const created = await createMutation.mutateAsync({
       email: createEmail,
       password: createPassword,
       fullName: createFullName,
@@ -139,6 +166,14 @@ export const UserListPage: React.FC = () => {
       isActive: true,
       avatar,
     });
+    const permissionIds = uniquePermissionIds(createPermissionIds);
+    if (permissionIds.length) {
+      await usersApi.assignPermissions(created.id, {
+        permissions: permissionIds,
+      });
+    }
+    setCreateDialogOpen(false);
+    setCreatePermissionIds([]);
   };
 
   const handleToggleActive = async (u: User) => {
@@ -191,7 +226,7 @@ export const UserListPage: React.FC = () => {
       minWidth: 200,
       render: (row) => (
         <div>
-          <div className="font-semibold text-slate-800 text-sm">
+          <div className="font-semibold  text-sm">
             {row.fullName}
           </div>
           <div className="text-xs text-slate-400 font-mono">{row.email}</div>
@@ -461,6 +496,35 @@ export const UserListPage: React.FC = () => {
               </Select>
             </FormControl> */}
           </div>
+          <FormControl fullWidth size="small">
+            <InputLabel id="create-permissions-label">Quyền truy cập</InputLabel>
+            <Select
+              labelId="create-permissions-label"
+              multiple
+              value={createPermissionIds}
+              label="Quyền truy cập"
+              onChange={(event) =>
+                setCreatePermissionIds(
+                  uniquePermissionIds(event.target.value as number[]),
+                )
+              }
+              renderValue={(selected) =>
+                selected
+                  .map((id) => permissions.find((permission) => permission.id === id)?.resource || id)
+                  .join(", ")
+              }
+            >
+              {permissions.map((permission) => (
+                <MenuItem key={permission.id} value={permission.id}>
+                  <Checkbox checked={createPermissionIds.includes(permission.id)} />
+                  <ListItemText
+                    primary={permission.resource}
+                    secondary={permission.action}
+                  />
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </DialogContent>
         <DialogActions className="px-6 pb-4">
           <Button onClick={() => setCreateDialogOpen(false)} color="inherit">
@@ -558,6 +622,36 @@ export const UserListPage: React.FC = () => {
             </FormControl> */}
           </div>
 
+          <FormControl fullWidth size="small">
+            <InputLabel id="edit-permissions-label">Quyền truy cập</InputLabel>
+            <Select
+              labelId="edit-permissions-label"
+              multiple
+              value={editPermissionIds}
+              label="Quyền truy cập"
+              onChange={(event) =>
+                setEditPermissionIds(
+                  uniquePermissionIds(event.target.value as number[]),
+                )
+              }
+              renderValue={(selected) =>
+                selected
+                  .map((id) => permissions.find((permission) => permission.id === id)?.resource || id)
+                  .join(", ")
+              }
+            >
+              {permissions.map((permission) => (
+                <MenuItem key={permission.id} value={permission.id}>
+                  <Checkbox checked={editPermissionIds.includes(permission.id)} />
+                  <ListItemText
+                    primary={permission.resource}
+                    secondary={permission.action}
+                  />
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
           <FormControlLabel
             control={
               <Switch
@@ -592,7 +686,7 @@ export const UserListPage: React.FC = () => {
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle className="font-bold text-slate-900">
+        <DialogTitle className="font-bold ">
           Đặt lại mật khẩu người dùng
         </DialogTitle>
         <DialogContent className="space-y-4 pt-2">

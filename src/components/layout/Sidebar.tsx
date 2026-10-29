@@ -16,8 +16,9 @@ import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
 import HistoryOutlinedIcon from "@mui/icons-material/HistoryOutlined";
 import HealingOutlinedIcon from "@mui/icons-material/HealingOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
-import { usePermission } from "@/hooks/usePermission";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { useAuthStore } from "@/stores/auth.store";
+import { hasAccess, pageAccess } from "@/routes/access-control";
 
 interface NavItem {
   label: string;
@@ -42,8 +43,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onToggleCollapse,
   onCloseMobile,
 }) => {
-  const { isSuperAdmin, isManager, canManagePatientAccounts, canViewPatients, canViewAuditLogs } =
-    usePermission();
+  const user = useAuthStore((state) => state.user);
 
   const navigationGroups: NavGroup[] = [
     {
@@ -63,7 +63,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           label: "Hồ sơ Bệnh nhân",
           path: "/patients",
           icon: <PeopleAltOutlinedIcon fontSize="small" />,
-          visible: canViewPatients,
         },
         {
           label: "Lịch hẹn khám",
@@ -119,7 +118,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           label: "Phân công ca bác sĩ",
           path: "/doctor-shifts",
           icon: <EventNoteOutlinedIcon fontSize="small" />,
-          visible: isManager,
         },
       ],
     },
@@ -150,25 +148,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
           label: "Nhật ký kiểm toán",
           path: "/audit-logs",
           icon: <HistoryOutlinedIcon fontSize="small" />,
-          visible: canViewAuditLogs,
         },
         {
           label: "Quản lý Người dùng",
           path: "/users",
           icon: <ManageAccountsOutlinedIcon fontSize="small" />,
-          visible: isSuperAdmin,
         },
         {
           label: "Tài khoản bệnh nhân",
           path: "/patient-accounts",
           icon: <ManageAccountsOutlinedIcon fontSize="small" />,
-          visible: canManagePatientAccounts,
         },
         {
           label: "Phân quyền hệ thống",
           path: "/permissions",
           icon: <SecurityOutlinedIcon fontSize="small" />,
-          visible: isSuperAdmin,
         },
       ],
     },
@@ -330,8 +324,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         }}
       >
         {navigationGroups.map((group, groupIndex) => {
-          const visibleItems = group.items.filter(
-            (item) => item.visible !== false,
+          const visibleItems = group.items.filter((item) =>
+            hasAccess(user, pageAccess[item.path]),
           );
           if (!visibleItems.length) return null;
 

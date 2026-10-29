@@ -1,6 +1,6 @@
 import type { CurrentUser } from '@/types';
 
-const medicalRoles = ['ADMIN', 'SUPER_ADMIN', 'MANAGER', 'STAFF'];
+const medicalRoles = ['ADMIN', 'SUPER_ADMIN', 'MANAGER', 'STAFF','DOCTOR'];
 
 export function isMedicalUser(user: { role?: string; accountType?: string } | null | undefined): boolean {
   return !!user && user.accountType === 'STAFF' && medicalRoles.includes(user.role ?? '');
