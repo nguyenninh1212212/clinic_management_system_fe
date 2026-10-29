@@ -52,10 +52,6 @@ export function useCreateMedicine() {
           };
         },
       );
-      void queryClient.refetchQueries({
-        queryKey: queryKeys.medicines.lists(),
-        type: "all",
-      });
       notifyApiFeedback("Thêm thuốc mới thành công", "info");
     },
   });
@@ -85,10 +81,6 @@ export function useUpdateMedicine() {
               }
             : cached,
       );
-      void queryClient.refetchQueries({
-        queryKey: queryKeys.medicines.lists(),
-        type: "all",
-      });
       notifyApiFeedback("Cập nhật thông tin thuốc thành công", "info");
     },
   });
@@ -120,10 +112,6 @@ export function useDeleteMedicine() {
               };
         },
       );
-      void queryClient.refetchQueries({
-        queryKey: queryKeys.medicines.lists(),
-        type: "all",
-      });
       notifyApiFeedback("Đã xóa thuốc khỏi danh mục", "info");
     },
   });

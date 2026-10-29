@@ -63,10 +63,6 @@ export function useCreatePatient() {
           };
         },
       );
-      void queryClient.refetchQueries({
-        queryKey: queryKeys.patients.lists(),
-        type: "all",
-      });
       notifyApiFeedback("Thêm bệnh nhân thành công", "info");
     },
   });
@@ -92,10 +88,6 @@ export function useUpdatePatient() {
           };
         },
       );
-      void queryClient.refetchQueries({
-        queryKey: queryKeys.patients.lists(),
-        type: "all",
-      });
       notifyApiFeedback("Cập nhật hồ sơ bệnh nhân thành công", "info");
     },
   });
@@ -129,10 +121,6 @@ export function useDeletePatient() {
               };
         },
       );
-      void queryClient.refetchQueries({
-        queryKey: queryKeys.patients.lists(),
-        type: "all",
-      });
       notifyApiFeedback("Đã xóa hồ sơ bệnh nhân", "info");
     },
   });

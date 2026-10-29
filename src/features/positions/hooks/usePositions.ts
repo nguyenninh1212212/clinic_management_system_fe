@@ -29,7 +29,6 @@ export function useCreatePosition() {
         return { ...cached, data: [created, ...cached.data].slice(0, cached.pagination?.limit ?? cached.data.length + 1), pagination: cached.pagination ? { ...cached.pagination, total: cached.pagination.total + 1 } : cached.pagination };
       });
       queryClient.setQueriesData({ queryKey: queryKeys.positions.all }, (cached: any) => Array.isArray(cached) ? [created, ...cached.filter((item: any) => item.id !== created.id)] : cached);
-      void queryClient.refetchQueries({ queryKey: queryKeys.positions.all, type: 'all' });
       notifyApiFeedback('Thêm vị trí công việc thành công', 'info');
     },
   });
@@ -44,7 +43,6 @@ export function useUpdatePosition() {
       queryClient.setQueryData(queryKeys.positions.detail(updated.id), updated);
       queryClient.setQueriesData({ queryKey: queryKeys.positions.lists() }, (cached: any) => cached && Array.isArray(cached.data) ? { ...cached, data: cached.data.map((item: any) => item.id === updated.id ? updated : item) } : cached);
       queryClient.setQueriesData({ queryKey: queryKeys.positions.all }, (cached: any) => Array.isArray(cached) ? cached.map((item: any) => item.id === updated.id ? updated : item) : cached);
-      void queryClient.refetchQueries({ queryKey: queryKeys.positions.all, type: 'all' });
       notifyApiFeedback('Cập nhật vị trí thành công', 'info');
     },
   });
@@ -58,7 +56,6 @@ export function useDeletePosition() {
       queryClient.removeQueries({ queryKey: queryKeys.positions.detail(id) });
       queryClient.setQueriesData({ queryKey: queryKeys.positions.lists() }, (cached: any) => cached && Array.isArray(cached.data) ? { ...cached, data: cached.data.filter((item: any) => item.id !== id), pagination: cached.pagination ? { ...cached.pagination, total: Math.max(0, cached.pagination.total - 1) } : cached.pagination } : cached);
       queryClient.setQueriesData({ queryKey: queryKeys.positions.all }, (cached: any) => Array.isArray(cached) ? cached.filter((item: any) => item.id !== id) : cached);
-      void queryClient.refetchQueries({ queryKey: queryKeys.positions.all, type: 'all' });
       notifyApiFeedback('Đã xóa vị trí công tác', 'info');
     },
   });

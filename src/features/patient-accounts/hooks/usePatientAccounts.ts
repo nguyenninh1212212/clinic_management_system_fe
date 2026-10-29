@@ -30,14 +30,19 @@ export function useUpdatePatientAccount() {
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdatePatientAccountDto }) =>
       patientAccountsApi.update(id, dto),
-    onSuccess: async (account) => {
+    onSuccess: (account) => {
       client.setQueryData(patientAccountKeys.detail(account.id), account);
-      await client.invalidateQueries({ queryKey: root });
+      client.setQueriesData({ queryKey: root }, (cached: any) =>
+        cached && Array.isArray(cached.data)
+          ? {
+              ...cached,
+              data: cached.data.map((item: any) =>
+                item.id === account.id ? account : item,
+              ),
+            }
+          : cached,
+      );
       notifyApiFeedback("Đã cập nhật tài khoản bệnh nhân", "info");
-    },
-    // A Redis failure may occur after the database has committed the account lock.
-    onError: async () => {
-      await client.invalidateQueries({ queryKey: root });
     },
   });
 }

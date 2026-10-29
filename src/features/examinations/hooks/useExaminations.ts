@@ -72,7 +72,6 @@ export function useUpdateExamination() {
         updated.data,
       );
       queryClient.setQueriesData({ queryKey: queryKeys.examinations.lists() }, (cached: any) => cached && Array.isArray(cached.data) ? { ...cached, data: cached.data.map((item: Examination) => item.id === updated.data.id ? updated.data : item) } : cached);
-      void queryClient.refetchQueries({ queryKey: queryKeys.examinations.lists(), type: 'all' });
       notifyApiFeedback("Cập nhật phiếu khám thành công", "info");
     },
   });
@@ -92,7 +91,6 @@ export function useDeleteExamination() {
         const data = cached.data.filter((item: Examination) => item.id !== id);
         return data.length === cached.data.length ? cached : { ...cached, data, pagination: cached.pagination ? { ...cached.pagination, total: Math.max(0, cached.pagination.total - 1) } : cached.pagination };
       });
-      void queryClient.refetchQueries({ queryKey: queryKeys.examinations.lists(), type: 'all' });
       notifyApiFeedback("Đã xóa phiếu khám", "info");
     },
   });

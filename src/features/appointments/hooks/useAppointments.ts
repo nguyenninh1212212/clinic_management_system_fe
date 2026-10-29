@@ -35,7 +35,6 @@ export function useCreateAppointment(): UseMutationResult<Appointment, Error, Cr
         if (!cached || !Array.isArray(cached.data) || cached.data.some((item: Appointment) => item.id === created.id) || cached.pagination?.page !== 1) return cached;
         return { ...cached, data: [created, ...cached.data].slice(0, cached.pagination?.limit ?? cached.data.length + 1), pagination: cached.pagination ? { ...cached.pagination, total: cached.pagination.total + 1 } : cached.pagination };
       });
-      void queryClient.refetchQueries({ queryKey: queryKeys.appointments.lists(), type: 'all' });
       notifyApiFeedback('Tạo lịch hẹn thành công', 'info');
     },
   });
@@ -50,7 +49,6 @@ export function useUpdateAppointment() {
     onSuccess: (updated: ApiResponse<Appointment>) => {
       queryClient.setQueryData(queryKeys.appointments.detail(updated.data.id), updated.data);
       queryClient.setQueriesData({ queryKey: queryKeys.appointments.lists() }, (cached: any) => cached && Array.isArray(cached.data) ? { ...cached, data: cached.data.map((item: Appointment) => item.id === updated.data.id ? updated.data : item) } : cached);
-      void queryClient.refetchQueries({ queryKey: queryKeys.appointments.lists(), type: 'all' });
       notifyApiFeedback('Cập nhật cuộc hẹn thành công', 'info');
     },
   });
@@ -72,7 +70,6 @@ export function useUpdateAppointmentStatus() {
     onSuccess: (updated: Appointment) => {
       queryClient.setQueryData(queryKeys.appointments.detail(updated.id), updated);
       queryClient.setQueriesData({ queryKey: queryKeys.appointments.lists() }, (cached: any) => cached && Array.isArray(cached.data) ? { ...cached, data: cached.data.map((item: Appointment) => item.id === updated.id ? updated : item) } : cached);
-      void queryClient.refetchQueries({ queryKey: queryKeys.appointments.lists(), type: 'all' });
       notifyApiFeedback('Cập nhật trạng thái cuộc hẹn thành công', 'info');
     },
   });
@@ -90,7 +87,6 @@ export function useDeleteAppointment() {
         const data = cached.data.filter((item: Appointment) => item.id !== id);
         return data.length === cached.data.length ? cached : { ...cached, data, pagination: cached.pagination ? { ...cached.pagination, total: Math.max(0, cached.pagination.total - 1) } : cached.pagination };
       });
-      void queryClient.refetchQueries({ queryKey: queryKeys.appointments.lists(), type: 'all' });
       notifyApiFeedback('Đã xóa cuộc hẹn', 'info');
     },
   });

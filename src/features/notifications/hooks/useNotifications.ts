@@ -19,7 +19,6 @@ export function useMarkNotificationRead() {
     mutationFn: (id: number) => notificationsApi.markRead(id),
     onSuccess: (_data, id) => {
       queryClient.setQueriesData({ queryKey: queryKeys.notifications.all }, (cached: any) => cached && Array.isArray(cached.data) ? { ...cached, data: cached.data.map((item: any) => item.id === id ? { ...item, isRead: true } : item) } : cached);
-      void queryClient.refetchQueries({ queryKey: queryKeys.notifications.all, type: 'all' });
     },
   });
 }
@@ -37,7 +36,6 @@ export function useDeleteNotification() {
         const data = cached.data.filter((item: any) => !removed.has(item.id));
         return { ...cached, data, pagination: cached.pagination ? { ...cached.pagination, total: Math.max(0, cached.pagination.total - (cached.data.length - data.length)) } : cached.pagination };
       });
-      void queryClient.refetchQueries({ queryKey: queryKeys.notifications.all, type: 'all' });
       notifyApiFeedback('Đã xóa thông báo', 'info');
     },
   });

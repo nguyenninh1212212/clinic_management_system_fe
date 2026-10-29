@@ -1,9 +1,13 @@
 // src/features/triage/hooks/useTriageList.ts
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@/api/queryKeys';
-import { triageResultsApi } from '@/api/endpoints/triage-results.api';
-import { notifyApiFeedback } from '@/api/axios';
-import { TriageResultQueryParams, CreateTriageResultDto, UpdateTriageResultDto } from '@/types';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/api/queryKeys";
+import { triageResultsApi } from "@/api/endpoints/triage-results.api";
+import { notifyApiFeedback } from "@/api/axios";
+import {
+  TriageResultQueryParams,
+  CreateTriageResultDto,
+  UpdateTriageResultDto,
+} from "@/types";
 
 interface UseTriageListParams extends TriageResultQueryParams {
   page: number;
@@ -21,15 +25,24 @@ export function useTriageList(params: UseTriageListParams) {
 export function useUpsertTriage(appointmentId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, dto }: { id?: number; dto: CreateTriageResultDto | UpdateTriageResultDto }) =>
+    mutationFn: ({
+      id,
+      dto,
+    }: {
+      id?: number;
+      dto: CreateTriageResultDto | UpdateTriageResultDto;
+    }) =>
       id
         ? triageResultsApi.update(id, dto as UpdateTriageResultDto)
         : triageResultsApi.create(dto as CreateTriageResultDto),
     onSuccess: (response) => {
       const triage = response.data;
-      queryClient.setQueryData(queryKeys.appointments.detail(appointmentId), (cached: any) => cached ? { ...cached, triageResult: triage } : cached);
-      void queryClient.refetchQueries({ queryKey: queryKeys.appointments.detail(appointmentId), type: 'all' });
-      notifyApiFeedback('Lưu sinh hiệu thành công', 'info');
+      queryClient.setQueryData(
+        queryKeys.appointments.detail(appointmentId),
+        (cached: any) =>
+          cached ? { ...cached, triageResult: triage } : cached,
+      );
+      notifyApiFeedback("Lưu sinh hiệu thành công", "info");
     },
   });
 }

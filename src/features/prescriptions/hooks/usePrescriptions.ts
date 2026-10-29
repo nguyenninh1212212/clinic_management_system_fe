@@ -34,7 +34,6 @@ export function useCreatePrescription() {
         if (!cached || !Array.isArray(cached.data) || cached.data.some((item: Prescription) => item.id === created.id) || cached.pagination?.page !== 1) return cached;
         return { ...cached, data: [created, ...cached.data].slice(0, cached.pagination?.limit ?? cached.data.length + 1), pagination: cached.pagination ? { ...cached.pagination, total: cached.pagination.total + 1 } : cached.pagination };
       });
-      void queryClient.refetchQueries({ queryKey: queryKeys.prescriptions.lists(), type: 'all' });
       notifyApiFeedback('Kê đơn thuốc thành công', 'info');
     },
   });
@@ -52,7 +51,6 @@ export function useDeletePrescription() {
         const data = cached.data.filter((item: Prescription) => item.id !== id);
         return data.length === cached.data.length ? cached : { ...cached, data, pagination: cached.pagination ? { ...cached.pagination, total: Math.max(0, cached.pagination.total - 1) } : cached.pagination };
       });
-      void queryClient.refetchQueries({ queryKey: queryKeys.prescriptions.lists(), type: 'all' });
       notifyApiFeedback('Đã xóa đơn thuốc', 'info');
     },
   });

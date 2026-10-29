@@ -1,5 +1,6 @@
 import { useMutation,useQueryClient } from '@tanstack/react-query';
 import { prescriptionsApi } from '@/api/endpoints/prescriptions.api';
+import { queryKeys } from '@/api/queryKeys';
 // src/features/prescriptions/pages/PrescriptionDetailPage.tsx
 import React, { useRef } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
@@ -24,7 +25,17 @@ export const PrescriptionDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const client=useQueryClient();
-  const issue=useMutation({mutationFn:()=>prescriptionsApi.issue(id!),onSuccess:()=>client.invalidateQueries({queryKey:['prescriptions']})});
+  const issue=useMutation({
+    mutationFn:()=>prescriptionsApi.issue(id!),
+    onSuccess:(issued)=>{
+      client.setQueryData(queryKeys.prescriptions.detail(issued.id), issued);
+      client.setQueriesData({ queryKey: queryKeys.prescriptions.lists() }, (cached: any) =>
+        cached && Array.isArray(cached.data)
+          ? { ...cached, data: cached.data.map((item: any) => item.id === issued.id ? issued : item) }
+          : cached,
+      );
+    },
+  });
   const printRef = useRef<HTMLDivElement>(null);
   const { data: prescription, isLoading, isError } = usePrescription(id ?? "");
 

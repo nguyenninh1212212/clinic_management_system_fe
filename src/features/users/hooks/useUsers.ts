@@ -62,10 +62,6 @@ export function useCreateUser() {
           };
         },
       );
-      void queryClient.refetchQueries({
-        queryKey: queryKeys.users.lists(),
-        type: "all",
-      });
       notifyApiFeedback("Tạo tài khoản người dùng thành công", "info");
     },
   });
@@ -90,10 +86,6 @@ export function useUpdateUser() {
               }
             : cached,
       );
-      void queryClient.refetchQueries({
-        queryKey: queryKeys.users.lists(),
-        type: "all",
-      });
       notifyApiFeedback("Cập nhật tài khoản thành công", "info");
     },
   });

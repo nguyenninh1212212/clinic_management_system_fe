@@ -40,7 +40,6 @@ export function useCreateInventory() {
             : cached.pagination,
         };
       });
-      void queryClient.refetchQueries({ queryKey: queryKeys.inventory.lists(), type: 'all' });
       notifyApiFeedback('Thêm lô thuốc mới vào kho thành công', 'info');
     },
   });
@@ -73,8 +72,6 @@ export function useStockTransaction() {
             : cached.transactions,
         } : cached,
       );
-      void queryClient.refetchQueries({ queryKey: queryKeys.inventory.lists(), type: 'all' });
-      void queryClient.refetchQueries({ queryKey: queryKeys.stockTransactions.lists(), type: 'all' });
       const defaultListParams: StockTransactionQueryParams = { page: 1, limit: 15 };
       const defaultListKey = queryKeys.stockTransactions.list(defaultListParams);
       if (!queryClient.getQueryState(defaultListKey)) {
@@ -105,7 +102,6 @@ export function useDeleteInventory() {
             : cached.pagination,
         };
       });
-      void queryClient.refetchQueries({ queryKey: queryKeys.inventory.lists(), type: 'all' });
       notifyApiFeedback('Đã xóa lô thuốc khỏi kho', 'info');
     },
   });

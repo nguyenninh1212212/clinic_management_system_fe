@@ -18,19 +18,26 @@ import {
 import SaveIcon from '@mui/icons-material/Save';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { PageHeader } from '@/components/common/PageHeader';
+import { InfiniteSelect, InfiniteSelectPage } from '@/components/common/InfiniteSelect';
+import { usersApi } from '@/api/endpoints/users.api';
+import { queryKeys } from '@/api/queryKeys';
 import { createDoctorSchema, CreateDoctorFormValues } from '../schemas/doctor.schema';
 import { useCreateDoctor } from '../hooks/useDoctors';
 import { useSpecialtiesDropdown } from '@/features/specialties/hooks/useSpecialties';
-import { useUsersDropdown } from '@/features/users/hooks/useUsers';
-import { DoctorDegree } from '@/types';
+import { DoctorDegree, User } from '@/types';
 
 export const DoctorCreatePage: React.FC = () => {
   const navigate = useNavigate();
   const createMutation = useCreateDoctor();
   const { data: specialties } = useSpecialtiesDropdown();
 
-  // Load users to link
-  const { data: usersData, isLoading: loadingUsers } = useUsersDropdown(100);
+  const loadUsers = async ({ page, search }: { page: number; search: string }): Promise<InfiniteSelectPage<User>> => {
+    const response = await usersApi.findAll({ page, limit: 20, search: search || undefined, isDoctor: '0' });
+    return {
+      data: response.data,
+      nextPage: page < response.pagination.totalPages ? page + 1 : null,
+    };
+  };
 
   const {
     register,
@@ -100,30 +107,27 @@ export const DoctorCreatePage: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* User Selection */}
               <div className="sm:col-span-2">
-                <FormControl fullWidth error={!!errors.userId}>
-                  <InputLabel id="user-select-label">Tài khoản người dùng liên kết *</InputLabel>
-                  <Controller
-                    name="userId"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        {...field}
-                        labelId="user-select-label"
-                        label="Tài khoản người dùng liên kết *"
-                        disabled={loadingUsers}
-                      >
-                        {usersData?.data?.map((u) => (
-                          <MenuItem key={u.id} value={u.id}>
-                            {u.fullName} — {u.email} ({u.role})
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    )}
-                  />
-                  {errors.userId && (
-                    <FormHelperText>{errors.userId.message}</FormHelperText>
+                <Controller
+                  name="userId"
+                  control={control}
+                  render={({ field }) => (
+                    <InfiniteSelect<User>
+                      label="Tài khoản người dùng liên kết *"
+                      value={field.value || null}
+                      onChange={(userId) => field.onChange(userId ?? '')}
+                      queryKey={queryKeys.users.lists()}
+                      queryFn={loadUsers}
+                      getOptionLabel={(user) => `${user.fullName} — ${user.email} (${user.role})`}
+                      getOptionValue={(user) => user.id}
+                      fullWidth
+                      textFieldProps={{
+                        error: !!errors.userId,
+                        helperText: errors.userId?.message,
+                        onBlur: field.onBlur,
+                      }}
+                    />
                   )}
-                </FormControl>
+                />
               </div>
 
               {/* License Number */}

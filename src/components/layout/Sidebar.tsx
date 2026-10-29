@@ -141,11 +141,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           path: "/stock-transactions",
           icon: <SwapHorizOutlinedIcon fontSize="small" />,
         },
-        {
-          label: "Nhà thuốc",
-          path: "/pharmacy",
-          icon: <MedicationOutlinedIcon fontSize="small" />,
-        },
       ],
     },
     {

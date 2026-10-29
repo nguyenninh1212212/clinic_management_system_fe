@@ -147,9 +147,6 @@ export const routeElements = (
       <Route path="legacy/invoices/new" element={<InvoiceCreatePage />} />
       <Route path="legacy/invoices/:id" element={<InvoiceDetailPage />} />
 
-      {/* Pharmacy */}
-      <Route path="pharmacy" element={<PharmacyDashboard/>} />
-
       {/* Medicines & Inventory */}
       <Route path="medicines" element={<MedicineListPage />} />
       <Route path="inventory" element={<InventoryListPage />} />

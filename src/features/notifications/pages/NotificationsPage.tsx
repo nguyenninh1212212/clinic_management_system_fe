@@ -69,7 +69,6 @@ export const NotificationsPage: React.FC = () => {
         if (!payload.createdAt || payload.isRead === undefined || !payload.userId || cached.pagination?.page !== 1) return cached;
         return { ...cached, data: [{ ...payload } as Notification, ...cached.data].slice(0, cached.pagination.limit), pagination: { ...cached.pagination, total: cached.pagination.total + 1 } };
       });
-      void queryClient.refetchQueries({ queryKey: queryKeys.notifications.all, type: 'all' });
     },
     [queryClient],
   );

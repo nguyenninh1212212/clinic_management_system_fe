@@ -23,6 +23,7 @@ export interface UserQueryParams extends BaseQueryParams {
   departmentId?: number;
   positionId?: number;
   isActive?: boolean;
+  isDoctor?:string
 }
 
 export interface CreateUserDto {
