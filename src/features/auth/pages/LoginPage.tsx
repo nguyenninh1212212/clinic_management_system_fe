@@ -274,7 +274,6 @@ export const LoginPage: React.FC = () => {
           color="text.secondary"
           sx={{ textAlign: "center", fontSize: 12, mt: 3 }}
         >
-          Chưa có tài khoản?{" "}
           <Box
             component={RouterLink}
             to="/register"
