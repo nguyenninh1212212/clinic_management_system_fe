@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate, Link as RouterLink, useLocation } from "react-router-dom";
+import { useNavigate, Link as RouterLink, Navigate } from "react-router-dom";
+import { getDefaultRoute } from "@/routes/access-control";
 
 import {
   Alert,
@@ -66,17 +67,14 @@ const inputSx = {
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const setAuth = useAuthStore((state) => state.setAuth);
 
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  const from =
-    (location.state as { from?: { pathname?: string } } | null)?.from
-      ?.pathname || "/dashboard";
 
   const {
     register,
@@ -101,7 +99,7 @@ export const LoginPage: React.FC = () => {
         password: values.password,
       });
       setAuth(response.accessToken, response.user);
-      navigate(from, { replace: true });
+      navigate(getDefaultRoute(response.user), { replace: true });
     } catch (err: any) {
       console.log("🚀 ~ onSubmit ~ err:", err)
       const axiosError = err as AxiosError<{
@@ -125,6 +123,10 @@ export const LoginPage: React.FC = () => {
     setValue("email", email);
     setValue("password", "Admin@123");
   };
+
+  if (isAuthenticated && user) {
+    return <Navigate to={getDefaultRoute(user)} replace />;
+  }
 
   return (
     <Box

@@ -5,7 +5,9 @@ import { CounterPurchasePage } from '@/features/commerce/CounterPurchasePage';
 import { UserDetailPage } from '@/features/users/pages/UserDetailPage';
 // src/App.tsx
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HomeRedirect } from "@/routes/HomeRedirect";
+import { NotFoundPage } from "@/features/errors/pages/NotFoundPage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeModeProvider } from "@/theme/ThemeModeProvider";
 
@@ -97,7 +99,7 @@ export const routeElements = (
         </ProtectedRoute>
       }
     >
-      <Route index element={<Navigate to="/dashboard" replace />} />
+      <Route index element={<HomeRedirect />} />
       <Route path="dashboard" element={<DashboardPage />} />
 
       {/* Patients */}
@@ -184,7 +186,7 @@ export const routeElements = (
       />
     </Route>
 
-    <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    <Route path="*" element={<NotFoundPage />} />
   </>
 );
 export default function App() {

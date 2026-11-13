@@ -2,7 +2,7 @@ import React from "react";
 import { Alert, Box, Button } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/auth.store";
-import { getPageAccess, hasAccess } from "./access-control";
+import { getDefaultRoute, getPageAccess, hasAccess } from "./access-control";
 
 export const PageAccessGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const user = useAuthStore((state) => state.user);
@@ -14,7 +14,7 @@ export const PageAccessGuard: React.FC<{ children: React.ReactNode }> = ({ child
     return (
       <Box className="mx-auto max-w-lg p-8 text-center">
         <Alert severity="error" className="mb-4">Bạn không có quyền truy cập trang này.</Alert>
-        <Button variant="outlined" onClick={() => navigate("/dashboard", { replace: true })}>
+        <Button variant="outlined" onClick={() => navigate(getDefaultRoute(user), { replace: true })}>
           Về trang chủ
         </Button>
       </Box>

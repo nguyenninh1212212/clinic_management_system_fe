@@ -100,3 +100,21 @@ export const getPageAccess = (pathname: string) =>
     .find(
       ([path]) => pathname === path || pathname.startsWith(`${path}/`),
     )?.[1];
+
+export const getDefaultRoute = (user: CurrentUser | null | undefined): string => {
+  if (!user) return "/login";
+
+  switch (user.role) {
+    case UserRole.SUPER_ADMIN:
+    case UserRole.ADMIN:
+      return "/dashboard";
+    case UserRole.MANAGER:
+      return "/doctor-shifts";
+    case UserRole.DOCTOR:
+      return "/examinations";
+    case UserRole.STAFF:
+      return "/appointments";
+    default:
+      return "/notifications";
+  }
+};
